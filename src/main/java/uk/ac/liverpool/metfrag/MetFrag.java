@@ -3,6 +3,12 @@
  */
 package uk.ac.liverpool.metfrag;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.ScoredCandidateList;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
@@ -20,13 +26,13 @@ public class MetFrag {
 	 * @return String
 	 * @throws Exception
 	 */
-	public String match() throws Exception {
-		final String peakListFilePath = ClassLoader.getSystemResource("peaklist_file_example_1.txt").getFile();
+	public static String match(final float[] mz, final int[] inten) throws Exception {
+		final File peakListFile = writePeakList(mz, inten);
 		final String candidateListFilePath = ClassLoader.getSystemResource("candidate_file_example_1.txt").getFile();
 		
 		final MetFragGlobalSettings settings = new MetFragGlobalSettings();
 		//set peaklist path and candidate list path
-		settings.set(VariableNames.PEAK_LIST_PATH_NAME, peakListFilePath);
+		settings.set(VariableNames.PEAK_LIST_PATH_NAME, peakListFile.getAbsolutePath());
 		settings.set(VariableNames.LOCAL_DATABASE_PATH_NAME, candidateListFilePath);
 		//set needed parameters
 		settings.set(VariableNames.RELATIVE_MASS_DEVIATION_NAME, 5.0);
@@ -44,9 +50,9 @@ public class MetFrag {
 		ICandidate correctCandidate = null;
 		
 		for(int i = 0; i < scoredCandidateList.getNumberElements(); i++) {
-			String inchikey1 = (String)scoredCandidateList.getElement(i).getProperty(VariableNames.INCHI_KEY_1_NAME);
+			String inchikey1 = (String)scoredCandidateList.getElement(i).getProperty(VariableNames.SMILES_NAME);
 			
-			if(inchikey1.equals("MEFQWPUMEMWTJP")) {
+			if(inchikey1.equals("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F")) {
 				correctCandidate = scoredCandidateList.getElement(i);
 			}
 		}
@@ -68,5 +74,27 @@ public class MetFrag {
 		
 		
 		return "MetFrag match";
+	}
+	
+	/**
+	 * 
+	 * @param mz
+	 * @param inten
+	 * @return File
+	 * @throws IOException
+	 */
+	private static File writePeakList(final float[] mz, final int[] inten) throws IOException {
+		// Ensure length of mz and inten are equal.
+		assert mz.length == inten.length;
+		
+		final File temp = File.createTempFile("peakList", ".tmp");
+	    
+	    try(final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(temp)))) {
+	    	for(int i = 0; i < mz.length; i++) {
+	    		writer.println(mz[i] + " " + inten[i]);
+	    	}
+	    }
+	    
+	    return temp;
 	}
 }
