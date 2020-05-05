@@ -1,3 +1,6 @@
+/**
+ * 
+ */
 package uk.ac.liverpool.metfrag;
 
 import java.io.IOException;

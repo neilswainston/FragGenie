@@ -1,3 +1,6 @@
+/**
+ * 
+ */
 package uk.ac.liverpool.metfrag;
 
 import java.io.IOException;
@@ -19,8 +22,8 @@ public class MetFragAppEngineTest {
 	public void test() throws IOException {
 		final MockHttpServletResponse response = new MockHttpServletResponse();
 		new MetFragAppEngine().doGet(null, response);
-		Assert.assertEquals("text/plain", response.getContentType());
+		Assert.assertEquals("application/json", response.getContentType());
 		Assert.assertEquals("UTF-8", response.getCharacterEncoding());
-		Assert.assertEquals("MetFrag match", response.getWriterContent().toString());
+		Assert.assertEquals("{\"match\":\"MetFrag match\"}", response.getWriterContent().toString());
 	}
 }
