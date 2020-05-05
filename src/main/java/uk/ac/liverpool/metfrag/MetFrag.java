@@ -59,7 +59,7 @@ public class MetFrag {
 			final Map<String, Object> properties = candidate.getProperties();
 			
 			// Map Identifier to index:
-			final String identifier = (String)properties.remove("Identifier");
+			final String identifier = (String)properties.remove(VariableNames.IDENTIFIER_NAME);
 			properties.put("index", Integer.parseInt(identifier));
 			
 			// Remove unnecessary field:
@@ -82,7 +82,7 @@ public class MetFrag {
 
 		try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(temp)))) {
 			// Write header:
-			writer.println("empty,Identifier,InChI");
+			writer.println("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.INCHI_NAME);
 
 			// Write data:
 			for (int i = 0; i < inchis.length; i++) {
