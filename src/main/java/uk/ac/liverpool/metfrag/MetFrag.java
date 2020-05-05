@@ -28,7 +28,7 @@ public class MetFrag {
 	 */
 	public static String match(final float[] mz, final int[] inten) throws Exception {
 		final File peakListFile = writePeakList(mz, inten);
-		final String candidateListFilePath = ClassLoader.getSystemResource("candidate_file_example_1.txt").getFile();
+		final String candidateListFilePath = ClassLoader.getSystemResource("candidate_file_example_1.csv").getFile();
 		
 		final MetFragGlobalSettings settings = new MetFragGlobalSettings();
 		//set peaklist path and candidate list path

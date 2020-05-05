@@ -28,7 +28,8 @@ public class MetFragAppEngine extends HttpServlet {
 	@Override
 	public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
 		
-		final float[] mz = new float[] {90.97445f,
+		final float[] mz = new float[] {
+				90.97445f,
 				106.94476f,
 				110.0275f,
 				115.98965f,
@@ -52,7 +53,8 @@ public class MetFragAppEngine extends HttpServlet {
 				236.96245f,
 				254.97312f};
 		
-		final int[] inten = new int[] {681,
+		final int[] inten = new int[] {
+				681,
 				274,
 				110,
 				95,
