@@ -7,20 +7,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(
-    name = "HelloAppEngine",
-    urlPatterns = {"/hello"}
-)
+@WebServlet(name = "MetFrag", urlPatterns = { "/match" })
 public class HelloAppEngine extends HttpServlet {
 
-  @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) 
-      throws IOException {
+	/**
+	 *
+	 **/
+	private static final long serialVersionUID = 1L;
 
-    response.setContentType("text/plain");
-    response.setCharacterEncoding("UTF-8");
+	@Override
+	public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
 
-    response.getWriter().print("Hello App Engine!\r\n");
-
-  }
+		response.setContentType("text/plain");
+		response.setCharacterEncoding("UTF-8");
+		response.getWriter().print("MetFrag match");
+	}
 }
