@@ -28,17 +28,17 @@ class MockHttpServletResponse implements HttpServletResponse {
 	 * 
 	 */
 	private String contentType;
-	
+
 	/**
 	 * 
 	 */
 	private String encoding;
-	
+
 	/**
 	 * 
 	 */
 	private StringWriter writerContent = new StringWriter();
-	
+
 	/**
 	 * 
 	 */

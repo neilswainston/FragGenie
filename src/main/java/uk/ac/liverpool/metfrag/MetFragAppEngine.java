@@ -4,8 +4,11 @@
 package uk.ac.liverpool.metfrag;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
 
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.servlet.annotation.WebServlet;
@@ -86,8 +89,8 @@ public class MetFragAppEngine extends HttpServlet {
 				999};
 		
 		try {
-			final String match = MetFrag.match(inchis, mz, inten);
-			final JsonObject json = toJson(match);
+			final Collection<Map<String,Object>> results = MetFrag.match(inchis, mz, inten);
+			final JsonObject json = toJson(results);
 			response.setContentType("application/json");
 			response.setCharacterEncoding("UTF-8");
 			response.getWriter().print(json.toString());
@@ -100,12 +103,34 @@ public class MetFragAppEngine extends HttpServlet {
 
 	/**
 	 * 
-	 * @param match
+	 * @param results
 	 * @return JsonObject
 	 */
-	private static JsonObject toJson(final String match) {
-		final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
-		jsonBuilder.add("match", match);
-		return jsonBuilder.build();
+	private static JsonObject toJson(final Collection<Map<String,Object>> results) {
+		final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+
+		for(Map<String,Object> result : results) {
+			final JsonObjectBuilder resBuilder = Json.createObjectBuilder();
+			
+			for (Map.Entry<String, Object> entry : result.entrySet()) {
+				final Object value = entry.getValue();
+				
+				if(value instanceof String) {
+					resBuilder.add(entry.getKey(), (String)value);
+				}
+				else if(value instanceof Byte) {
+					resBuilder.add(entry.getKey(), (Byte)value);
+				}
+				else if(value instanceof Double) {
+					resBuilder.add(entry.getKey(), (Double)value);
+				}
+			}
+			
+			arrayBuilder.add(resBuilder.build());
+		}
+		
+		final JsonObjectBuilder objBuilder = Json.createObjectBuilder();
+		objBuilder.add("results", arrayBuilder.build());
+		return objBuilder.build();
 	}
 }

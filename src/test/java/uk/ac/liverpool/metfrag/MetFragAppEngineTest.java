@@ -4,6 +4,12 @@
 package uk.ac.liverpool.metfrag;
 
 import java.io.IOException;
+import java.io.StringReader;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,6 +30,13 @@ public class MetFragAppEngineTest {
 		new MetFragAppEngine().doGet(null, response);
 		Assert.assertEquals("application/json", response.getContentType());
 		Assert.assertEquals("UTF-8", response.getCharacterEncoding());
-		Assert.assertEquals("{\"match\":\"MetFrag match\"}", response.getWriterContent().toString());
+
+		final String resp = response.getWriterContent().toString();
+
+		try(final JsonReader jsonReader = Json.createReader(new StringReader(resp))) {
+			final JsonObject object = jsonReader.readObject();
+			final JsonArray results = (JsonArray)object.get("results");
+			Assert.assertEquals(5, results.size());
+		}
 	}
 }
