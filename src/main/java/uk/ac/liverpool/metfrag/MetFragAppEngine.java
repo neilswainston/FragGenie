@@ -121,6 +121,9 @@ public class MetFragAppEngine extends HttpServlet {
 				else if(value instanceof Byte) {
 					resBuilder.add(entry.getKey(), (Byte)value);
 				}
+				else if(value instanceof Integer) {
+					resBuilder.add(entry.getKey(), (Integer)value);
+				}
 				else if(value instanceof Double) {
 					resBuilder.add(entry.getKey(), (Double)value);
 				}

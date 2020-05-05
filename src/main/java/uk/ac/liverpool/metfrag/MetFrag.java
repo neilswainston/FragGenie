@@ -57,7 +57,14 @@ public class MetFrag {
 		for (int i = 0; i < scoredCandidateList.getNumberElements(); i++) {
 			final ICandidate candidate = scoredCandidateList.getElement(i);
 			final Map<String, Object> properties = candidate.getProperties();
+			
+			// Map Identifier to index:
+			final String identifier = (String)properties.remove("Identifier");
+			properties.put("index", Integer.parseInt(identifier));
+			
+			// Remove unnecessary field:
 			properties.remove("empty");
+			
 			results.add(properties);
 		}
 
