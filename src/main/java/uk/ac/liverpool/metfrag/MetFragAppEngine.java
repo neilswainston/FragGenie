@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "MetFrag", urlPatterns = { "/match" })
-public class HelloAppEngine extends HttpServlet {
+public class MetFragAppEngine extends HttpServlet {
 
 	/**
 	 *
