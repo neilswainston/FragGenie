@@ -27,12 +27,17 @@ public class MetFragAppEngine extends HttpServlet {
 
 	@Override
 	public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
-		final MetFrag metFrag = new MetFrag();
-		final String match = metFrag.match();
-		final JsonObject json = toJson(match);
-		response.setContentType("application/json");
-		response.setCharacterEncoding("UTF-8");
-		response.getWriter().print(json.toString());
+		try {
+			final MetFrag metFrag = new MetFrag();
+			final String match = metFrag.match();
+			final JsonObject json = toJson(match);
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			response.getWriter().print(json.toString());
+		}
+		catch(Exception e) {
+			throw new IOException(e.getMessage());
+		}
 	}
 
 	/**
