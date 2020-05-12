@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.log4j.Level;
+
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.ScoredCandidateList;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
@@ -36,6 +38,9 @@ public class MetFrag {
 
 		final MetFragGlobalSettings settings = new MetFragGlobalSettings();
 
+		// Set logging:
+		settings.set(VariableNames.LOG_LEVEL_NAME, Level.ALL);
+		
 		// Set peak list and candidate list:
 		settings.set(VariableNames.PEAK_LIST_PATH_NAME, peakListFile.getAbsolutePath());
 		settings.set(VariableNames.LOCAL_DATABASE_PATH_NAME, candidateListFile.getAbsolutePath());
