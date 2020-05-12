@@ -30,6 +30,14 @@ public class MetFragAppEngine extends HttpServlet {
 
 	@Override
 	public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+		final String[] smiles = new String[] {
+				"C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F",
+				"C(C(=O)OC1=NC(=C(C(=C1Cl)N)Cl)F)O",
+				"C1(=C(C(=NC(=C1Cl)F)C(C(=O)O)O)Cl)N",
+				"CC(=O)OOC1=NC(=C(C(=C1Cl)N)Cl)F",
+				"C(C(CSCP(=O)([O-])[O-])C(=O)[O-])C(=O)[O-]"
+		};
+		
 		final String[] inchis = new String[] {
 				"InChI=1S/C7H5Cl2FN2O3/c8-3-5(11)4(9)7(12-6(3)10)15-1-2(13)14/h1H2,(H2,11,12)(H,13,14)",
 				"InChI=1S/C7H5Cl2FN2O3/c8-3-5(11)4(9)7(12-6(3)10)15-2(14)1-13/h13H,1H2,(H2,11,12)",
@@ -89,7 +97,7 @@ public class MetFragAppEngine extends HttpServlet {
 				999};
 		
 		try {
-			final Collection<Map<String,Object>> results = MetFrag.match(inchis, mz, inten);
+			final Collection<Map<String,Object>> results = MetFrag.match(smiles, inchis, mz, inten);
 			final JsonObject json = toJson(results);
 			response.setContentType("application/json");
 			response.setCharacterEncoding("UTF-8");

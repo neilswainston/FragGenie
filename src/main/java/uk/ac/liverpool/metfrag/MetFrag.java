@@ -28,12 +28,16 @@ public class MetFrag {
 
 	/**
 	 * 
-	 * @return Collection<Map<String,Object>>
+	 * @param smiles
+	 * @param inchis
+	 * @param mz
+	 * @param inten
+	 * @return Collection<Map<String, Object>>
 	 * @throws Exception
 	 */
-	public static Collection<Map<String, Object>> match(final String[] inchis, final float[] mz, final int[] inten)
+	public static Collection<Map<String, Object>> match(final String[] smiles, final String[] inchis, final float[] mz, final int[] inten)
 			throws Exception {
-		final File candidateListFile = writeCandidateList(inchis);
+		final File candidateListFile = writeCandidateList(smiles, inchis);
 		final File peakListFile = writePeakList(mz, inten);
 
 		final MetFragGlobalSettings settings = new MetFragGlobalSettings();
@@ -78,20 +82,24 @@ public class MetFrag {
 
 	/**
 	 * 
+	 * @param smiles
 	 * @param inchis
 	 * @return File
 	 * @throws IOException
 	 */
-	private static File writeCandidateList(final String[] inchis) throws IOException {
+	private static File writeCandidateList(final String[] smiles, final String[] inchis) throws IOException {
+		// Ensure length of smiles and inchis are equal.
+		assert smiles.length == inchis.length;
+		
 		final File temp = File.createTempFile("candidateList", ".tmp");
 
 		try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(temp)))) {
 			// Write header:
-			writer.println("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.INCHI_NAME);
+			writer.println("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," + VariableNames.INCHI_NAME);
 
 			// Write data:
-			for (int i = 0; i < inchis.length; i++) {
-				writer.println("," + i + ",\"" + inchis[i] + "\"");
+			for (int i = 0; i < smiles.length; i++) {
+				writer.println("," + i + "," + smiles[i] + ",\"" + inchis[i] + "\"");
 			}
 		}
 
