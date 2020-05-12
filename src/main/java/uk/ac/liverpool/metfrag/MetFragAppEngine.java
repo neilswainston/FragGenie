@@ -4,6 +4,9 @@
 package uk.ac.liverpool.metfrag;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 
@@ -113,7 +116,10 @@ public class MetFragAppEngine extends HttpServlet {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			throw new IOException(e.getMessage());
+			
+			final Writer writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+			throw new IOException(writer.toString());
 		}
 	}
 
