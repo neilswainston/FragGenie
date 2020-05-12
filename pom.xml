@@ -68,9 +68,9 @@
 			<version>1.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.github.ipb-halle.MetFragRelaunched</groupId>
+			<groupId>com.github.neilswainston.MetFragRelaunched</groupId>
 			<artifactId>MetFragLib</artifactId>
-			<version>v2.4.5</version>
+			<version>master-SNAPSHOT</version>
 		</dependency>
 
 

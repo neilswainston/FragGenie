@@ -3,11 +3,9 @@
  */
 package uk.ac.liverpool.metfrag;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -30,24 +28,28 @@ public class MetFrag {
 	 * 
 	 * @param smiles
 	 * @param inchis
+	 * @param formulae
 	 * @param mz
 	 * @param inten
 	 * @return Collection<Map<String, Object>>
 	 * @throws Exception
 	 */
-	public static Collection<Map<String, Object>> match(final String[] smiles, final String[] inchis, final float[] mz, final int[] inten)
+	public static Collection<Map<String, Object>> match(final String[] smiles, final String[] inchis, final String[] formulae, final float[] mz, final int[] inten)
 			throws Exception {
-		final File candidateListFile = writeCandidateList(smiles, inchis);
-		final File peakListFile = writePeakList(mz, inten);
+		final String candidateList = writeCandidateList(smiles, inchis, formulae);
+		final String peakList = writePeakList(mz, inten);
 
 		final MetFragGlobalSettings settings = new MetFragGlobalSettings();
 
 		// Set logging:
 		settings.set(VariableNames.LOG_LEVEL_NAME, Level.ALL);
+	
+		// Use SMILES:
+		settings.set(VariableNames.USE_SMILES_NAME, Boolean.TRUE);
 		
 		// Set peak list and candidate list:
-		settings.set(VariableNames.PEAK_LIST_PATH_NAME, peakListFile.getAbsolutePath());
-		settings.set(VariableNames.LOCAL_DATABASE_PATH_NAME, candidateListFile.getAbsolutePath());
+		settings.set(VariableNames.PEAK_LIST_PATH_NAME, peakList);
+		settings.set(VariableNames.LOCAL_DATABASE_PATH_NAME, candidateList);
 		settings.set(VariableNames.METFRAG_DATABASE_TYPE_NAME, "LocalCSV");
 
 		// Set other parameters:
@@ -67,10 +69,6 @@ public class MetFrag {
 			final ICandidate candidate = scoredCandidateList.getElement(i);
 			final Map<String, Object> properties = candidate.getProperties();
 			
-			// Map Identifier to index:
-			final String identifier = (String)properties.remove(VariableNames.IDENTIFIER_NAME);
-			properties.put("index", Integer.parseInt(identifier));
-			
 			// Remove unnecessary field:
 			properties.remove("empty");
 			
@@ -84,47 +82,48 @@ public class MetFrag {
 	 * 
 	 * @param smiles
 	 * @param inchis
-	 * @return File
+	 * @return String
 	 * @throws IOException
 	 */
-	private static File writeCandidateList(final String[] smiles, final String[] inchis) throws IOException {
-		// Ensure length of smiles and inchis are equal.
-		assert smiles.length == inchis.length;
+	private static String writeCandidateList(final String[] smiles, final String[] inchis, final String[] formulae) throws IOException {
+		// Ensure length of smiles, inchis and formulae are equal.
+		assert smiles.length == inchis.length && inchis.length == formulae.length;
 		
 		final File temp = File.createTempFile("candidateList", ".tmp");
 
-		try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(temp)))) {
+		try (final StringWriter writer = new StringWriter()) {
 			// Write header:
-			writer.println("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," + VariableNames.INCHI_NAME);
-
+			writer.write("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," + VariableNames.INCHI_NAME + "," + VariableNames.MOLECULAR_FORMULA_NAME);
+			writer.write(System.lineSeparator());
+			
 			// Write data:
 			for (int i = 0; i < smiles.length; i++) {
-				writer.println("," + i + "," + smiles[i] + ",\"" + inchis[i] + "\"");
+				writer.write("," + i + "," + smiles[i] + ",\"" + inchis[i] + "\"," + formulae[i]);
+				writer.write(System.lineSeparator());
 			}
+			
+			return writer.toString();
 		}
-
-		return temp;
 	}
 
 	/**
 	 * 
 	 * @param mz
 	 * @param inten
-	 * @return File
+	 * @return String
 	 * @throws IOException
 	 */
-	private static File writePeakList(final float[] mz, final int[] inten) throws IOException {
+	private static String writePeakList(final float[] mz, final int[] inten) throws IOException {
 		// Ensure length of mz and inten are equal.
 		assert mz.length == inten.length;
 
-		final File temp = File.createTempFile("peakList", ".tmp");
-
-		try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(temp)))) {
+		try (final StringWriter writer = new StringWriter()) {
 			for (int i = 0; i < mz.length; i++) {
-				writer.println(mz[i] + " " + inten[i]);
+				writer.write(mz[i] + " " + inten[i]);
+				writer.write(System.lineSeparator());
 			}
+			
+			return writer.toString();
 		}
-
-		return temp;
 	}
 }
