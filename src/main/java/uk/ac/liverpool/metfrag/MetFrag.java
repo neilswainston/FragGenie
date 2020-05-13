@@ -73,7 +73,8 @@ public class MetFrag {
 			final String identifier = (String)properties.remove("Identifier");
 			properties.put("index", Integer.parseInt(identifier.split("|")[0]));
 			
-			// Remove unnecessary field:
+			// Remove unnecessary fields:
+			properties.remove("InChI");
 			properties.remove("empty");
 			
 			results.add(properties);
