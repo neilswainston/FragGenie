@@ -3,6 +3,7 @@
  */
 package uk.ac.liverpool.metfrag;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -107,7 +108,17 @@ public class MetFragAppEngine extends HttpServlet {
 	
 	@Override
 	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
-		final String query = request.getParameter("query");
+		final StringBuilder builder = new StringBuilder();
+		
+		try(final BufferedReader reader = request.getReader()) {
+			String line;
+			
+	        while((line = reader.readLine()) != null) {
+	        	builder.append(line).append('\n');
+	        }
+		}
+
+	    final String query = builder.toString();
 		
 		try(final JsonReader jsonReader = Json.createReader(new StringReader(query))) {
 			final JsonObject json = jsonReader.readObject();

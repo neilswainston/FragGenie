@@ -5,6 +5,7 @@ package uk.ac.liverpool.metfrag;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Collection;
@@ -184,10 +185,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
 	@Override
 	public String getParameter(String name) {
-		if(name == "query") {
-			return query;
-		}
-		
+		// Empty block
 		return null;
 	}
 
@@ -235,8 +233,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
 	@Override
 	public BufferedReader getReader() throws IOException {
-		// Empty block
-		return null;
+		return new BufferedReader(new StringReader(this.query));
 	}
 
 	@Override
