@@ -48,14 +48,6 @@ public class MetFragAppEngine extends HttpServlet {
 				"InChI=1S/C7H5Cl2FN2O3/c1-2(13)14-15-7-4(9)5(11)3(8)6(10)12-7/h1H3,(H2,11,12)",
 				"InChI=1S/C6H11O7PS/c7-5(8)1-4(6(9)10)2-15-3-14(11,12)13/h4H,1-3H2,(H,7,8)(H,9,10)(H2,11,12,13)/p-4"
 		};
-
-		final String[] formulae = new String[] {
-				"C7H5Cl2FN2O3", 
-				"C7H5Cl2FN2O3",
-				"C7H5Cl2FN2O3",
-				"C7H5Cl2FN2O3", 
-				"C6H11O7PS"
-		};
 		
 		final float[] mz = new float[] {
 				90.97445f,
@@ -108,7 +100,7 @@ public class MetFragAppEngine extends HttpServlet {
 				999};
 		
 		try {
-			final Collection<Map<String,Object>> results = MetFrag.match(smiles, inchis, formulae, mz, inten);
+			final Collection<Map<String,Object>> results = MetFrag.match(smiles, inchis,  mz, inten);
 			final JsonObject json = toJson(results);
 			response.setContentType("application/json");
 			response.setCharacterEncoding("UTF-8");

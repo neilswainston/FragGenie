@@ -28,15 +28,14 @@ public class MetFrag {
 	 * 
 	 * @param smiles
 	 * @param inchis
-	 * @param formulae
 	 * @param mz
 	 * @param inten
 	 * @return Collection<Map<String, Object>>
 	 * @throws Exception
 	 */
-	public static Collection<Map<String, Object>> match(final String[] smiles, final String[] inchis, final String[] formulae, final float[] mz, final int[] inten)
+	public static Collection<Map<String, Object>> match(final String[] smiles, final String[] inchis, final float[] mz, final int[] inten)
 			throws Exception {
-		final String candidateList = writeCandidateList(smiles, inchis, formulae);
+		final String candidateList = writeCandidateList(smiles, inchis);
 		final String peakList = writePeakList(mz, inten);
 
 		final MetFragGlobalSettings settings = new MetFragGlobalSettings();
@@ -85,20 +84,20 @@ public class MetFrag {
 	 * @return String
 	 * @throws IOException
 	 */
-	private static String writeCandidateList(final String[] smiles, final String[] inchis, final String[] formulae) throws IOException {
-		// Ensure length of smiles, inchis and formulae are equal.
-		assert smiles.length == inchis.length && inchis.length == formulae.length;
+	private static String writeCandidateList(final String[] smiles, final String[] inchis) throws IOException {
+		// Ensure length of smiles and inchis are equal.
+		assert smiles.length == inchis.length;
 		
 		final File temp = File.createTempFile("candidateList", ".tmp");
 
 		try (final StringWriter writer = new StringWriter()) {
 			// Write header:
-			writer.write("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," + VariableNames.INCHI_NAME); // + "," + VariableNames.MOLECULAR_FORMULA_NAME);
+			writer.write("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," + VariableNames.INCHI_NAME);
 			writer.write(System.lineSeparator());
 			
 			// Write data:
 			for (int i = 0; i < smiles.length; i++) {
-				writer.write("," + i + "," + smiles[i] + ",\"" + inchis[i] + "\""); // + ""," + formulae[i]);
+				writer.write("," + i + "," + smiles[i] + ",\"" + inchis[i] + "\"");
 				writer.write(System.lineSeparator());
 			}
 			
