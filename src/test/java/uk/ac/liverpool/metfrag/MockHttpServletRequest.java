@@ -9,10 +9,12 @@ import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
@@ -48,71 +50,88 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	/**
 	 * 
 	 */
-	private final String[] mz = new String[] {
-			"90.97445",
-			"106.94476",
-			"110.0275",
-			"115.98965",
-			"117.9854",
-			"124.93547",
-			"124.99015",
-			"125.99793",
-			"133.95592",
-			"143.98846",
-			"144.99625",
-			"146.0041",
-			"151.94641",
-			"160.96668",
-			"163.00682",
-			"172.99055",
-			"178.95724",
-			"178.97725",
-			"180.97293",
-			"196.96778",
-			"208.9678",
-			"236.96245",
-			"254.97312"};
+	private final double[] mz = new double[] {
+			90.97445,
+			106.94476,
+			110.0275,
+			115.98965,
+			117.9854,
+			124.93547,
+			124.99015,
+			125.99793,
+			133.95592,
+			143.98846,
+			144.99625,
+			146.0041,
+			151.94641,
+			160.96668,
+			163.00682,
+			172.99055,
+			178.95724,
+			178.97725,
+			180.97293,
+			196.96778,
+			208.9678,
+			236.96245,
+			254.97312};
+	
+	private final int[] inten = new int[] {
+			681,
+			274,
+			110,
+			95,
+			384,
+			613,
+			146,
+			207,
+			777,
+			478,
+			352,
+			999,
+			962,
+			387,
+			782,
+			17,
+			678,
+			391,
+			999,
+			720,
+			999,
+			999,
+			999};
 	
 	/**
 	 * 
 	 */
-	private final String[] inten = new String[] {
-			"681",
-			"274",
-			"110",
-			"95",
-			"384",
-			"613",
-			"146",
-			"207",
-			"777",
-			"478",
-			"352",
-			"999",
-			"962",
-			"387",
-			"782",
-			"17",
-			"678",
-			"391",
-			"999",
-			"720",
-			"999",
-			"999",
-			"999"};
-	
-	/**
-	 * 
-	 */
-	private final Map<String,String[]> parameterValues = new HashMap<>();
+	private final String query;
 	
 	/**
 	 * 
 	 */
 	public MockHttpServletRequest() {
-		parameterValues.put("smiles", smiles);
-		parameterValues.put("mz", mz);
-		parameterValues.put("inten", inten);
+		final JsonObjectBuilder builder = Json.createObjectBuilder();
+		
+		final JsonArrayBuilder smilesBuilder = Json.createArrayBuilder();
+		final JsonArrayBuilder mzBuilder = Json.createArrayBuilder();
+		final JsonArrayBuilder intenBuilder = Json.createArrayBuilder();
+		
+		for(String value : this.smiles) {
+			smilesBuilder.add(value);
+		}
+		
+		for(double value : this.mz) {
+			mzBuilder.add(value);
+		}
+		
+		for(int value : this.inten) {
+			intenBuilder.add(value);
+		}
+		
+		builder.add("smiles", smilesBuilder.build());
+		builder.add("mz", mzBuilder.build());
+		builder.add("inten", intenBuilder.build());
+		
+		this.query = builder.build().toString();
 	}
 
 	@Override
@@ -165,7 +184,10 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
 	@Override
 	public String getParameter(String name) {
-		// Empty block
+		if(name == "query") {
+			return query;
+		}
+		
 		return null;
 	}
 
@@ -177,7 +199,8 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
 	@Override
 	public String[] getParameterValues(String name) {
-		return parameterValues.get(name);
+		// Empty block
+		return null;
 	}
 
 	@Override

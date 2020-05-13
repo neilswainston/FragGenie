@@ -5,15 +5,17 @@ package uk.ac.liverpool.metfrag;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Arrays;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -105,19 +107,24 @@ public class MetFragAppEngine extends HttpServlet {
 	
 	@Override
 	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
-		final String[] smiles = request.getParameterValues("smiles");
-		final double[] mz = Arrays.stream(request.getParameterValues("mz")).mapToDouble(Double::parseDouble).toArray();
-		final int[] inten = Arrays.stream(request.getParameterValues("inten")).mapToInt(Integer::parseInt).toArray();
+		final String query = request.getParameter("query");
 		
-		try {
-			run(smiles, mz, inten, response);
-		}
-		catch(Exception e) {
-			e.printStackTrace();
+		try(final JsonReader jsonReader = Json.createReader(new StringReader(query))) {
+			final JsonObject json = jsonReader.readObject();
+			final JsonArray smiles = (JsonArray)json.get("smiles");
+			final JsonArray mz = (JsonArray)json.get("mz");
+			final JsonArray inten = (JsonArray)json.get("inten");
 			
-			final Writer writer = new StringWriter();
-            e.printStackTrace(new PrintWriter(writer));
-			throw new IOException(writer.toString());
+			try {
+				run(toStringArray(smiles), toDoubleArray(mz), toIntArray(inten), response);
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+				
+				final Writer writer = new StringWriter();
+	            e.printStackTrace(new PrintWriter(writer));
+				throw new IOException(writer.toString());
+			}
 		}
 	}
 	
@@ -135,6 +142,51 @@ public class MetFragAppEngine extends HttpServlet {
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 		response.getWriter().print(json.toString());
+	}
+	
+	/**
+	 * 
+	 * @param jsonArray
+	 * @return String[]
+	 */
+	private static String[] toStringArray(final JsonArray jsonArray) {
+		final String[] array = new String[jsonArray.size()];
+		
+		for(int i=0; i< jsonArray.size(); i++) {
+			array[i] = jsonArray.getString(i);
+		}
+		
+		return array;
+	}
+	
+	/**
+	 * 
+	 * @param jsonArray
+	 * @return double[]
+	 */
+	private static double[] toDoubleArray(final JsonArray jsonArray) {
+		final double[] array = new double[jsonArray.size()];
+		
+		for(int i=0; i< jsonArray.size(); i++) {
+			array[i] = jsonArray.getJsonNumber(0).doubleValue();
+		}
+		
+		return array;
+	}
+	
+	/**
+	 * 
+	 * @param jsonArray
+	 * @return int[]
+	 */
+	private static int[] toIntArray(final JsonArray jsonArray) {
+		final int[] array = new int[jsonArray.size()];
+		
+		for(int i=0; i< jsonArray.size(); i++) {
+			array[i] = jsonArray.getInt(0);
+		}
+		
+		return array;
 	}
 
 	/**
