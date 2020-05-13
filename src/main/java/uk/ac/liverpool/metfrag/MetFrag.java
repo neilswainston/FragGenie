@@ -31,7 +31,7 @@ public class MetFrag {
 	 * @return Collection<Map<String, Object>>
 	 * @throws Exception
 	 */
-	public static Collection<Map<String, Object>> match(final String[] smiles, final float[] mz, final int[] inten)
+	public static Collection<Map<String, Object>> match(final String[] smiles, final double[] mz, final int[] inten)
 			throws Exception {
 		final String candidateList = writeCandidateList(smiles);
 		final String peakList = writePeakList(mz, inten);
@@ -108,7 +108,7 @@ public class MetFrag {
 	 * @return String
 	 * @throws IOException
 	 */
-	private static String writePeakList(final float[] mz, final int[] inten) throws IOException {
+	private static String writePeakList(final double[] mz, final int[] inten) throws IOException {
 		// Ensure length of mz and inten are equal.
 		assert mz.length == inten.length;
 

@@ -9,7 +9,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
-
+import java.util.Arrays;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -41,30 +41,30 @@ public class MetFragAppEngine extends HttpServlet {
 				"C(C(CSCP(=O)([O-])[O-])C(=O)[O-])C(=O)[O-]"
 		};
 		
-		final float[] mz = new float[] {
-				90.97445f,
-				106.94476f,
-				110.0275f,
-				115.98965f,
-				117.9854f,
-				124.93547f,
-				124.99015f,
-				125.99793f,
-				133.95592f,
-				143.98846f,
-				144.99625f,
-				146.0041f,
-				151.94641f,
-				160.96668f,
-				163.00682f,
-				172.99055f,
-				178.95724f,
-				178.97725f,
-				180.97293f,
-				196.96778f,
-				208.9678f,
-				236.96245f,
-				254.97312f};
+		final double[] mz = new double[] {
+				90.97445,
+				106.94476,
+				110.0275,
+				115.98965,
+				117.9854,
+				124.93547,
+				124.99015,
+				125.99793,
+				133.95592,
+				143.98846,
+				144.99625,
+				146.0041,
+				151.94641,
+				160.96668,
+				163.00682,
+				172.99055,
+				178.95724,
+				178.97725,
+				180.97293,
+				196.96778,
+				208.9678,
+				236.96245,
+				254.97312};
 		
 		final int[] inten = new int[] {
 				681,
@@ -92,11 +92,7 @@ public class MetFragAppEngine extends HttpServlet {
 				999};
 		
 		try {
-			final Collection<Map<String,Object>> results = MetFrag.match(smiles, mz, inten);
-			final JsonObject json = toJson(results);
-			response.setContentType("application/json");
-			response.setCharacterEncoding("UTF-8");
-			response.getWriter().print(json.toString());
+			run(smiles, mz, inten, response);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -105,6 +101,40 @@ public class MetFragAppEngine extends HttpServlet {
             e.printStackTrace(new PrintWriter(writer));
 			throw new IOException(writer.toString());
 		}
+	}
+	
+	@Override
+	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+		final String[] smiles = request.getParameterValues("smiles");
+		final double[] mz = Arrays.stream(request.getParameterValues("mz")).mapToDouble(Double::parseDouble).toArray();
+		final int[] inten = Arrays.stream(request.getParameterValues("inten")).mapToInt(Integer::parseInt).toArray();
+		
+		try {
+			run(smiles, mz, inten, response);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			
+			final Writer writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+			throw new IOException(writer.toString());
+		}
+	}
+	
+	/**
+	 * 
+	 * @param smiles
+	 * @param mz
+	 * @param inten
+	 * @param response
+	 * @throws Exception
+	 */
+	private static void run(final String[] smiles, final double[] mz, final int[] inten, final HttpServletResponse response) throws Exception{
+		final Collection<Map<String,Object>> results = MetFrag.match(smiles, mz, inten);
+		final JsonObject json = toJson(results);
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		response.getWriter().print(json.toString());
 	}
 
 	/**

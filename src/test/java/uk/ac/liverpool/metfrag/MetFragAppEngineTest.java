@@ -25,9 +25,17 @@ public class MetFragAppEngineTest {
 	 * @throws IOException
 	 */
 	@Test
-	public void test() throws IOException {
+	public void testGet() throws IOException {
 		final MockHttpServletResponse response = new MockHttpServletResponse();
 		new MetFragAppEngine().doGet(null, response);
+		verify(response);
+	}
+	
+	/**
+	 * 
+	 * @param response
+	 */
+	private static void verify(final MockHttpServletResponse response) {
 		Assert.assertEquals("application/json", response.getContentType());
 		Assert.assertEquals("UTF-8", response.getCharacterEncoding());
 
