@@ -93,12 +93,12 @@ public class MetFrag {
 
 		try (final StringWriter writer = new StringWriter()) {
 			// Write header:
-			writer.write("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," + VariableNames.INCHI_NAME + "," + VariableNames.MOLECULAR_FORMULA_NAME);
+			writer.write("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," + VariableNames.INCHI_NAME); // + "," + VariableNames.MOLECULAR_FORMULA_NAME);
 			writer.write(System.lineSeparator());
 			
 			// Write data:
 			for (int i = 0; i < smiles.length; i++) {
-				writer.write("," + i + "," + smiles[i] + ",\"" + inchis[i] + "\"," + formulae[i]);
+				writer.write("," + i + "," + smiles[i] + ",\"" + inchis[i] + "\""); // + ""," + formulae[i]);
 				writer.write(System.lineSeparator());
 			}
 			
