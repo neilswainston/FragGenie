@@ -33,6 +33,17 @@ public class MetFragAppEngineTest {
 	
 	/**
 	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testPost() throws IOException {
+		final MockHttpServletResponse response = new MockHttpServletResponse();
+		new MetFragAppEngine().doPost(new MockHttpServletRequest(), response);
+		verify(response);
+	}
+	
+	/**
+	 * 
 	 * @param response
 	 */
 	private static void verify(final MockHttpServletResponse response) {
