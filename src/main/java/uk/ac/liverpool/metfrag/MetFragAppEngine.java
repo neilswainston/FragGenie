@@ -149,7 +149,7 @@ public class MetFragAppEngine extends HttpServlet {
 	 */
 	private static void run(final String[] smiles, final double[] mz, final int[] inten, final HttpServletResponse response) throws Exception{
 		final Collection<Map<String,Object>> results = MetFrag.match(smiles, mz, inten);
-		final JsonObject json = toJson(results);
+		final JsonArray json = toJson(results);
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
 		response.getWriter().print(json.toString());
@@ -203,9 +203,9 @@ public class MetFragAppEngine extends HttpServlet {
 	/**
 	 * 
 	 * @param results
-	 * @return JsonObject
+	 * @return JsonArray
 	 */
-	private static JsonObject toJson(final Collection<Map<String,Object>> results) {
+	private static JsonArray toJson(final Collection<Map<String,Object>> results) {
 		final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
 
 		for(Map<String,Object> result : results) {
@@ -231,8 +231,6 @@ public class MetFragAppEngine extends HttpServlet {
 			arrayBuilder.add(resBuilder.build());
 		}
 		
-		final JsonObjectBuilder objBuilder = Json.createObjectBuilder();
-		objBuilder.add("results", arrayBuilder.build());
-		return objBuilder.build();
+		return arrayBuilder.build();
 	}
 }
