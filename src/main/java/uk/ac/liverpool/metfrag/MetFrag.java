@@ -3,7 +3,6 @@
  */
 package uk.ac.liverpool.metfrag;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -27,15 +26,14 @@ public class MetFrag {
 	/**
 	 * 
 	 * @param smiles
-	 * @param inchis
 	 * @param mz
 	 * @param inten
 	 * @return Collection<Map<String, Object>>
 	 * @throws Exception
 	 */
-	public static Collection<Map<String, Object>> match(final String[] smiles, final String[] inchis, final float[] mz, final int[] inten)
+	public static Collection<Map<String, Object>> match(final String[] smiles, final float[] mz, final int[] inten)
 			throws Exception {
-		final String candidateList = writeCandidateList(smiles, inchis);
+		final String candidateList = writeCandidateList(smiles);
 		final String peakList = writePeakList(mz, inten);
 
 		final MetFragGlobalSettings settings = new MetFragGlobalSettings();
@@ -45,6 +43,9 @@ public class MetFrag {
 	
 		// Use SMILES:
 		settings.set(VariableNames.USE_SMILES_NAME, Boolean.TRUE);
+		
+		// Remove pre-filter:
+		settings.set(VariableNames.METFRAG_PRE_PROCESSING_CANDIDATE_FILTER_NAME, new String[0]);
 		
 		// Set peak list and candidate list:
 		settings.set(VariableNames.PEAK_LIST_PATH_NAME, peakList);
@@ -84,12 +85,7 @@ public class MetFrag {
 	 * @return String
 	 * @throws IOException
 	 */
-	private static String writeCandidateList(final String[] smiles, final String[] inchis) throws IOException {
-		// Ensure length of smiles and inchis are equal.
-		assert smiles.length == inchis.length;
-		
-		final File temp = File.createTempFile("candidateList", ".tmp");
-
+	private static String writeCandidateList(final String[] smiles) throws IOException {
 		try (final StringWriter writer = new StringWriter()) {
 			// Write header:
 			writer.write("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," + VariableNames.INCHI_NAME);
@@ -97,7 +93,7 @@ public class MetFrag {
 			
 			// Write data:
 			for (int i = 0; i < smiles.length; i++) {
-				writer.write("," + i + "," + smiles[i] + ",\"" + inchis[i] + "\"");
+				writer.write("," + i + "," + smiles[i] + ",\"INVALID_INCHI\"");
 				writer.write(System.lineSeparator());
 			}
 			
