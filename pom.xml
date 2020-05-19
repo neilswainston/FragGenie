@@ -70,7 +70,12 @@
 		<dependency>
 			<groupId>com.github.neilswainston.MetFragRelaunched</groupId>
 			<artifactId>MetFragLib</artifactId>
-			<version>master-SNAPSHOT</version>
+			<version>f3794ba</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.neilswainston.MetFragRelaunched</groupId>
+			<artifactId>MetFragR</artifactId>
+			<version>f3794ba</version>
 		</dependency>
 
 

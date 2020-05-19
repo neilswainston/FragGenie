@@ -8,9 +8,18 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.TreeSet;
 
 import org.apache.log4j.Level;
 
+import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IMolecularFormula;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
+import org.openscience.cdk.smiles.SmilesParser;
+import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
+
+import de.ipbhalle.metfrag.r.MetfRag;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.ScoredCandidateList;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
@@ -82,6 +91,31 @@ public class MetFrag {
 
 		return results;
 	}
+	
+	/**
+	 * 
+	 * @param smiles
+	 * @param maximumTreeDepth
+	 * @return Double[]
+	 * @throws CDKException 
+	 */
+	public static Double[] generateAllFragments(final String smiles, final int maximumTreeDepth) throws CDKException {
+		final double PROTON_MASS = 1.00727647;
+		final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
+		final IAtomContainer molecule = parser.parseSmiles(smiles);
+		
+		final IAtomContainer[] fragments = MetfRag.generateAllFragments(molecule, maximumTreeDepth);
+		final Collection<Double> molWts = new TreeSet<>();
+		
+		for(int i = 0; i < fragments.length; i++)  {
+			IAtomContainer fragment = fragments[i];
+			final IMolecularFormula formula = MolecularFormulaManipulator.getMolecularFormula(fragment);
+			final double mass = MolecularFormulaManipulator.getMajorIsotopeMass(formula);
+			molWts.add(mass);
+		}
+		
+		return molWts.toArray(new Double[molWts.size()]);
+	}
 
 	/**
 	 * 
@@ -125,5 +159,10 @@ public class MetFrag {
 			
 			return writer.toString();
 		}
+	}
+	
+	public static void main(String[] args) throws CDKException {
+		final Double[] result = MetFrag.generateAllFragments("Nc1c(Cl)c(F)nc(OCC(O)=O)c1Cl", 2);
+		System.out.println(result);
 	}
 }
