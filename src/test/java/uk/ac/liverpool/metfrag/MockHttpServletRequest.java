@@ -36,70 +36,6 @@ import javax.servlet.http.Part;
  * @author neilswainston
  */
 public class MockHttpServletRequest implements HttpServletRequest {
-
-	/**
-	 * 
-	 */
-	private final String[] smiles = new String[] {
-			"C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F",
-			"C(C(=O)OC1=NC(=C(C(=C1Cl)N)Cl)F)O",
-			"C1(=C(C(=NC(=C1Cl)F)C(C(=O)O)O)Cl)N",
-			"CC(=O)OOC1=NC(=C(C(=C1Cl)N)Cl)F",
-			"C(C(CSCP(=O)([O-])[O-])C(=O)[O-])C(=O)[O-]"
-	};
-	
-	/**
-	 * 
-	 */
-	private final double[] mz = new double[] {
-			90.97445,
-			106.94476,
-			110.0275,
-			115.98965,
-			117.9854,
-			124.93547,
-			124.99015,
-			125.99793,
-			133.95592,
-			143.98846,
-			144.99625,
-			146.0041,
-			151.94641,
-			160.96668,
-			163.00682,
-			172.99055,
-			178.95724,
-			178.97725,
-			180.97293,
-			196.96778,
-			208.9678,
-			236.96245,
-			254.97312};
-	
-	private final int[] inten = new int[] {
-			681,
-			274,
-			110,
-			95,
-			384,
-			613,
-			146,
-			207,
-			777,
-			478,
-			352,
-			999,
-			962,
-			387,
-			782,
-			17,
-			678,
-			391,
-			999,
-			720,
-			999,
-			999,
-			999};
 	
 	/**
 	 * 
@@ -116,15 +52,15 @@ public class MockHttpServletRequest implements HttpServletRequest {
 		final JsonArrayBuilder mzBuilder = Json.createArrayBuilder();
 		final JsonArrayBuilder intenBuilder = Json.createArrayBuilder();
 		
-		for(String value : this.smiles) {
+		for(String value : MetFragTestData.SMILES) {
 			smilesBuilder.add(value);
 		}
 		
-		for(double value : this.mz) {
+		for(double value : MetFragTestData.MZ) {
 			mzBuilder.add(value);
 		}
 		
-		for(int value : this.inten) {
+		for(int value : MetFragTestData.INTEN) {
 			intenBuilder.add(value);
 		}
 		
