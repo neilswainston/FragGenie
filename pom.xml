@@ -72,11 +72,6 @@
 			<artifactId>MetFragLib</artifactId>
 			<version>f3794ba</version>
 		</dependency>
-		<dependency>
-			<groupId>com.github.neilswainston.MetFragRelaunched</groupId>
-			<artifactId>MetFragR</artifactId>
-			<version>f3794ba</version>
-		</dependency>
 
 
 		<!-- Test Dependencies -->

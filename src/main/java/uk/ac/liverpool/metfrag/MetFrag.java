@@ -12,15 +12,17 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Level;
 
-import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IMolecularFormula;
-import org.openscience.cdk.silent.SilentChemObjectBuilder;
-import org.openscience.cdk.smiles.SmilesParser;
+// import org.openscience.cdk.silent.SilentChemObjectBuilder;
+// import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
-import de.ipbhalle.metfrag.r.MetfRag;
+// import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
+import de.ipbhalle.metfraglib.candidate.TopDownPrecursorCandidate;
+import de.ipbhalle.metfraglib.fragmenter.TopDownNeutralLossFragmenter;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
+import de.ipbhalle.metfraglib.list.FragmentList;
 import de.ipbhalle.metfraglib.list.ScoredCandidateList;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.process.CombinedMetFragProcess;
@@ -45,16 +47,8 @@ public class MetFrag {
 		final String candidateList = writeCandidateList(smiles);
 		final String peakList = writePeakList(mz, inten);
 
-		final MetFragGlobalSettings settings = new MetFragGlobalSettings();
-
-		// Set logging:
-		settings.set(VariableNames.LOG_LEVEL_NAME, Level.ALL);
-	
-		// Use SMILES:
-		settings.set(VariableNames.USE_SMILES_NAME, Boolean.TRUE);
-		
-		// Remove pre-filter:
-		settings.set(VariableNames.METFRAG_PRE_PROCESSING_CANDIDATE_FILTER_NAME, new String[0]);
+		// Get settings:
+		final MetFragGlobalSettings settings = getSettings();
 		
 		// Set peak list and candidate list:
 		settings.set(VariableNames.PEAK_LIST_PATH_NAME, peakList);
@@ -97,14 +91,15 @@ public class MetFrag {
 	 * @param smiles
 	 * @param maximumTreeDepth
 	 * @return double[]
-	 * @throws CDKException 
+	 * @throws Exception 
 	 */
-	public static double[] getFragments(final String smiles, final int maximumTreeDepth) throws CDKException {
-		final double PROTON_MASS = 1.00727647;
-		final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
-		final IAtomContainer molecule = parser.parseSmiles(smiles);
+	public static double[] getFragments(final String smiles, final int maximumTreeDepth) throws Exception {
+		// final double PROTON_MASS = 1.00727647;
+		// final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
+		// final IAtomContainer molecule = parser.parseSmiles(smiles);
 		
-		final IAtomContainer[] fragments = MetfRag.generateAllFragments(molecule, maximumTreeDepth);
+		// Get settings:
+		final IAtomContainer[] fragments = generateAllFragments(smiles, maximumTreeDepth);
 		final Collection<Double> massesSet = new TreeSet<>();
 		
 		for(int i = 0; i < fragments.length; i++)  {
@@ -169,10 +164,58 @@ public class MetFrag {
 	
 	/**
 	 * 
-	 * @param args
-	 * @throws CDKException
+	 * @param molecule
+	 * @param maximumTreeDepth
+	 * @return IAtomContainer
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) throws CDKException {
+	private static IAtomContainer[] generateAllFragments(String smiles, int maximumTreeDepth) throws Exception {
+		final MetFragGlobalSettings settings = getSettings();
+		final ICandidate candidate = new TopDownPrecursorCandidate(null, "IDENTIFIER", smiles);
+		candidate.setUseSmiles(true);
+		candidate.initialisePrecursorCandidate();
+
+		settings.set(VariableNames.CANDIDATE_NAME, candidate);
+		settings.set(VariableNames.MAXIMUM_TREE_DEPTH_NAME, (byte)2);
+		settings.set(VariableNames.MINIMUM_FRAGMENT_MASS_LIMIT_NAME, 0.0);
+		settings.set(VariableNames.MAXIMUM_NUMBER_OF_TOPDOWN_FRAGMENT_ADDED_TO_QUEUE, (byte)maximumTreeDepth);
+		
+		final TopDownNeutralLossFragmenter fragmenter = new TopDownNeutralLossFragmenter(settings);
+		final FragmentList fragmentList = fragmenter.generateFragments();
+		final IAtomContainer[] fragments = new IAtomContainer[fragmentList.getNumberElements()];
+		
+		for(int i = 0; i < fragmentList.getNumberElements(); i++) {
+			fragments[i] = fragmentList.getElement(i).getStructureAsIAtomContainer(candidate.getPrecursorMolecule());
+		}
+		
+		return fragments;
+	}
+	
+	/**
+	 * 
+	 * @return MetFragGlobalSettings
+	 */
+	private static MetFragGlobalSettings getSettings() {
+		final MetFragGlobalSettings settings = new MetFragGlobalSettings();
+
+		// Set logging:
+		settings.set(VariableNames.LOG_LEVEL_NAME, Level.ALL);
+	
+		// Use SMILES:
+		settings.set(VariableNames.USE_SMILES_NAME, Boolean.TRUE);
+		
+		// Remove pre-filter:
+		settings.set(VariableNames.METFRAG_PRE_PROCESSING_CANDIDATE_FILTER_NAME, new String[0]);
+		
+		return settings;
+	}
+	
+	/**
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
 		final double[] result = MetFrag.getFragments("Nc1c(Cl)c(F)nc(OCC(O)=O)c1Cl", 2);
 		System.out.println(result);
 	}
