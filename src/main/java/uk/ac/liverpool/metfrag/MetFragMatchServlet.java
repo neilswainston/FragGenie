@@ -27,8 +27,8 @@ import javax.servlet.http.HttpServletResponse;
  * 
  * @author neilswainston
  */
-@WebServlet(name = "MetFrag", urlPatterns = { "/match" })
-public class MetFragAppEngine extends HttpServlet {
+@WebServlet(name = "MetFragMatchServlet", urlPatterns = { "/match" })
+public class MetFragMatchServlet extends HttpServlet {
 
 	/**
 	 *

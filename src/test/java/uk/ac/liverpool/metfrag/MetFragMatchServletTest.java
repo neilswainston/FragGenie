@@ -17,7 +17,7 @@ import org.junit.Test;
  * 
  * @author neilswainston
  */
-public class MetFragAppEngineTest {
+public class MetFragMatchServletTest {
 
 	/**
 	 * 
@@ -26,7 +26,7 @@ public class MetFragAppEngineTest {
 	@Test
 	public void testGet() throws IOException {
 		final MockHttpServletResponse response = new MockHttpServletResponse();
-		new MetFragAppEngine().doGet(null, response);
+		new MetFragMatchServlet().doGet(null, response);
 		verify(response);
 	}
 	
@@ -37,7 +37,7 @@ public class MetFragAppEngineTest {
 	@Test
 	public void testPost() throws IOException {
 		final MockHttpServletResponse response = new MockHttpServletResponse();
-		new MetFragAppEngine().doPost(new MockHttpServletRequest(), response);
+		new MetFragMatchServlet().doPost(new MockHttpServletRequest(), response);
 		verify(response);
 	}
 	
