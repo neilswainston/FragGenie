@@ -96,24 +96,31 @@ public class MetFrag {
 	 * 
 	 * @param smiles
 	 * @param maximumTreeDepth
-	 * @return Double[]
+	 * @return double[]
 	 * @throws CDKException 
 	 */
-	public static Double[] getFragments(final String smiles, final int maximumTreeDepth) throws CDKException {
+	public static double[] getFragments(final String smiles, final int maximumTreeDepth) throws CDKException {
 		final double PROTON_MASS = 1.00727647;
 		final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
 		final IAtomContainer molecule = parser.parseSmiles(smiles);
 		
 		final IAtomContainer[] fragments = MetfRag.generateAllFragments(molecule, maximumTreeDepth);
-		final Collection<Double> molWts = new TreeSet<>();
+		final Collection<Double> massesSet = new TreeSet<>();
 		
 		for(int i = 0; i < fragments.length; i++)  {
 			IAtomContainer fragment = fragments[i];
 			final IMolecularFormula formula = MolecularFormulaManipulator.getMolecularFormula(fragment);
-			molWts.add(MolecularFormulaManipulator.getMajorIsotopeMass(formula));
+			massesSet.add(MolecularFormulaManipulator.getMajorIsotopeMass(formula));
 		}
 		
-		return molWts.toArray(new Double[molWts.size()]);
+		final double[] masses = new double[massesSet.size()];
+		int i = 0;
+		
+		for(final Double mass : massesSet) {
+			masses[i++] = mass.doubleValue();
+		}
+		
+		return masses;
 	}
 
 	/**
@@ -160,8 +167,13 @@ public class MetFrag {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param args
+	 * @throws CDKException
+	 */
 	public static void main(String[] args) throws CDKException {
-		final Double[] result = MetFrag.getFragments("Nc1c(Cl)c(F)nc(OCC(O)=O)c1Cl", 2);
+		final double[] result = MetFrag.getFragments("Nc1c(Cl)c(F)nc(OCC(O)=O)c1Cl", 2);
 		System.out.println(result);
 	}
 }

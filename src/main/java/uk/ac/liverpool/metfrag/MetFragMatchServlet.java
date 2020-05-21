@@ -3,12 +3,7 @@
  */
 package uk.ac.liverpool.metfrag;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 
@@ -41,43 +36,23 @@ public class MetFragMatchServlet extends HttpServlet {
 			run(MetFragTestData.SMILES, MetFragTestData.MZ, MetFragTestData.INTEN, response);
 		}
 		catch(Exception e) {
-			e.printStackTrace();
-			
-			final Writer writer = new StringWriter();
-            e.printStackTrace(new PrintWriter(writer));
-			throw new IOException(writer.toString());
+			MetFragUtils.handleException(e);
 		}
 	}
 	
 	@Override
 	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
-		final StringBuilder builder = new StringBuilder();
-		
-		try(final BufferedReader reader = request.getReader()) {
-			String line;
-			
-	        while((line = reader.readLine()) != null) {
-	        	builder.append(line).append('\n');
-	        }
-		}
-
-	    final String query = builder.toString();
-		
-		try(final JsonReader jsonReader = Json.createReader(new StringReader(query))) {
+		try(final JsonReader jsonReader = MetFragUtils.getReader(request)) {
 			final JsonObject json = jsonReader.readObject();
 			final JsonArray smiles = (JsonArray)json.get("smiles");
 			final JsonArray mz = (JsonArray)json.get("mz");
 			final JsonArray inten = (JsonArray)json.get("inten");
 			
 			try {
-				run(toStringArray(smiles), toDoubleArray(mz), toIntArray(inten), response);
+				run(MetFragUtils.toStringArray(smiles), MetFragUtils.toDoubleArray(mz), MetFragUtils.toIntArray(inten), response);
 			}
 			catch(Exception e) {
-				e.printStackTrace();
-				
-				final Writer writer = new StringWriter();
-	            e.printStackTrace(new PrintWriter(writer));
-				throw new IOException(writer.toString());
+				MetFragUtils.handleException(e);
 			}
 		}
 	}
@@ -93,54 +68,7 @@ public class MetFragMatchServlet extends HttpServlet {
 	private static void run(final String[] smiles, final double[] mz, final int[] inten, final HttpServletResponse response) throws Exception{
 		final Collection<Map<String,Object>> results = MetFrag.match(smiles, mz, inten);
 		final JsonArray json = toJson(results);
-		response.setContentType("application/json");
-		response.setCharacterEncoding("UTF-8");
-		response.getWriter().print(json.toString());
-	}
-	
-	/**
-	 * 
-	 * @param jsonArray
-	 * @return String[]
-	 */
-	private static String[] toStringArray(final JsonArray jsonArray) {
-		final String[] array = new String[jsonArray.size()];
-		
-		for(int i=0; i< jsonArray.size(); i++) {
-			array[i] = jsonArray.getString(i);
-		}
-		
-		return array;
-	}
-	
-	/**
-	 * 
-	 * @param jsonArray
-	 * @return double[]
-	 */
-	private static double[] toDoubleArray(final JsonArray jsonArray) {
-		final double[] array = new double[jsonArray.size()];
-		
-		for(int i=0; i< jsonArray.size(); i++) {
-			array[i] = jsonArray.getJsonNumber(0).doubleValue();
-		}
-		
-		return array;
-	}
-	
-	/**
-	 * 
-	 * @param jsonArray
-	 * @return int[]
-	 */
-	private static int[] toIntArray(final JsonArray jsonArray) {
-		final int[] array = new int[jsonArray.size()];
-		
-		for(int i=0; i< jsonArray.size(); i++) {
-			array[i] = jsonArray.getInt(0);
-		}
-		
-		return array;
+		MetFragUtils.sendJson(json, response);
 	}
 
 	/**
