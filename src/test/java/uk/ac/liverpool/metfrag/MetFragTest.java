@@ -77,7 +77,7 @@ public class MetFragTest {
 				245.0459727, 247.041636268, 248.02565185599997, 248.025651856,
 				248.0494613, 249.033476888, 264.04437592};
 		
-		final double[] fragments = MetFrag.getFragments("Nc1c(Cl)c(F)nc(OCC(O)=O)c1Cl", 2);
+		final double[] fragments = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2);
 		Assert.assertArrayEquals(expected, fragments, 1e-12);
 	}
 }

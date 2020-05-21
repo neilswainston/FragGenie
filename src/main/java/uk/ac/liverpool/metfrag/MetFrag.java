@@ -216,7 +216,7 @@ public class MetFrag {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		final double[] result = MetFrag.getFragments("Nc1c(Cl)c(F)nc(OCC(O)=O)c1Cl", 2);
+		final double[] result = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2);
 		System.out.println(result);
 	}
 }
