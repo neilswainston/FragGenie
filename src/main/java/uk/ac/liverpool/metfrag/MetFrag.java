@@ -14,11 +14,8 @@ import org.apache.log4j.Level;
 
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IMolecularFormula;
-// import org.openscience.cdk.silent.SilentChemObjectBuilder;
-// import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
-// import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
 import de.ipbhalle.metfraglib.candidate.TopDownPrecursorCandidate;
 import de.ipbhalle.metfraglib.fragmenter.TopDownNeutralLossFragmenter;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
