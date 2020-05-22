@@ -56,7 +56,7 @@ public class MetFrag {
 		settings.set(VariableNames.RELATIVE_MASS_DEVIATION_NAME, 5.0);
 		settings.set(VariableNames.PRECURSOR_NEUTRAL_MASS_NAME, 253.966126);
 
-		final CombinedMetFragProcess metfragProcess = new CombinedMetFragProcess(settings);
+		final CombinedMetFragProcess metfragProcess = new CombinedMetFragProcess(settings, Level.ALL);
 
 		metfragProcess.retrieveCompounds();
 		metfragProcess.run();

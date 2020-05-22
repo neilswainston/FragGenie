@@ -4,6 +4,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import de.ipbhalle.metfraglib.fragmenterassignerscorer.AbstractFragmenterAssignerScorer;
+import de.ipbhalle.metfraglib.fragmenterassignerscorer.TopDownFragmenterAssignerScorer;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.settings.Settings;
@@ -12,7 +13,7 @@ public class CombinedSingleCandidateMetFragProcess implements Runnable {
 	
 	//usually this array is of size 1
 	//for special cases additional candidates may be generated out of one
-	private ICandidate[] scoredPrecursorCandidates;
+	private ICandidate candidate;
 	//pre-processing candidate filter collection
 	//used to check before the processing of a candidate whether it fulfills all criteria to be processed 
 	// private PreProcessingCandidateFilterCollection preProcessingCandidateFilterCollection;
@@ -34,7 +35,7 @@ public class CombinedSingleCandidateMetFragProcess implements Runnable {
 	public CombinedSingleCandidateMetFragProcess(Settings settings, ICandidate candidate) {
 		this.settings = settings;
 		this.logger.setLevel((Level)this.settings.get(VariableNames.LOG_LEVEL_NAME));
-		this.scoredPrecursorCandidates = new ICandidate[] {candidate};
+		this.candidate = candidate;
 	}
 	
 	/**
@@ -44,12 +45,12 @@ public class CombinedSingleCandidateMetFragProcess implements Runnable {
 	@Override
 	public void run() {
 		try {
-			this.settings.set(VariableNames.CANDIDATE_NAME, this.scoredPrecursorCandidates[0]);
+			this.settings.set(VariableNames.CANDIDATE_NAME, this.candidate);
 			
 			//define the fragmenterAssignerScorer
-			this.fas = (AbstractFragmenterAssignerScorer) Class.forName((String)this.settings.get(VariableNames.METFRAG_ASSIGNER_SCORER_NAME)).getConstructor(Settings.class, ICandidate.class).newInstance(this.settings, this.scoredPrecursorCandidates[0]);
+			this.fas = new TopDownFragmenterAssignerScorer(this.settings, this.candidate);
 			//sets the candidate to be processed
-			this.fas.setCandidate(this.scoredPrecursorCandidates[0]);
+			this.fas.setCandidate(candidate);
 			//inits the candidate, fragmenter, scores objects
 			this.fas.initialise();
 			
@@ -61,25 +62,21 @@ public class CombinedSingleCandidateMetFragProcess implements Runnable {
 			//removing score assignment and shifted to CombinedMetFragProcess after postCalculating scores
 			this.fas.assignInterimScoresResults();
 			//set the reference to the scored candidate(s)
-			this.scoredPrecursorCandidates = this.fas.getCandidates();
+			this.candidate = this.fas.getCandidate();
 
 			((ProcessingStatus)this.settings.get(VariableNames.PROCESS_STATUS_OBJECT_NAME)).checkNumberFinishedCandidates();
-			this.scoredPrecursorCandidates[0].resetPrecursorMolecule();
+			this.candidate.resetPrecursorMolecule();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void singlePostCalculateScores() throws Exception {
-		this.fas.singlePostCalculateScore();
-	}
-	
 	public void assignScores() {
 		this.fas.assignScores();
 	}
 	
-	public ICandidate[] getScoredPrecursorCandidates() {
-		return this.scoredPrecursorCandidates;
+	public ICandidate getScoredPrecursorCandidates() {
+		return candidate;
 	}
 }

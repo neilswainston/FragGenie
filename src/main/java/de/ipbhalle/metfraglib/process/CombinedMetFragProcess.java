@@ -35,7 +35,7 @@ public class CombinedMetFragProcess implements Runnable {
 	// private PostProcessingCandidateFilterCollection postProcessingCandidateFilterCollection;
 	//candidate list -> later also containing the scored candidates
 	private CandidateList sortedScoredCandidateList;
-	private int numberCandidatesBeforeFilter;
+
 	private boolean threadStoppedExternally = false;
 	//threads to process single candidates
 	private CombinedSingleCandidateMetFragProcess[] processes;
@@ -58,15 +58,22 @@ public class CombinedMetFragProcess implements Runnable {
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
-	public CombinedMetFragProcess(final MetFragGlobalSettings globalSettings) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
+	public CombinedMetFragProcess(final MetFragGlobalSettings globalSettings, final Level logLevel) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
 		this.globalSettings = globalSettings;
 		//set log level
-		this.logger.setLevel((Level)this.globalSettings.get(VariableNames.LOG_LEVEL_NAME));
-		//init processing status object
-		//inits database, peaklist reader
-		this.initialise();
-		//init pre- and post-processing filters
-		// this.initialiseCandidateFilters();
+		this.logger.setLevel(logLevel);
+		
+		this.processingStatus = new ProcessingStatus(this.globalSettings);
+		this.globalSettings.set(VariableNames.PROCESS_STATUS_OBJECT_NAME, this.processingStatus);
+		
+		//initialise database
+		this.database = (IDatabase) Class.forName(ClassNames.getClassNameOfDatabase((String)this.globalSettings.get(VariableNames.METFRAG_DATABASE_TYPE_NAME))).getConstructor(Settings.class).newInstance(this.globalSettings);
+		
+		//init peaklist reader
+		this.peakListReader = (IPeakListReader) Class.forName((String)this.globalSettings.get(VariableNames.METFRAG_PEAK_LIST_READER_NAME)).getConstructor(Settings.class).newInstance(this.globalSettings);
+		
+		//init bond energies
+		this.globalSettings.set(VariableNames.BOND_ENERGY_OBJECT_NAME, new BondEnergies());
 	}
 	
 	/*
@@ -83,10 +90,6 @@ public class CombinedMetFragProcess implements Runnable {
 			}
 		}
 		this.sortedScoredCandidateList = this.database.getCandidateByIdentifier(databaseCandidateIdentifiers);
-		this.database.nullify();
-		numberCandidatesBeforeFilter = this.sortedScoredCandidateList.getNumberElements();
-		this.logger.info("Got " + numberCandidatesBeforeFilter + " candidate(s)");
-		
 		return true;
 	}
 	
@@ -121,13 +124,7 @@ public class CombinedMetFragProcess implements Runnable {
 		this.processingStatus.setNumberFinishedCandidates(0);
 		this.processingStatus.setNextPercentageValue(1);
 		//initialise all necessary score parameters
-		//these parameters are shared over all single candidate thread instances
-		try {
-			// initialiseScoresGlobal(this.globalSettings);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		
 		/*
 		 * prepare single MetFrag threads
 		 */
@@ -182,28 +179,20 @@ public class CombinedMetFragProcess implements Runnable {
 	     * perform post processing of scores
 	     */
 	    this.globalSettings.set(VariableNames.METFRAG_PROCESSES_NAME, this.processes);
-	    try {
-			// postProcessScoresGlobal(this.globalSettings);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} 
 	    
-	    int numberCandidatesProcessed = 0;
 		for(CombinedSingleCandidateMetFragProcess scmfp : this.processes) {
 			/*
 			 * check whether the single run was successful
 			 */
 			try {
-				scmfp.singlePostCalculateScores();
 				scmfp.assignScores();
 			} catch (Exception e) {
 				e.printStackTrace();
 				return;
 			}
-			numberCandidatesProcessed++;
-			ICandidate[] candidates = scmfp.getScoredPrecursorCandidates();
-			for(int i = 0; i < candidates.length; i++) scoredCandidateList.addElement(candidates[i]);
+
+			ICandidate candidate = scmfp.getScoredPrecursorCandidates();
+			scoredCandidateList.addElement(candidate);
 		}
 		/*
 		 * normalise scores of the candidate list 
@@ -219,13 +208,6 @@ public class CombinedMetFragProcess implements Runnable {
 		}
 		
 		/*
-		 * filter candidates by post processing filter
-		 */
-		if(this.sortedScoredCandidateList.getNumberElements() != this.numberCandidatesBeforeFilter)
-			this.logger.info("Processed " + numberCandidatesProcessed + " candidate(s)");
-		numberCandidatesBeforeFilter = numberCandidatesProcessed;
-		// this.sortedScoredCandidateList = this.postProcessingCandidateFilterCollection.filter(this.sortedScoredCandidateList);
-		/*
 		 * set number of peaks used for processing
 		 */
 		((ScoredCandidateList)this.sortedScoredCandidateList).setNumberPeaksUsed(((AbstractPeakList)this.globalSettings.get(VariableNames.PEAK_LIST_NAME)).getNumberPeaksUsed());
@@ -236,49 +218,9 @@ public class CombinedMetFragProcess implements Runnable {
 		this.logger.info("Stored " + this.sortedScoredCandidateList.getNumberElements() + " candidate(s)");
 		
 		this.processingStatus.setProcessStatusString("Processing Candidates");
-		
-		this.processes = null;
 	}
 	
 	public CandidateList getCandidateList() {
 		return this.sortedScoredCandidateList;
-	}
-
-	/**
-	 * init database, peaklist reader, bond energies 
-	 * @throws ClassNotFoundException 
-	 * @throws SecurityException 
-	 * @throws NoSuchMethodException 
-	 * @throws InvocationTargetException 
-	 * @throws IllegalArgumentException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
-	 */
-	private void initialise() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
-		/*
-		 * set processing status object
-		 * stores and returns status of metfrag processing
-		 */
-		this.processingStatus = new ProcessingStatus(this.globalSettings);
-		this.globalSettings.set(VariableNames.PROCESS_STATUS_OBJECT_NAME, this.processingStatus);
-		if(this.logger.isTraceEnabled())
-			this.logger.trace(this.getClass().getName());
-
-		if(this.logger.isTraceEnabled())
-			this.logger.trace("\tinitialising database " + VariableNames.METFRAG_DATABASE_TYPE_NAME);
-		//initialise database
-		this.database = (IDatabase) Class.forName(ClassNames.getClassNameOfDatabase((String)this.globalSettings.get(VariableNames.METFRAG_DATABASE_TYPE_NAME))).getConstructor(Settings.class).newInstance(this.globalSettings);
-		if(this.logger.isTraceEnabled())
-			this.logger.trace("\tinitialising peakListReader " + VariableNames.METFRAG_PEAK_LIST_READER_NAME);
-		//init peaklist reader
-		this.peakListReader = (IPeakListReader) Class.forName((String)this.globalSettings.get(VariableNames.METFRAG_PEAK_LIST_READER_NAME)).getConstructor(Settings.class).newInstance(this.globalSettings);
-		//init bond energies
-		BondEnergies bondEnergies = null;
-		//from external file if given
-		if(this.globalSettings.get(VariableNames.BOND_ENERGY_FILE_PATH_NAME) != null) 
-			bondEnergies = new BondEnergies((String)this.globalSettings.get(VariableNames.BOND_ENERGY_FILE_PATH_NAME));
-		else //or use defaults
-			bondEnergies = new BondEnergies();
-		this.globalSettings.set(VariableNames.BOND_ENERGY_OBJECT_NAME, bondEnergies);
 	}
 }
