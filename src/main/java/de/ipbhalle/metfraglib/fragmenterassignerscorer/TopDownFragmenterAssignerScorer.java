@@ -33,10 +33,22 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 	 */
 	protected java.util.Hashtable<String, Integer> bitArrayToFragment;
 	
-	public TopDownFragmenterAssignerScorer(Settings settings, ICandidate candidate) {
+	/**
+	 * 
+	 */
+	private final SortedTandemMassPeakList peakList;
+	
+	/**
+	 * 
+	 * @param settings
+	 * @param candidate
+	 * @param peakList
+	 */
+	public TopDownFragmenterAssignerScorer(Settings settings, ICandidate candidate, final SortedTandemMassPeakList peakList) {
 		super(settings, candidate);
 		this.bitArrayToFragment = new java.util.Hashtable<>();
 		this.uniqueFragmentMatches = (Boolean)this.settings.get(VariableNames.METFRAG_UNIQUE_FRAGMENT_MATCHES);
+		this.peakList = peakList;
 	}
 
 	@Override
@@ -50,8 +62,7 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 		}
 		this.candidate.setProperty(VariableNames.MAXIMUM_TREE_DEPTH_NAME, maximumTreeDepth);
 		//read peaklist
-		SortedTandemMassPeakList tandemMassPeakList = (SortedTandemMassPeakList)settings.get(VariableNames.PEAK_LIST_NAME);
-		tandemMassPeakList.initialiseMassLimits((Double)this.settings.get(VariableNames.RELATIVE_MASS_DEVIATION_NAME), (Double)settings.get(VariableNames.ABSOLUTE_MASS_DEVIATION_NAME));
+		this.peakList.initialiseMassLimits((Double)this.settings.get(VariableNames.RELATIVE_MASS_DEVIATION_NAME), (Double)settings.get(VariableNames.ABSOLUTE_MASS_DEVIATION_NAME));
 		Integer precursorIonType = (Integer)this.settings.get(VariableNames.PRECURSOR_ION_MODE_NAME);
 		Boolean positiveMode = (Boolean)this.settings.get(VariableNames.IS_POSITIVE_ION_MODE_NAME);
 		int precursorIonTypeIndex = Constants.ADDUCT_NOMINAL_MASSES.indexOf(precursorIonType);
@@ -64,7 +75,7 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 		/*
 		 * wrap the root fragment
 		 */
-		AbstractTopDownBitArrayFragmentWrapper rootFragmentWrapper = new AbstractTopDownBitArrayFragmentWrapper(root, tandemMassPeakList.getNumberElements() - 1);
+		AbstractTopDownBitArrayFragmentWrapper rootFragmentWrapper = new AbstractTopDownBitArrayFragmentWrapper(root, this.peakList.getNumberElements() - 1);
 		toProcessFragments.add(rootFragmentWrapper);
 		java.util.HashMap<Integer, MatchFragmentList> peakIndexToPeakMatch = new java.util.HashMap<>();
 		java.util.HashMap<Integer, MatchPeakList> fragmentIndexToPeakMatch = new java.util.HashMap<>();
@@ -127,7 +138,7 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 						/*
 						 * calculate match
 						 */
-						matched = currentFragment.matchToPeak(candidatePrecursor, tandemMassPeakList.getElement(tempPeakPointer), precursorIonTypeIndex, positiveMode, match);
+						matched = currentFragment.matchToPeak(candidatePrecursor, this.peakList.getElement(tempPeakPointer), precursorIonTypeIndex, positiveMode, match);
 						/*
 						 * check whether match has occurred
 						 */
@@ -174,10 +185,10 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 							 */
 							if(!similarFragmentFound) {
 								if(fragmentIndexToPeakMatch.containsKey(currentFragment.getID())) {
-									fragmentIndexToPeakMatch.get(currentFragment.getID()).insert(tandemMassPeakList.getElement(tempPeakPointer), currentScores[0][0], tempPeakPointer);
+									fragmentIndexToPeakMatch.get(currentFragment.getID()).insert(this.peakList.getElement(tempPeakPointer), currentScores[0][0], tempPeakPointer);
 								}
 								else {
-									MatchPeakList newPeakList = new MatchPeakList(tandemMassPeakList.getElement(tempPeakPointer), currentScores[0][0], tempPeakPointer);
+									MatchPeakList newPeakList = new MatchPeakList(this.peakList.getElement(tempPeakPointer), currentScores[0][0], tempPeakPointer);
 									fragmentIndexToPeakMatch.put(currentFragment.getID(), newPeakList);
 								}
 							}
@@ -536,18 +547,14 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 		}
 	}
 	
-	protected void writeFingerPrintsToFile(ArrayList<String> fps, String filename) {
-		try {
-			java.io.BufferedWriter bwriter = new java.io.BufferedWriter(new java.io.FileWriter(new java.io.File(filename)));
+	protected static void writeFingerPrintsToFile(ArrayList<String> fps, String filename) {
+		try(java.io.BufferedWriter bwriter = new java.io.BufferedWriter(new java.io.FileWriter(new java.io.File(filename)))) {
 			for(int i = 0; i < fps.size(); i++) {
 				bwriter.write(fps.get(i));
 				bwriter.newLine();
 			}
-			bwriter.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
 }
