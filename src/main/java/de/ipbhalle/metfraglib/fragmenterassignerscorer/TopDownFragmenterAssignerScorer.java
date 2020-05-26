@@ -2,26 +2,15 @@ package de.ipbhalle.metfraglib.fragmenterassignerscorer;
 
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.interfaces.IMatch;
-import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
-import de.ipbhalle.metfraglib.list.FragmentList;
 import de.ipbhalle.metfraglib.list.MatchList;
 import de.ipbhalle.metfraglib.list.SortedTandemMassPeakList;
 import de.ipbhalle.metfraglib.match.MatchFragmentList;
 import de.ipbhalle.metfraglib.match.MatchFragmentNode;
 import de.ipbhalle.metfraglib.match.MatchPeakList;
-import de.ipbhalle.metfraglib.match.MatchPeakNode;
 import de.ipbhalle.metfraglib.settings.Settings;
 import de.ipbhalle.metfraglib.parameter.Constants;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.precursor.AbstractTopDownBitArrayPrecursor;
-
-import java.io.IOException;
-import java.util.ArrayList;
-
-import org.openscience.cdk.fingerprint.IBitFingerprint;
-
-import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
-import de.ipbhalle.metfraglib.fingerprint.TanimotoSimilarity;
 import de.ipbhalle.metfraglib.fragment.AbstractTopDownBitArrayFragment;
 import de.ipbhalle.metfraglib.fragment.AbstractTopDownBitArrayFragmentWrapper;
 
@@ -44,7 +33,7 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 	 * @param candidate
 	 * @param peakList
 	 */
-	public TopDownFragmenterAssignerScorer(Settings settings, ICandidate candidate, final SortedTandemMassPeakList peakList) {
+	public TopDownFragmenterAssignerScorer(Settings settings, ICandidate candidate, final SortedTandemMassPeakList peakList) throws Exception {
 		super(settings, candidate);
 		this.bitArrayToFragment = new java.util.Hashtable<>();
 		this.uniqueFragmentMatches = (Boolean)this.settings.get(VariableNames.METFRAG_UNIQUE_FRAGMENT_MATCHES);
@@ -282,210 +271,6 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 			return;
 		}
 	}
-	
-	/**
-	 * 
-	 * @param sortedScoredPeaks
-	 * @param peakIndexToPeakMatch
-	 * @param fragmentIndexToPeakMatch
-	 */
-	public void cleanMatchLists(MatchPeakList sortedScoredPeaks, java.util.HashMap<Integer, MatchFragmentList> peakIndexToPeakMatch, java.util.HashMap<Integer, MatchPeakList> fragmentIndexToPeakMatch) {
-		if(sortedScoredPeaks == null) return;
-		//	System.out.println(sortedScoredPeaks.countElements());
-		/*
-		 * traverse matched peak list
-		 * 69 -> f1 -> f2 -> f3
-		 * 68 -> f1 -> f2 -> f3
-		 * 67 -> f1 -> f2 -> f3
-		 */
-		
-	//	sortedScoredPeaks.printElements();
-		
-		//	this.printHashMapInfo(peakIndexToPeakMatch, fragmentIndexToPeakMatch);
-		
-		while(sortedScoredPeaks.getRootNode() != null) {
-			/*
-			 * get current peak index
-			 * 69 -> f1 -> f2 -> f3
-			 */
-			int currentPeakIndex = sortedScoredPeaks.getRootNode().getId();
-			//		System.out.println("best peak guy " + currentPeakIndex + " " + sortedScoredPeaks.getRootNode().getPeak().getMass());
-			sortedScoredPeaks.removeFirst();
-			/*
-			 * get fragment list
-			 * f1 -> f2 -> f3
-			 */
-			MatchFragmentList currentFragmentList = peakIndexToPeakMatch.get(currentPeakIndex);
-			//	System.out.println("best fragment guy " + currentFragmentList.getRootNode().getElement().getID() + " " + currentFragmentList.getRootNode().getElement().getMonoisotopicMass());
-			/*
-			 * get root node
-			 * f1
-			 */
-			boolean processed = false;
-			while(!processed) {
-				MatchFragmentNode currentFragmentNode = currentFragmentList.getRootNode();
-				if(currentFragmentNode == null) {
-					//		System.out.println("removing peak index " + currentPeakIndex);
-					peakIndexToPeakMatch.remove(currentPeakIndex);
-					processed = true;
-					continue;
-				}
-				//	System.out.println("\t" + currentFragmentNode.getElement().getID() + " pointing to " + fragmentIndexToPeakMatch.get(currentFragmentNode.getElement().getID()).getRootNode().getId());
-				/*
-				 * check whether the best peak's best fragment also points to this peak
-				 */
-				if(fragmentIndexToPeakMatch.get(currentFragmentNode.getFragment().getID()).getRootNode().getId() == currentPeakIndex) {
-					//		System.out.println("processed");
-					processed = true;
-					/*
-					 * traverse over fragment list from root
-					 */
-					MatchFragmentNode fragmentNodeToRemoveFrom = currentFragmentNode.getNext();
-					while(fragmentNodeToRemoveFrom != null) {
-						/*
-						 * remove peak index from fragment list
-						 */
-						//			System.out.println("removing " + fragmentNodeToRemoveFrom.getElement().getID() + " from " + currentPeakIndex);
-						fragmentIndexToPeakMatch.get(fragmentNodeToRemoveFrom.getFragment().getID()).removeElementByID(currentPeakIndex);		
-						fragmentNodeToRemoveFrom = fragmentNodeToRemoveFrom.getNext();
-					}
-					/*
-					 * get root peak from peak list of the current matched fragment
-					 * f1 -> 69 -> 68 -> 67
-					 * 69
-					 */
-					MatchPeakNode currentPeakNode = fragmentIndexToPeakMatch.get(currentFragmentList.getRootNode().getFragment().getID()).getRootNode();
-					//		System.out.println(currentFragmentList.getRootNode().getElement().getID() + " currentPeakNode: " + currentPeakNode.getId());
-					//		if(!currentPeakNode.hasNext()) System.out.println("nothing next");
-					while(currentPeakNode.hasNext()) {
-						/*
-						 * get neighbour of peak node
-						 */
-						currentPeakNode = currentPeakNode.getNext();
-						//			System.out.println("\tremoving from list " + currentPeakNode.getId());
-						/*
-						 * remove fragment index from peak list
-						 * 68 -> f1 -> f2 -> f3
-						 * 67 -> f1 -> f2 -> f3
-						 * removed:
-						 * 68 -> f2 -> f3
-						 * 67 -> f2 -> f3
-						 */
-						try {
-							//	sortedScoredPeaks.printElements();
-							boolean toUpdate = false;
-							try {
-								peakIndexToPeakMatch.get(currentPeakNode.getId()).getRootNode().getFragment().getID();
-							}
-							catch(Exception e) {
-								e.printStackTrace();
-							}
-							if(peakIndexToPeakMatch.get(currentPeakNode.getId()).getRootNode().getFragment().getID() == currentFragmentNode.getFragment().getID()) {
-								toUpdate = true;
-							}
-							if(toUpdate) {
-								//		System.out.println("update1");
-								//		sortedScoredPeaks.printElements();
-									//		System.out.println("remove peak from sortedScoredPeaks by id " + currentPeakNode.getId());
-									sortedScoredPeaks.removeElementByID(currentPeakNode.getId());
-									//		sortedScoredPeaks.printElements();
-							}
-							//sortedScoredPeaks.printElements();
-							//	System.out.println("removing from " + currentPeakNode.getId() + " " + currentFragmentNode.getElement().getID());
-							peakIndexToPeakMatch.get(currentPeakNode.getId()).removeElementByID(currentFragmentNode.getFragment().getID());
-					
-							if(toUpdate) {
-								MatchFragmentNode fragmentRoot = peakIndexToPeakMatch.get(currentPeakNode.getId()).getRootNode();
-								//		System.out.println("update2 " + currentPeakNode.getId() + " " + fragmentRoot);
-								if(fragmentRoot != null) {
-									MatchPeakNode peakRoot = fragmentIndexToPeakMatch.get(fragmentRoot.getFragment().getID()).getElementById(currentPeakNode.getId());
-									//		System.out.println("\tpeakRoot " + peakRoot + " " + fragmentRoot.getElement().getID() + " " + currentPeakNode.getId());
-									if(peakRoot != null) {
-										//			System.out.print("\there2 " + peakRoot.getId() + " "); sortedScoredPeaks.printElements();
-										sortedScoredPeaks.insert(peakRoot.clone());
-									}
-								}
-								else {
-									//		System.out.println("\tremoving from peak hashmap " + currentPeakNode.getId());
-									peakIndexToPeakMatch.remove(currentPeakNode.getId());
-								}
-							}
-							//	sortedScoredPeaks.printElements();
-						}
-						catch(Exception e) {
-							e.printStackTrace();
-							System.out.println(this.candidate.getIdentifier() + " " + currentPeakNode.getId() + " " + peakIndexToPeakMatch.get(currentPeakNode.getId()) + " " + peakIndexToPeakMatch.size());
-							System.exit(1);
-						}
-					}
-					//	currentFragmentList.removeAfterRoot();
-				}
-				else {
-					//	System.out.println("remove " + currentFragmentList.getRootNode().getElement().getID());
-					currentFragmentList.removeFirst();
-				}
-			}
-			//	sortedScoredPeaks.printElements();
-			//	this.printHashMapInfo(peakIndexToPeakMatch, fragmentIndexToPeakMatch);
-		}
-	}
-	
-	protected void printHashMapInfo(java.util.HashMap<Integer, MatchFragmentList> peakIndexToPeakMatch, java.util.HashMap<Integer, MatchPeakList> fragmentIndexToPeakMatch) {
-		java.util.Iterator<Integer> it = peakIndexToPeakMatch.keySet().iterator();
-		while(it.hasNext()) {
-			int key = it.next();
-			System.out.print(key + " -> ");
-			peakIndexToPeakMatch.get(key).printElements(this.candidate.getPrecursorMolecule());
-			/*
-			 * peakID -> fragments
-			0 -> 188:104.05002:C7H6N:9.148574830115374	202:104.05002:C7H6N:9.148574830115374	139:105.05784:C7H7N:8.339671410655502	
-			1 -> 38:102.04695:C8H6:14.281494870955974	211:101.03913:C8H5:12.476472398768284	
-			3 -> 18:105.05784:C7H7N:14.135045638767528	22:105.05784:C7H7N:14.135045638767528	188:104.05002:C7H6N:13.03922782363598	202:104.05002:C7H6N:13.03922782363598	
-			4 -> 38:102.04695:C8H6:31.232063005948184	
-			5 -> 18:105.05784:C7H7N:15.469563444506283	22:105.05784:C7H7N:15.469563444506283	188:104.05002:C7H6N:13.360240498468544	202:104.05002:C7H6N:13.360240498468544	
-			6 -> 18:105.05784:C7H7N:11.41574962148274	22:105.05784:C7H7N:11.41574962148274	188:104.05002:C7H6N:9.954371408167367	202:104.05002:C7H6N:9.954371408167367	
-			8 -> 139:105.05784:C7H7N:8.94381924374472	
-			*/
-		}
-		System.out.println("##### " + fragmentIndexToPeakMatch.size());
-		java.util.Iterator<Integer> it1 = fragmentIndexToPeakMatch.keySet().iterator();
-		while(it1.hasNext()) {
-			int key = it1.next();
-			System.out.print(key + " -> ");
-			fragmentIndexToPeakMatch.get(key).printElements();
-			/*
-			 * fragmentID -> peaks
-				139 -> 8:108.080575:19.0:8.94381924374472 0:104.0495:19.0:8.339671410655502 
-				18 -> 5:106.0652:34.0:15.469563444506283 3:105.05745:32.0:14.135045638767528 6:107.072925:21.0:11.41574962148274 
-				38 -> 4:105.06985:128.0:31.232063005948184 1:104.062025:33.0:14.281494870955974 
-				188 -> 5:106.0652:34.0:13.360240498468544 3:105.05745:32.0:13.03922782363598 6:107.072925:21.0:9.954371408167367 0:104.0495:19.0:9.148574830115374 
-				202 -> 5:106.0652:34.0:13.360240498468544 3:105.05745:32.0:13.03922782363598 6:107.072925:21.0:9.954371408167367 0:104.0495:19.0:9.148574830115374 
-				22 -> 5:106.0652:34.0:15.469563444506283 3:105.05745:32.0:14.135045638767528 6:107.072925:21.0:11.41574962148274 
-				211 -> 1:104.062025:33.0:12.476472398768284
-			 */
-		}
-		System.out.println("#####");
-	}
-	
-	/**
-	 * 
-	 * @param currentFragment
-	 * @return
-	 */
-	/*
-	protected boolean wasAlreadyGenerated(AbstractTopDownBitArrayFragment currentFragment) {
-		AbstractTopDownBitArrayFragment precursorOfFragment = currentFragment.getPrecursorFragment();
-		if(precursorOfFragment == null) return false;
-			java.util.ArrayList<AbstractTopDownBitArrayFragment> children = precursorOfFragment.getChildren();
-		
-		for(int i = 0; i < children.size(); i++) {
-			if(children.get(i).getID() < currentFragment.getID() && children.get(i).getAtomsFastBitArray().equals(currentFragment.getAtomsFastBitArray())) 
-			{
-				return true;
-			}
-		}
-		return false;
-	}*/
 
 	protected boolean wasAlreadyGeneratedByHashtable(AbstractTopDownBitArrayFragment currentFragment) {
 		String currentHash = currentFragment.getAtomsFastBitArray().toString();
@@ -499,56 +284,5 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 			return false;
 		
 		return true;
-	}
-	
-	@Override
-	public FragmentList getFragments() {
-		return null;
-	}
-	
-	@Override
-	public MatchList getMatchList() {
-		return this.matchList;
-	}
-	
-	@Override
-	public void nullify() {
-		super.nullify();
-		this.bitArrayToFragment = null;
-	}
-
-	@Override
-	public void shallowNullify() {
-		super.shallowNullify();
-		this.bitArrayToFragment = null;
-	}
-	
-	protected void addFingerPrintsToArrayList(IMolecularStructure precursorMolecule, ArrayList<AbstractTopDownBitArrayFragment> fragments, ArrayList<String> fingerprints, ArrayList<IBitFingerprint> fps) {
-		for(int i = 0; i < fragments.size(); i++) {
-			int index = 0;
-			IBitFingerprint fp = TanimotoSimilarity.calculateFingerPrint(fragments.get(i).getStructureAsIAtomContainer(precursorMolecule));
-			String fingerprint = MoleculeFunctions.fingerPrintToString(fp);
-			int compareResult = -1;
-			while(index < fingerprints.size()) {
-				compareResult = fingerprints.get(index).compareTo(fingerprint);
-				if(compareResult < 0) index++;
-				else break; 
-			}
-			if(compareResult != 0) {
-				fingerprints.add(index, fingerprint);
-				fps.add(index, fp);
-			}
-		}
-	}
-	
-	protected static void writeFingerPrintsToFile(ArrayList<String> fps, String filename) {
-		try(java.io.BufferedWriter bwriter = new java.io.BufferedWriter(new java.io.FileWriter(new java.io.File(filename)))) {
-			for(int i = 0; i < fps.size(); i++) {
-				bwriter.write(fps.get(i));
-				bwriter.newLine();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 }

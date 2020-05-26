@@ -11,19 +11,18 @@ import de.ipbhalle.metfraglib.database.LocalCSVDatabase;
 import de.ipbhalle.metfraglib.interfaces.IDatabase;
 import de.ipbhalle.metfraglib.interfaces.IPeakListReader;
 import de.ipbhalle.metfraglib.list.CandidateList;
-import de.ipbhalle.metfraglib.list.ScoredCandidateList;
 import de.ipbhalle.metfraglib.list.SortedTandemMassPeakList;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.peaklistreader.FilteredTandemMassPeakListReader;
-import de.ipbhalle.metfraglib.settings.MetFragGlobalSettings;
 import de.ipbhalle.metfraglib.settings.MetFragSingleProcessSettings;
+import de.ipbhalle.metfraglib.settings.Settings;
 
 public class CombinedMetFragProcess implements Runnable {
 
 	/**
 	 * Settings object containing all parameters.
 	 */
-	private final MetFragGlobalSettings globalSettings;
+	private final Settings settings;
 	
 	/**
 	 * Candidate list -> later also containing the scored candidates.
@@ -42,19 +41,21 @@ public class CombinedMetFragProcess implements Runnable {
 	
 	/**
 	 * 
-	 * @param globalSettings
+	 * @param settings
 	 * @param logLevel
 	 * @throws Exception
 	 */
-	public CombinedMetFragProcess(final MetFragGlobalSettings globalSettings, final Level logLevel) throws Exception {
-		this.globalSettings = globalSettings;
+	public CombinedMetFragProcess(final Settings settings, final Level logLevel) throws Exception {
+		this.settings = settings;
+		this.settings.set(VariableNames.BOND_ENERGY_OBJECT_NAME, new BondEnergies());
+		
 		this.logger.setLevel(logLevel);
 		
-		final IDatabase database = new LocalCSVDatabase(this.globalSettings);
+		final IDatabase database = new LocalCSVDatabase(this.settings);
 		java.util.ArrayList<String> databaseCandidateIdentifiers = database.getCandidateIdentifiers();
 		this.candidateList = database.getCandidateByIdentifier(databaseCandidateIdentifiers);
 		
-		this.globalSettings.set(VariableNames.BOND_ENERGY_OBJECT_NAME, new BondEnergies());
+		
 	}
 	
 	/*
@@ -65,14 +66,14 @@ public class CombinedMetFragProcess implements Runnable {
 	@Override
 	public void run() {
 		try {
-			final IPeakListReader peakListReader = new FilteredTandemMassPeakListReader(this.globalSettings);
+			final IPeakListReader peakListReader = new FilteredTandemMassPeakListReader(this.settings);
 			final SortedTandemMassPeakList peakList = (SortedTandemMassPeakList)peakListReader.read();
 			final CombinedSingleCandidateMetFragProcess[] processes = new CombinedSingleCandidateMetFragProcess[this.candidateList.getNumberElements()];
 			
 			for(int i = 0; i < this.candidateList.getNumberElements(); i++) 
 			{
-				final MetFragSingleProcessSettings singleProcessSettings = new MetFragSingleProcessSettings(this.globalSettings);
 				this.candidateList.getElement(i).setUseSmiles(true);
+				final MetFragSingleProcessSettings singleProcessSettings = new MetFragSingleProcessSettings(this.settings);
 				processes[i] = new CombinedSingleCandidateMetFragProcess(singleProcessSettings, this.candidateList.getElement(i), peakList, this.logger.getLevel());
 			}
 			
@@ -88,24 +89,6 @@ public class CombinedMetFragProcess implements Runnable {
 			{
 				Thread.sleep(1000);
 			}
-			
-		    final ScoredCandidateList scoredCandidateList = new ScoredCandidateList();
-		    
-		    for(int i = 0; i < this.candidateList.getNumberElements(); i++) 
-			{
-		    	scoredCandidateList.addElement(this.candidateList.getElement(i));
-			}
-	
-			this.candidateList = scoredCandidateList.normaliseScores(
-				(Double[])this.globalSettings.get(VariableNames.METFRAG_SCORE_WEIGHTS_NAME), 
-				(String[])this.globalSettings.get(VariableNames.METFRAG_SCORE_TYPES_NAME),
-				(String[])this.globalSettings.get(VariableNames.SCORE_NAMES_NOT_TO_SCALE)
-			);
-			
-			/*
-			 * set number of peaks used for processing
-			 */
-			((ScoredCandidateList)this.candidateList).setNumberPeaksUsed(peakList.getNumberPeaksUsed());
 			
 			this.logger.info("Stored " + this.candidateList.getNumberElements() + " candidate(s)");
 		}

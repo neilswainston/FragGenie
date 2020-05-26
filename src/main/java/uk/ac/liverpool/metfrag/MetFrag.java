@@ -19,8 +19,8 @@ import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 import de.ipbhalle.metfraglib.candidate.TopDownPrecursorCandidate;
 import de.ipbhalle.metfraglib.fragmenter.TopDownNeutralLossFragmenter;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
+import de.ipbhalle.metfraglib.list.CandidateList;
 import de.ipbhalle.metfraglib.list.FragmentList;
-import de.ipbhalle.metfraglib.list.ScoredCandidateList;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.process.CombinedMetFragProcess;
 import de.ipbhalle.metfraglib.settings.MetFragGlobalSettings;
@@ -59,7 +59,7 @@ public class MetFrag {
 		final CombinedMetFragProcess metfragProcess = new CombinedMetFragProcess(settings, Level.ALL);
 		metfragProcess.run();
 
-		final ScoredCandidateList scoredCandidateList = (ScoredCandidateList) metfragProcess.getCandidateList();
+		final CandidateList scoredCandidateList = metfragProcess.getCandidateList();
 
 		final Collection<Map<String, Object>> results = new ArrayList<>();
 
