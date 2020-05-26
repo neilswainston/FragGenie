@@ -20,9 +20,9 @@ public class TopDownFragmenter extends AbstractTopDownFragmenter {
 	protected boolean ringBondsInitialised;
 	protected FastBitArray ringBondFastBitArray;
 	
-	public TopDownFragmenter(Settings settings) throws Exception {
+	public TopDownFragmenter(final ICandidate candidate, Settings settings) throws Exception {
 		super(settings);
-		this.scoredCandidate = (ICandidate)settings.get(VariableNames.CANDIDATE_NAME);
+		this.scoredCandidate = candidate;
 		this.maximumTreeDepth = (Byte)settings.get(VariableNames.MAXIMUM_TREE_DEPTH_NAME);
 		this.minimumFragmentMassLimit = (Double)settings.get(VariableNames.MINIMUM_FRAGMENT_MASS_LIMIT_NAME);
 		this.maximumNumberOfAFragmentAddedToQueue = (Byte)settings.get(VariableNames.MAXIMUM_NUMBER_OF_TOPDOWN_FRAGMENT_ADDED_TO_QUEUE);

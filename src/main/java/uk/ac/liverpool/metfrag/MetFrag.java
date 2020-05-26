@@ -175,7 +175,7 @@ public class MetFrag {
 		settings.set(VariableNames.MINIMUM_FRAGMENT_MASS_LIMIT_NAME, 0.0);
 		settings.set(VariableNames.MAXIMUM_NUMBER_OF_TOPDOWN_FRAGMENT_ADDED_TO_QUEUE, (byte)maximumTreeDepth);
 		
-		final TopDownNeutralLossFragmenter fragmenter = new TopDownNeutralLossFragmenter(settings);
+		final TopDownNeutralLossFragmenter fragmenter = new TopDownNeutralLossFragmenter(candidate, settings);
 		final FragmentList fragmentList = fragmenter.generateFragments();
 		final IAtomContainer[] fragments = new IAtomContainer[fragmentList.getNumberElements()];
 		

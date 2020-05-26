@@ -238,13 +238,7 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 			MatchFragmentList matchFragmentList = peakIndexToPeakMatch.get(key);
 			MatchFragmentNode bestFragment = matchFragmentList.getRootNode();
 			IMatch match = bestFragment.getMatch();
-			Double[] scoreValuesSingleMatch = null;
-			try {
-				scoreValuesSingleMatch = bestFragment.getFragmentScores();
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
+			Double[] scoreValuesSingleMatch = bestFragment.getFragmentScores();
 			Double[] optimalValuesSingleMatch = bestFragment.getOptimalValues();
 			for(int k = 1; k < scoreValuesSingleMatch.length; k++) {
 				if(optimalValuesSingleMatch[k] != null) singleScores[k-1][index] = optimalValuesSingleMatch[k];

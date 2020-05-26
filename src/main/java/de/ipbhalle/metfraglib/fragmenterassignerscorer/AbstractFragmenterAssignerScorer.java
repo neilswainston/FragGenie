@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import de.ipbhalle.metfraglib.collection.ScoreCollection;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
 import de.ipbhalle.metfraglib.fragmenter.AbstractTopDownFragmenter;
+import de.ipbhalle.metfraglib.fragmenter.TopDownNeutralLossFragmenter;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.interfaces.IFragmenterAssignerScorer;
 import de.ipbhalle.metfraglib.interfaces.IScore;
@@ -86,7 +87,7 @@ public abstract class AbstractFragmenterAssignerScorer implements IFragmenterAss
 		/*
 		 * initialise fragmenter
 		 */
-		this.fragmenter = (AbstractTopDownFragmenter) Class.forName((String)settings.get(VariableNames.METFRAG_FRAGMENTER_TYPE_NAME)).getConstructor(Settings.class).newInstance(settings);
+		this.fragmenter = new TopDownNeutralLossFragmenter(this.candidate, this.settings);
 		
 		/*
 		 * initialise score
