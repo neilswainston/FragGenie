@@ -29,9 +29,7 @@ public class CombinedSingleCandidateMetFragProcess implements Runnable {
 	private Settings settings;
 	
 	private Logger logger = Logger.getLogger(CombinedSingleCandidateMetFragProcess.class);
-	
-	//fragments the candidate, assignes fragments to m/z peaks and scores
-	private AbstractFragmenterAssignerScorer fas;
+
 	
 	/**
 	 * each candidate processing thread has its own settings object and the candidate to process
@@ -56,35 +54,16 @@ public class CombinedSingleCandidateMetFragProcess implements Runnable {
 			this.settings.set(VariableNames.CANDIDATE_NAME, this.candidate);
 			
 			//define the fragmenterAssignerScorer
-			this.fas = new TopDownFragmenterAssignerScorer(this.settings, this.candidate, this.peakList);
-			//sets the candidate to be processed
-			this.fas.setCandidate(candidate);
-			//inits the candidate, fragmenter, scores objects
-			this.fas.initialise();
-			
-			/*
-			 * do the actual work
-			 * fragment candidate, assign fragments and score
-			 */
-			this.fas.calculate();
-			//removing score assignment and shifted to CombinedMetFragProcess after postCalculating scores
-			this.fas.assignInterimScoresResults();
-			//set the reference to the scored candidate(s)
-			this.candidate = this.fas.getCandidate();
-
-			// ((ProcessingStatus)this.settings.get(VariableNames.PROCESS_STATUS_OBJECT_NAME)).checkNumberFinishedCandidates();
+			AbstractFragmenterAssignerScorer fas = new TopDownFragmenterAssignerScorer(this.settings, this.candidate, this.peakList);
+			fas.setCandidate(this.candidate);
+			fas.initialise();
+			fas.calculate();
+			fas.assignInterimScoresResults();
 			this.candidate.resetPrecursorMolecule();
+			fas.assignScores();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public void assignScores() {
-		this.fas.assignScores();
-	}
-	
-	public ICandidate getScoredPrecursorCandidates() {
-		return candidate;
 	}
 }

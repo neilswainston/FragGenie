@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 
 import de.ipbhalle.metfraglib.additionals.BondEnergies;
 import de.ipbhalle.metfraglib.database.LocalCSVDatabase;
-import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.interfaces.IDatabase;
 import de.ipbhalle.metfraglib.interfaces.IPeakListReader;
 import de.ipbhalle.metfraglib.list.CandidateList;
@@ -92,14 +91,9 @@ public class CombinedMetFragProcess implements Runnable {
 			
 		    final ScoredCandidateList scoredCandidateList = new ScoredCandidateList();
 		    
-			for(CombinedSingleCandidateMetFragProcess process : processes) {
-				/*
-				 * check whether the single run was successful
-				 */
-				process.assignScores();
-	
-				final ICandidate candidate = process.getScoredPrecursorCandidates();
-				scoredCandidateList.addElement(candidate);
+		    for(int i = 0; i < this.candidateList.getNumberElements(); i++) 
+			{
+		    	scoredCandidateList.addElement(this.candidateList.getElement(i));
 			}
 	
 			this.candidateList = scoredCandidateList.normaliseScores(
