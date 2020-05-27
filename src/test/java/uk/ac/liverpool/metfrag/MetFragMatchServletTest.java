@@ -46,14 +46,15 @@ public class MetFragMatchServletTest {
 	 * @param response
 	 */
 	private static void verify(final MockHttpServletResponse response) {
-		Assert.assertEquals("application/json", response.getContentType());
-		Assert.assertEquals("UTF-8", response.getCharacterEncoding());
+		Assert.assertEquals("application/json", response.getContentType()); //$NON-NLS-1$
+		Assert.assertEquals("UTF-8", response.getCharacterEncoding()); //$NON-NLS-1$
 
 		final String resp = response.getWriterContent().toString();
 
 		try(final JsonReader jsonReader = Json.createReader(new StringReader(resp))) {
 			final JsonArray results = jsonReader.readArray();
 			Assert.assertEquals(5, results.size());
+			Assert.assertEquals(1188.6403357016206, results.getJsonObject(0).getJsonNumber("FragmenterScore").doubleValue(), 1e-6); //$NON-NLS-1$
 		}
 	}
 }

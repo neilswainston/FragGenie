@@ -24,9 +24,9 @@ public class MetFragTest {
 		final List<Map<String, Object>> results = (List<Map<String, Object>>)MetFrag.match(MetFragTestData.SMILES, MetFragTestData.MZ, MetFragTestData.INTEN);
 		Assert.assertEquals(5, results.size());
 		Assert.assertEquals("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", results.get(0).get("SMILES"));
-		Assert.assertEquals(1197.3267765170576, (Double)results.get(0).get("FragmenterScore"), 1e-6);
+		Assert.assertEquals(1188.6403357016206, (Double)results.get(0).get("FragmenterScore"), 1e-6);
 	}
-	
+
 	/**
 	 * 
 	 * @throws Exception

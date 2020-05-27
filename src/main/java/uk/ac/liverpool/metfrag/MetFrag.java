@@ -55,6 +55,9 @@ public class MetFrag {
 
 		// Set other parameters:
 		settings.set(VariableNames.PRECURSOR_NEUTRAL_MASS_NAME, Double.valueOf(mz[mz.length - 1]));
+		
+		// Set the following value to retain "original" score of 1197.3267765170576:
+		// settings.set(VariableNames.PRECURSOR_NEUTRAL_MASS_NAME, 253.966126);
 
 		final CombinedMetFragProcess metfragProcess = new CombinedMetFragProcess(settings);
 		metfragProcess.retrieveCompounds();

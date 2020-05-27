@@ -93,7 +93,7 @@ public abstract class MetFragUtils {
 		final double[] array = new double[jsonArray.size()];
 		
 		for(int i=0; i< jsonArray.size(); i++) {
-			array[i] = jsonArray.getJsonNumber(0).doubleValue();
+			array[i] = jsonArray.getJsonNumber(i).doubleValue();
 		}
 		
 		return array;
@@ -108,7 +108,7 @@ public abstract class MetFragUtils {
 		final int[] array = new int[jsonArray.size()];
 		
 		for(int i=0; i< jsonArray.size(); i++) {
-			array[i] = jsonArray.getInt(0);
+			array[i] = jsonArray.getInt(i);
 		}
 		
 		return array;
