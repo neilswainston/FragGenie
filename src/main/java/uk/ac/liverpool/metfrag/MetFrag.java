@@ -54,10 +54,10 @@ public class MetFrag {
 		settings.set(VariableNames.METFRAG_DATABASE_TYPE_NAME, "LocalCSV");
 
 		// Set other parameters:
-		settings.set(VariableNames.RELATIVE_MASS_DEVIATION_NAME, 5.0);
-		settings.set(VariableNames.PRECURSOR_NEUTRAL_MASS_NAME, 253.966126);
+		settings.set(VariableNames.PRECURSOR_NEUTRAL_MASS_NAME, Double.valueOf(mz[mz.length - 1]));
 
-		final CombinedMetFragProcess metfragProcess = new CombinedMetFragProcess(settings, Level.ALL);
+		final CombinedMetFragProcess metfragProcess = new CombinedMetFragProcess(settings);
+		metfragProcess.retrieveCompounds();
 		metfragProcess.run();
 
 		final CandidateList scoredCandidateList = metfragProcess.getCandidateList();
@@ -70,7 +70,7 @@ public class MetFrag {
 			
 			// Get index:
 			final String identifier = (String)properties.remove("Identifier");
-			properties.put("index", Integer.parseInt(identifier.split("|")[0]));
+			properties.put("index", Integer.valueOf(Integer.parseInt(identifier.split("|")[0])));
 			
 			// Remove unnecessary fields:
 			properties.remove("InChI");
@@ -101,7 +101,7 @@ public class MetFrag {
 		for(int i = 0; i < fragments.length; i++)  {
 			IAtomContainer fragment = fragments[i];
 			final IMolecularFormula formula = MolecularFormulaManipulator.getMolecularFormula(fragment);
-			massesSet.add(MolecularFormulaManipulator.getMajorIsotopeMass(formula));
+			massesSet.add(Double.valueOf(MolecularFormulaManipulator.getMajorIsotopeMass(formula)));
 		}
 		
 		final double[] masses = new double[massesSet.size()];
@@ -117,7 +117,6 @@ public class MetFrag {
 	/**
 	 * 
 	 * @param smiles
-	 * @param inchis
 	 * @return String
 	 * @throws IOException
 	 */
@@ -160,23 +159,23 @@ public class MetFrag {
 	
 	/**
 	 * 
-	 * @param molecule
+	 * @param smiles
 	 * @param maximumTreeDepth
-	 * @return IAtomContainer
-	 * @throws Exception 
+	 * @return IAtomContainer[]
+	 * @throws Exception
 	 */
-	private static IAtomContainer[] generateAllFragments(String smiles, int maximumTreeDepth) throws Exception {
+	private static IAtomContainer[] generateAllFragments(final String smiles, final int maximumTreeDepth) throws Exception {
 		final MetFragGlobalSettings settings = getSettings();
 		final ICandidate candidate = new TopDownPrecursorCandidate(null, "IDENTIFIER", smiles);
 		candidate.setUseSmiles(true);
 		candidate.initialisePrecursorCandidate();
 
 		settings.set(VariableNames.CANDIDATE_NAME, candidate);
-		settings.set(VariableNames.MAXIMUM_TREE_DEPTH_NAME, (byte)2);
-		settings.set(VariableNames.MINIMUM_FRAGMENT_MASS_LIMIT_NAME, 0.0);
-		settings.set(VariableNames.MAXIMUM_NUMBER_OF_TOPDOWN_FRAGMENT_ADDED_TO_QUEUE, (byte)maximumTreeDepth);
+		settings.set(VariableNames.MAXIMUM_TREE_DEPTH_NAME, Byte.valueOf((byte)2));
+		settings.set(VariableNames.MINIMUM_FRAGMENT_MASS_LIMIT_NAME, Double.valueOf(0.0));
+		settings.set(VariableNames.MAXIMUM_NUMBER_OF_TOPDOWN_FRAGMENT_ADDED_TO_QUEUE, Byte.valueOf((byte)maximumTreeDepth));
 		
-		final TopDownFragmenter fragmenter = new TopDownNeutralLossFragmenter(candidate, settings);
+		final TopDownFragmenter fragmenter = new TopDownNeutralLossFragmenter(settings);
 		final FragmentList fragmentList = fragmenter.generateFragments();
 		final IAtomContainer[] fragments = new IAtomContainer[fragmentList.getNumberElements()];
 		
