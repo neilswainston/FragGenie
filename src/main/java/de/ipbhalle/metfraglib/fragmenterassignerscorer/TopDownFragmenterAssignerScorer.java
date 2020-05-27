@@ -1,26 +1,46 @@
 package de.ipbhalle.metfraglib.fragmenterassignerscorer;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import de.ipbhalle.metfraglib.collection.ScoreCollection;
+import de.ipbhalle.metfraglib.fragment.AbstractTopDownBitArrayFragment;
+import de.ipbhalle.metfraglib.fragment.AbstractTopDownBitArrayFragmentWrapper;
+import de.ipbhalle.metfraglib.fragmenter.AbstractTopDownFragmenter;
+import de.ipbhalle.metfraglib.fragmenter.TopDownNeutralLossFragmenter;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.interfaces.IMatch;
+import de.ipbhalle.metfraglib.interfaces.IScore;
 import de.ipbhalle.metfraglib.list.MatchList;
 import de.ipbhalle.metfraglib.list.SortedTandemMassPeakList;
 import de.ipbhalle.metfraglib.match.MatchFragmentList;
 import de.ipbhalle.metfraglib.match.MatchFragmentNode;
 import de.ipbhalle.metfraglib.match.MatchPeakList;
-import de.ipbhalle.metfraglib.settings.Settings;
 import de.ipbhalle.metfraglib.parameter.Constants;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.precursor.AbstractTopDownBitArrayPrecursor;
-import de.ipbhalle.metfraglib.fragment.AbstractTopDownBitArrayFragment;
-import de.ipbhalle.metfraglib.fragment.AbstractTopDownBitArrayFragmentWrapper;
+import de.ipbhalle.metfraglib.score.NewFragmenterScore;
+import de.ipbhalle.metfraglib.settings.Settings;
 
-public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerScorer {
+public class TopDownFragmenterAssignerScorer {
 
-	protected boolean uniqueFragmentMatches;
+	//matchlist contains all fragment peak matches 
+	private MatchList matchList;
+	//settings object
+	private Settings settings;
+	//candidate(s) to be processed
+	private ICandidate candidate;
+	//fragmenter performing in silico fragmention
+	private AbstractTopDownFragmenter fragmenter;
+	//score collection containg all scores
+	private ScoreCollection scoreCollection;
+
+	private Logger logger = Logger.getLogger(AbstractFragmenterAssignerScorer.class);
+
 	/*
 	 * workaround
 	 */
-	protected java.util.Hashtable<String, Integer> bitArrayToFragment;
+	private java.util.Hashtable<String, Integer> bitArrayToFragment = new java.util.Hashtable<>();
 	
 	/**
 	 * 
@@ -29,18 +49,30 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 	
 	/**
 	 * 
+	 */
+	private final String scoreType = "FragmenterScore";
+	
+	/**
+	 * 
 	 * @param settings
 	 * @param candidate
-	 * @param peakList
 	 */
 	public TopDownFragmenterAssignerScorer(Settings settings, ICandidate candidate, final SortedTandemMassPeakList peakList) throws Exception {
-		super(settings, candidate);
-		this.bitArrayToFragment = new java.util.Hashtable<>();
-		this.uniqueFragmentMatches = (Boolean)this.settings.get(VariableNames.METFRAG_UNIQUE_FRAGMENT_MATCHES);
+		this.settings = settings;
+		this.candidate = candidate;
 		this.peakList = peakList;
+		
+		this.logger.setLevel((Level)this.settings.get(VariableNames.LOG_LEVEL_NAME));
+		
+		this.candidate.initialisePrecursorCandidate();
+		this.fragmenter = new TopDownNeutralLossFragmenter(this.candidate, this.settings);
+		
+		final IScore score = new NewFragmenterScore(this.settings);
+		
+		this.scoreCollection = new ScoreCollection(new IScore[] {score});
+		
 	}
-
-	@Override
+	
 	public void calculate() {
 		AbstractTopDownBitArrayPrecursor candidatePrecursor = (AbstractTopDownBitArrayPrecursor)(this.candidate).getPrecursorMolecule();
 		//generate root fragment to start fragmentation
@@ -272,17 +304,31 @@ public class TopDownFragmenterAssignerScorer extends AbstractFragmenterAssignerS
 		}
 	}
 
-	protected boolean wasAlreadyGeneratedByHashtable(AbstractTopDownBitArrayFragment currentFragment) {
+	private boolean wasAlreadyGeneratedByHashtable(AbstractTopDownBitArrayFragment currentFragment) {
 		String currentHash = currentFragment.getAtomsFastBitArray().toString();
 		Integer minimalTreeDepth = this.bitArrayToFragment.get(currentHash);
 		if(minimalTreeDepth == null) {
 			this.bitArrayToFragment.put(currentHash, (int)currentFragment.getTreeDepth());
 			return false;
 		}
-		//if(minimalTreeDepth.equals(currentFragment.getTreeDepth()))
+
 		if(minimalTreeDepth >= currentFragment.getTreeDepth())
 			return false;
 		
 		return true;
+	}
+
+	/**
+	 * 
+	 */
+	public void assignScores() {
+		this.candidate.setProperty(scoreType, scoreCollection.getScore(0).getValue());
+	}
+	
+	/**
+	 * 
+	 */
+	public void assignInterimScoresResults() {
+		this.candidate.setProperty(scoreType + "_Values", scoreCollection.getScore(0).getOptimalValuesToString());
 	}
 }

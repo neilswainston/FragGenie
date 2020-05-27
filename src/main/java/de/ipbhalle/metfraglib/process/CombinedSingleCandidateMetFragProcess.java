@@ -3,7 +3,6 @@ package de.ipbhalle.metfraglib.process;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import de.ipbhalle.metfraglib.fragmenterassignerscorer.AbstractFragmenterAssignerScorer;
 import de.ipbhalle.metfraglib.fragmenterassignerscorer.TopDownFragmenterAssignerScorer;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.SortedTandemMassPeakList;
@@ -54,7 +53,7 @@ public class CombinedSingleCandidateMetFragProcess implements Runnable {
 	@Override
 	public void run() {
 		try {
-			final AbstractFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(this.settings, this.candidate, this.peakList);
+			final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(this.settings, this.candidate, this.peakList);
 			scorer.calculate();
 			scorer.assignInterimScoresResults();
 			this.candidate.resetPrecursorMolecule();
