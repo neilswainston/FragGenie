@@ -51,7 +51,7 @@ public class MetFrag {
 		// Set peak list and candidate list:
 		settings.set(VariableNames.PEAK_LIST_PATH_NAME, peakList);
 		settings.set(VariableNames.LOCAL_DATABASE_PATH_NAME, candidateList);
-		settings.set(VariableNames.METFRAG_DATABASE_TYPE_NAME, "LocalCSV");
+		settings.set(VariableNames.METFRAG_DATABASE_TYPE_NAME, "LocalCSV"); //$NON-NLS-1$
 
 		// Set other parameters:
 		settings.set(VariableNames.PRECURSOR_NEUTRAL_MASS_NAME, Double.valueOf(mz[mz.length - 1]));
@@ -72,12 +72,12 @@ public class MetFrag {
 			final Map<String, Object> properties = candidate.getProperties();
 			
 			// Get index:
-			final String identifier = (String)properties.remove("Identifier");
-			properties.put("index", Integer.valueOf(Integer.parseInt(identifier.split("|")[0])));
+			final String identifier = (String)properties.remove("Identifier"); //$NON-NLS-1$
+			properties.put("index", Integer.valueOf(Integer.parseInt(identifier.split("|")[0]))); //$NON-NLS-1$ //$NON-NLS-2$
 			
 			// Remove unnecessary fields:
-			properties.remove("InChI");
-			properties.remove("empty");
+			properties.remove("InChI"); //$NON-NLS-1$
+			properties.remove("empty"); //$NON-NLS-1$
 			
 			results.add(properties);
 		}
@@ -126,12 +126,12 @@ public class MetFrag {
 	private static String writeCandidateList(final String[] smiles) throws IOException {
 		try (final StringWriter writer = new StringWriter()) {
 			// Write header:
-			writer.write("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," + VariableNames.INCHI_NAME);
+			writer.write("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," + VariableNames.INCHI_NAME); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			writer.write(System.lineSeparator());
 			
 			// Write data:
 			for (int i = 0; i < smiles.length; i++) {
-				writer.write("," + i + "," + smiles[i] + ",\"INVALID_INCHI\"");
+				writer.write("," + i + "," + smiles[i] + ",\"INVALID_INCHI\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				writer.write(System.lineSeparator());
 			}
 			
@@ -152,7 +152,7 @@ public class MetFrag {
 
 		try (final StringWriter writer = new StringWriter()) {
 			for (int i = 0; i < mz.length; i++) {
-				writer.write(mz[i] + " " + inten[i]);
+				writer.write(mz[i] + " " + inten[i]); //$NON-NLS-1$
 				writer.write(System.lineSeparator());
 			}
 			
@@ -169,7 +169,7 @@ public class MetFrag {
 	 */
 	private static IAtomContainer[] generateAllFragments(final String smiles, final int maximumTreeDepth) throws Exception {
 		final MetFragGlobalSettings settings = getSettings();
-		final ICandidate candidate = new TopDownPrecursorCandidate(null, "IDENTIFIER", smiles);
+		final ICandidate candidate = new TopDownPrecursorCandidate(null, "IDENTIFIER", smiles); //$NON-NLS-1$
 		candidate.setUseSmiles(true);
 		candidate.initialisePrecursorCandidate();
 
@@ -214,7 +214,7 @@ public class MetFrag {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		final double[] result = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2);
+		final double[] result = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2); //$NON-NLS-1$
 		System.out.println(result);
 	}
 }

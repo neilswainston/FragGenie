@@ -44,9 +44,9 @@ public class MetFragMatchServlet extends HttpServlet {
 	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
 		try(final JsonReader jsonReader = MetFragUtils.getReader(request)) {
 			final JsonObject json = jsonReader.readObject();
-			final JsonArray smiles = (JsonArray)json.get("smiles");
-			final JsonArray mz = (JsonArray)json.get("mz");
-			final JsonArray inten = (JsonArray)json.get("inten");
+			final JsonArray smiles = (JsonArray)json.get("smiles"); //$NON-NLS-1$
+			final JsonArray mz = (JsonArray)json.get("mz"); //$NON-NLS-1$
+			final JsonArray inten = (JsonArray)json.get("inten"); //$NON-NLS-1$
 			
 			try {
 				run(MetFragUtils.toStringArray(smiles), MetFragUtils.toDoubleArray(mz), MetFragUtils.toIntArray(inten), response);
@@ -89,13 +89,13 @@ public class MetFragMatchServlet extends HttpServlet {
 					resBuilder.add(entry.getKey(), (String)value);
 				}
 				else if(value instanceof Byte) {
-					resBuilder.add(entry.getKey(), (Byte)value);
+					resBuilder.add(entry.getKey(), ((Byte)value).intValue());
 				}
 				else if(value instanceof Integer) {
-					resBuilder.add(entry.getKey(), (Integer)value);
+					resBuilder.add(entry.getKey(), ((Integer)value).intValue());
 				}
 				else if(value instanceof Double) {
-					resBuilder.add(entry.getKey(), (Double)value);
+					resBuilder.add(entry.getKey(), ((Double)value).doubleValue());
 				}
 			}
 			

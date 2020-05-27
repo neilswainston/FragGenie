@@ -64,8 +64,8 @@ public abstract class MetFragUtils {
 	 * @throws IOException
 	 */
 	protected static void sendJson(final Object json, final HttpServletResponse response) throws IOException {
-		response.setContentType("application/json");
-		response.setCharacterEncoding("UTF-8");
+		response.setContentType("application/json"); //$NON-NLS-1$
+		response.setCharacterEncoding("UTF-8"); //$NON-NLS-1$
 		response.getWriter().print(json.toString());
 	}
 	

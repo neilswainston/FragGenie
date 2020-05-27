@@ -23,8 +23,8 @@ public class MetFragTest {
 	public void testMatch() throws Exception {
 		final List<Map<String, Object>> results = (List<Map<String, Object>>)MetFrag.match(MetFragTestData.SMILES, MetFragTestData.MZ, MetFragTestData.INTEN);
 		Assert.assertEquals(5, results.size());
-		Assert.assertEquals("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", results.get(0).get("SMILES"));
-		Assert.assertEquals(1188.6403357016206, (Double)results.get(0).get("FragmenterScore"), 1e-6);
+		Assert.assertEquals("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", results.get(0).get("SMILES")); //$NON-NLS-1$ //$NON-NLS-2$
+		Assert.assertEquals(1188.6403357016206, ((Double)results.get(0).get("FragmenterScore")).doubleValue(), 1e-6); //$NON-NLS-1$
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class MetFragTest {
 				245.0459727, 247.041636268, 248.02565185599997, 248.025651856,
 				248.0494613, 249.033476888, 264.04437592};
 		
-		final double[] fragments = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2);
+		final double[] fragments = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2); //$NON-NLS-1$
 		Assert.assertArrayEquals(expected, fragments, 1e-12);
 	}
 }

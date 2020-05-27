@@ -43,10 +43,10 @@ public class MetFragFragmentServlet extends HttpServlet {
 	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
 		try(final JsonReader jsonReader = MetFragUtils.getReader(request)) {
 			final JsonObject json = jsonReader.readObject();
-			final JsonArray smiles = (JsonArray)json.get("smiles");
+			final JsonArray smiles = (JsonArray)json.get("smiles"); //$NON-NLS-1$
 			
 			try {
-				run(MetFragUtils.toStringArray(smiles), json.getInt("maximumTreeDepth"), response);
+				run(MetFragUtils.toStringArray(smiles), json.getInt("maximumTreeDepth"), response); //$NON-NLS-1$
 			}
 			catch(Exception e) {
 				MetFragUtils.handleException(e);

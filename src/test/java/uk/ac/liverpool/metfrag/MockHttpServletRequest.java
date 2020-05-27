@@ -43,12 +43,12 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	 * 
 	 * @param query
 	 */
-	public MockHttpServletRequest(final String query) {		
-		this.query = query;
+	public MockHttpServletRequest(final String qry) {		
+		this.query = qry;
 	}
 
 	@Override
-	public Object getAttribute(String name) {
+	public Object getAttribute(final String name) {
 		// Empty block
 		return null;
 	}
@@ -66,7 +66,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public void setCharacterEncoding(String env) throws UnsupportedEncodingException {
+	public void setCharacterEncoding(final String env) throws UnsupportedEncodingException {
 		// Empty block
 
 	}
@@ -96,7 +96,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public String getParameter(String name) {
+	public String getParameter(final String name) {
 		// Empty block
 		return null;
 	}
@@ -108,7 +108,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public String[] getParameterValues(String name) {
+	public String[] getParameterValues(final String name) {
 		// Empty block
 		return null;
 	}
@@ -161,13 +161,13 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public void setAttribute(String name, Object o) {
+	public void setAttribute(final String name, final Object o) {
 		// Empty block
 
 	}
 
 	@Override
-	public void removeAttribute(String name) {
+	public void removeAttribute(final String name) {
 		// Empty block
 
 	}
@@ -191,13 +191,13 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public RequestDispatcher getRequestDispatcher(String path) {
+	public RequestDispatcher getRequestDispatcher(final String path) {
 		// Empty block
 		return null;
 	}
 
 	@Override
-	public String getRealPath(String path) {
+	public String getRealPath(final String path) {
 		// Empty block
 		return null;
 	}
@@ -239,7 +239,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse)
+	public AsyncContext startAsync(final ServletRequest servletRequest, final ServletResponse servletResponse)
 			throws IllegalStateException {
 		// Empty block
 		return null;
@@ -282,19 +282,19 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public long getDateHeader(String name) {
+	public long getDateHeader(final String name) {
 		// Empty block
 		return 0;
 	}
 
 	@Override
-	public String getHeader(String name) {
+	public String getHeader(final String name) {
 		// Empty block
 		return null;
 	}
 
 	@Override
-	public Enumeration<String> getHeaders(String name) {
+	public Enumeration<String> getHeaders(final String name) {
 		// Empty block
 		return null;
 	}
@@ -306,7 +306,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public int getIntHeader(String name) {
+	public int getIntHeader(final String name) {
 		// Empty block
 		return 0;
 	}
@@ -348,7 +348,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public boolean isUserInRole(String role) {
+	public boolean isUserInRole(final String role) {
 		// Empty block
 		return false;
 	}
@@ -384,7 +384,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public HttpSession getSession(boolean create) {
+	public HttpSession getSession(final boolean create) {
 		// Empty block
 		return null;
 	}
@@ -426,13 +426,13 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
+	public boolean authenticate(final HttpServletResponse response) throws IOException, ServletException {
 		// Empty block
 		return false;
 	}
 
 	@Override
-	public void login(String username, String password) throws ServletException {
+	public void login(final String username, final String password) throws ServletException {
 		// Empty block
 
 	}
@@ -450,13 +450,13 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	@Override
-	public Part getPart(String name) throws IOException, ServletException {
+	public Part getPart(final String name) throws IOException, ServletException {
 		// Empty block
 		return null;
 	}
 
 	@Override
-	public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
+	public <T extends HttpUpgradeHandler> T upgrade(final Class<T> handlerClass) throws IOException, ServletException {
 		// Empty block
 		return null;
 	}

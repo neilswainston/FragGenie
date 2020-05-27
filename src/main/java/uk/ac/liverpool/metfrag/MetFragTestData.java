@@ -13,11 +13,11 @@ public class MetFragTestData {
  * 
  */
 public final static String[] SMILES = new String[] {
-		"C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F",
-		"C(C(=O)OC1=NC(=C(C(=C1Cl)N)Cl)F)O",
-		"C1(=C(C(=NC(=C1Cl)F)C(C(=O)O)O)Cl)N",
-		"CC(=O)OOC1=NC(=C(C(=C1Cl)N)Cl)F",
-		"C(C(CSCP(=O)([O-])[O-])C(=O)[O-])C(=O)[O-]"
+		"C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", //$NON-NLS-1$
+		"C(C(=O)OC1=NC(=C(C(=C1Cl)N)Cl)F)O", //$NON-NLS-1$
+		"C1(=C(C(=NC(=C1Cl)F)C(C(=O)O)O)Cl)N", //$NON-NLS-1$
+		"CC(=O)OOC1=NC(=C(C(=C1Cl)N)Cl)F", //$NON-NLS-1$
+		"C(C(CSCP(=O)([O-])[O-])C(=O)[O-])C(=O)[O-]" //$NON-NLS-1$
 };
 
 /**

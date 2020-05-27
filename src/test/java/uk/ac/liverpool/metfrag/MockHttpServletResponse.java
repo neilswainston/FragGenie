@@ -42,25 +42,25 @@ class MockHttpServletResponse implements HttpServletResponse {
 	/**
 	 * 
 	 */
-	private PrintWriter writer = new PrintWriter(writerContent);
+	private PrintWriter writer = new PrintWriter(this.writerContent);
 
 	@Override
-	public void setContentType(String contentType) {
-		this.contentType = contentType;
+	public void setContentType(final String contType) {
+		this.contentType = contType;
 	}
 
 	@Override
 	public String getContentType() {
-		return contentType;
+		return this.contentType;
 	}
 
 	@Override
 	public PrintWriter getWriter() throws IOException {
-		return writer;
+		return this.writer;
 	}
 
 	public StringWriter getWriterContent() {
-		return writerContent;
+		return this.writerContent;
 	}
 
 	@Override
@@ -75,7 +75,7 @@ class MockHttpServletResponse implements HttpServletResponse {
 
 	@Override
 	public String getCharacterEncoding() {
-		return encoding;
+		return this.encoding;
 	}
 
 	@Override
@@ -109,8 +109,8 @@ class MockHttpServletResponse implements HttpServletResponse {
 	}
 
 	@Override
-	public void setCharacterEncoding(final String encoding) {
-		this.encoding = encoding;
+	public void setCharacterEncoding(final String enc) {
+		this.encoding = enc;
 	}
 
 	@Override

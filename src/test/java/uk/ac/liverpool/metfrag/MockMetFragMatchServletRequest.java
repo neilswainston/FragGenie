@@ -43,9 +43,9 @@ public class MockMetFragMatchServletRequest extends MockHttpServletRequest {
 			intenBuilder.add(value);
 		}
 		
-		builder.add("smiles", smilesBuilder.build());
-		builder.add("mz", mzBuilder.build());
-		builder.add("inten", intenBuilder.build());
+		builder.add("smiles", smilesBuilder.build()); //$NON-NLS-1$
+		builder.add("mz", mzBuilder.build()); //$NON-NLS-1$
+		builder.add("inten", intenBuilder.build()); //$NON-NLS-1$
 		
 		return builder.build().toString();
 	}

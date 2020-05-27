@@ -33,8 +33,8 @@ public class MockMetFragFragmentServletRequest extends MockHttpServletRequest {
 			smilesBuilder.add(value);
 		}
 		
-		builder.add("smiles", smilesBuilder.build());
-		builder.add("maximumTreeDepth", 2);
+		builder.add("smiles", smilesBuilder.build()); //$NON-NLS-1$
+		builder.add("maximumTreeDepth", 2); //$NON-NLS-1$
 		
 		return builder.build().toString();
 	}

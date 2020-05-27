@@ -46,8 +46,8 @@ public class MetFragFragmentServletTest {
 	 * @param response
 	 */
 	private static void verify(final MockHttpServletResponse response) {
-		Assert.assertEquals("application/json", response.getContentType());
-		Assert.assertEquals("UTF-8", response.getCharacterEncoding());
+		Assert.assertEquals("application/json", response.getContentType()); //$NON-NLS-1$
+		Assert.assertEquals("UTF-8", response.getCharacterEncoding()); //$NON-NLS-1$
 
 		final String resp = response.getWriterContent().toString();
 
