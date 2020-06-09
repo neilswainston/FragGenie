@@ -33,17 +33,17 @@ import javax.servlet.http.Part;
  * @author neilswainston
  */
 public class MockHttpServletRequest implements HttpServletRequest {
-	
+
 	/**
 	 * 
 	 */
 	private final String query;
-	
+
 	/**
 	 * 
 	 * @param query
 	 */
-	public MockHttpServletRequest(final String qry) {		
+	public MockHttpServletRequest(final String qry) {
 		this.query = qry;
 	}
 

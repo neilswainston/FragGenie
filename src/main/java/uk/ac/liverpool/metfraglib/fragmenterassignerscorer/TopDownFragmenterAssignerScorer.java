@@ -8,16 +8,14 @@ import java.util.Queue;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import uk.ac.liverpool.metfraglib.fragment.AbstractFragment;
-import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
-import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragmentWrapper;
-import de.ipbhalle.metfraglib.fragment.DefaultBitArrayFragment;
-import uk.ac.liverpool.metfraglib.fragmenter.TopDownNeutralLossFragmenter;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.interfaces.IFragment;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
-import de.ipbhalle.metfraglib.precursor.AbstractTopDownBitArrayPrecursor;
+import uk.ac.liverpool.metfraglib.fragment.AbstractFragment;
+import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
+import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragmentWrapper;
+import uk.ac.liverpool.metfraglib.fragmenter.TopDownNeutralLossFragmenter;
 
 public class TopDownFragmenterAssignerScorer {
 
@@ -30,40 +28,40 @@ public class TopDownFragmenterAssignerScorer {
 	 * 
 	 */
 	private final Map<String, Integer> bitArrayToFragment = new HashMap<>();
-	
+
 	/**
 	 * 
 	 */
 	private final boolean positiveMode = true;
-	
+
 	/**
 	 * 
 	 */
 	private final int maximumTreeDepth = 2;
-	
+
 	/**
 	 * 
 	 */
 	private final ICandidate candidate;
-	
+
 	/**
 	 * 
 	 */
 	private final TopDownNeutralLossFragmenter fragmenter;
-	
+
 	/**
 	 * 
 	 * @param settings
 	 * @param candidate
 	 */
 	public TopDownFragmenterAssignerScorer(final ICandidate candidate) throws Exception {
-		
+
 		this.candidate = candidate;
 		this.candidate.initialisePrecursorCandidate();
 		this.candidate.setProperty(VariableNames.MAXIMUM_TREE_DEPTH_NAME, Integer.valueOf(this.maximumTreeDepth));
-		
+
 		this.fragmenter = new TopDownNeutralLossFragmenter(this.candidate, this.maximumTreeDepth);
-		
+
 		this.logger.setLevel(Level.ALL);
 	}
 
@@ -75,10 +73,11 @@ public class TopDownFragmenterAssignerScorer {
 		final IMolecularStructure candidatePrecursor = this.candidate.getPrecursorMolecule();
 		// generate root fragment to start fragmentation
 		final IFragment root = candidatePrecursor.toFragment();
-		
+
 		Queue<AbstractTopDownBitArrayFragmentWrapper> toProcessFragments = new LinkedList<>();
 
-		AbstractTopDownBitArrayFragmentWrapper rootFragmentWrapper = new AbstractTopDownBitArrayFragmentWrapper(root, Integer.valueOf(0));
+		AbstractTopDownBitArrayFragmentWrapper rootFragmentWrapper = new AbstractTopDownBitArrayFragmentWrapper(root,
+				Integer.valueOf(0));
 		toProcessFragments.add(rootFragmentWrapper);
 
 		/*
@@ -96,7 +95,8 @@ public class TopDownFragmenterAssignerScorer {
 				AbstractTopDownBitArrayFragmentWrapper wrappedPrecursorFragment = toProcessFragments.poll();
 
 				if (((AbstractFragment) wrappedPrecursorFragment.getWrappedFragment()).isDiscardedForFragmentation()) {
-					AbstractTopDownBitArrayFragment clonedFragment = (AbstractTopDownBitArrayFragment) wrappedPrecursorFragment.getWrappedFragment().clone(candidatePrecursor);
+					AbstractTopDownBitArrayFragment clonedFragment = (AbstractTopDownBitArrayFragment) wrappedPrecursorFragment
+							.getWrappedFragment().clone(candidatePrecursor);
 					clonedFragment.setAsDiscardedForFragmentation();
 					if (clonedFragment.getTreeDepth() < this.maximumTreeDepth)
 						newToProcessFragments.add(new AbstractTopDownBitArrayFragmentWrapper(clonedFragment,
@@ -142,12 +142,12 @@ public class TopDownFragmenterAssignerScorer {
 					byte matched = -1;
 					int tempPeakPointer = currentPeakPointer;
 					while (matched != 1 && tempPeakPointer >= 0) {
-					
+
 						/*
 						 * calculate match
 						 */
 						matched = currentFragment.matchToPeak(candidatePrecursor, 2, this.positiveMode);
-						
+
 						/*
 						 * if the mass of the current fragment was greater than the peak mass then
 						 * assign the current peak ID to the peak IDs of the child fragments as they
@@ -186,7 +186,7 @@ public class TopDownFragmenterAssignerScorer {
 	private boolean wasAlreadyGeneratedByHashtable(final AbstractTopDownBitArrayFragment currentFragment) {
 		String currentHash = currentFragment.getAtomsFastBitArray().toString();
 		Integer minimalTreeDepth = this.bitArrayToFragment.get(currentHash);
-		
+
 		if (minimalTreeDepth == null) {
 			this.bitArrayToFragment.put(currentHash, (int) currentFragment.getTreeDepth());
 			return false;

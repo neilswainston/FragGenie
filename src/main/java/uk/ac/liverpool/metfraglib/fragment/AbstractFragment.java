@@ -1,9 +1,10 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
+import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
 import de.ipbhalle.metfraglib.interfaces.IFragment;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 
-public abstract class AbstractFragment implements IFragment{
+public abstract class AbstractFragment implements IFragment {
 
 	protected int ID;
 	protected byte treeDepth;
@@ -33,13 +34,11 @@ public abstract class AbstractFragment implements IFragment{
 	 * @throws AtomTypeNotKnownFromInputListException
 	 */
 
-	
 	@Override
 	public void setID(int ID) {
 		this.ID = ID;
 	}
 
-	
 	@Override
 	public int getID() {
 		return this.ID;
@@ -50,25 +49,22 @@ public abstract class AbstractFragment implements IFragment{
 	 * 
 	 * @return
 	 */
-	
+
 	@Override
 	public byte getTreeDepth() {
 		return this.treeDepth;
 	}
 
-	
 	@Override
 	public boolean hasMatched() {
 		return this.hasMatched;
 	}
 
-	
 	@Override
 	public void setHasMatched() {
 		this.hasMatched = true;
 	}
 
-	
 	@Override
 	public void setIsBestMatchedFragment(boolean value) {
 		this.isBestMatchedFragment = value;
@@ -98,7 +94,7 @@ public abstract class AbstractFragment implements IFragment{
 	 * 
 	 * @return
 	 */
-	
+
 	@Override
 	public abstract IFragment clone(IMolecularStructure precursorMolecule);
 }

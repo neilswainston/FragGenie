@@ -159,8 +159,8 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 						.equals(this.detectedNeutralLosses[i].getNeutralLossAtomFastBitArray(ii))) {
 					newGeneratedTopDownFragments[1].getMolecularFormula(this.candidate.getPrecursorMolecule())
 							.setNumberHydrogens((short) (newGeneratedTopDownFragments[1]
-									.getMolecularFormula(this.candidate.getPrecursorMolecule())
-									.getNumberHydrogens() + this.detectedNeutralLosses[i].getHydrogenDifference()));
+									.getMolecularFormula(this.candidate.getPrecursorMolecule()).getNumberHydrogens()
+									+ this.detectedNeutralLosses[i].getHydrogenDifference()));
 					/*
 					 * check for previous broken bonds caused by neutral loss
 					 */
@@ -175,8 +175,7 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 							continue;
 						}
 						if (index != -1) {
-							newGeneratedTopDownFragments[1]
-									.getMolecularFormula(this.candidate.getPrecursorMolecule())
+							newGeneratedTopDownFragments[1].getMolecularFormula(this.candidate.getPrecursorMolecule())
 									.setNumberHydrogens((short) (newGeneratedTopDownFragments[1]
 											.getMolecularFormula(this.candidate.getPrecursorMolecule())
 											.getNumberHydrogens()
@@ -189,8 +188,8 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 						.equals(this.detectedNeutralLosses[i].getNeutralLossAtomFastBitArray(ii))) {
 					newGeneratedTopDownFragments[0].getMolecularFormula(this.candidate.getPrecursorMolecule())
 							.setNumberHydrogens((short) (newGeneratedTopDownFragments[0]
-									.getMolecularFormula(this.candidate.getPrecursorMolecule())
-									.getNumberHydrogens() + this.detectedNeutralLosses[i].getHydrogenDifference()));
+									.getMolecularFormula(this.candidate.getPrecursorMolecule()).getNumberHydrogens()
+									+ this.detectedNeutralLosses[i].getHydrogenDifference()));
 					// newGeneratedTopDownFragments[0].setTreeDepth((byte)(newGeneratedTopDownFragments[0].getTreeDepth()
 					// - 1));
 					/*
@@ -207,8 +206,7 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 							continue;
 						}
 						if (index != -1) {
-							newGeneratedTopDownFragments[0]
-									.getMolecularFormula(this.candidate.getPrecursorMolecule())
+							newGeneratedTopDownFragments[0].getMolecularFormula(this.candidate.getPrecursorMolecule())
 									.setNumberHydrogens((short) (newGeneratedTopDownFragments[0]
 											.getMolecularFormula(this.candidate.getPrecursorMolecule())
 											.getNumberHydrogens()

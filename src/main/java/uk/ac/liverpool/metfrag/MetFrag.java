@@ -16,12 +16,12 @@ import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
 import de.ipbhalle.metfraglib.candidate.TopDownPrecursorCandidate;
-import uk.ac.liverpool.metfraglib.fragmenterassignerscorer.TopDownFragmenterAssignerScorer;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.CandidateList;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.process.CombinedMetFragProcess;
 import de.ipbhalle.metfraglib.settings.MetFragGlobalSettings;
+import uk.ac.liverpool.metfraglib.fragmenterassignerscorer.TopDownFragmenterAssignerScorer;
 
 /**
  * 
@@ -169,10 +169,9 @@ public class MetFrag {
 		candidate.setUseSmiles(true);
 		candidate.initialisePrecursorCandidate();
 
-
 		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(candidate);
 		scorer.calculate();
-		
+
 		final IAtomContainer[] fragments = new IAtomContainer[0];
 
 		return fragments;

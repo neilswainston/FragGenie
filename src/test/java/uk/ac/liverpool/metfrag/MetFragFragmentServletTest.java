@@ -29,7 +29,7 @@ public class MetFragFragmentServletTest {
 		new MetFragFragmentServlet().doGet(null, response);
 		verify(response);
 	}
-	
+
 	/**
 	 * 
 	 * @throws IOException
@@ -40,7 +40,7 @@ public class MetFragFragmentServletTest {
 		new MetFragFragmentServlet().doPost(new MockMetFragFragmentServletRequest(), response);
 		verify(response);
 	}
-	
+
 	/**
 	 * 
 	 * @param response
@@ -51,7 +51,7 @@ public class MetFragFragmentServletTest {
 
 		final String resp = response.getWriterContent().toString();
 
-		try(final JsonReader jsonReader = Json.createReader(new StringReader(resp))) {
+		try (final JsonReader jsonReader = Json.createReader(new StringReader(resp))) {
 			final JsonArray results = jsonReader.readArray();
 			Assert.assertEquals(5, results.size());
 		}

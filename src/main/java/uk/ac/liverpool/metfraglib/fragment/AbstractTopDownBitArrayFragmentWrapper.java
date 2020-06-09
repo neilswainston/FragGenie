@@ -11,8 +11,7 @@ public class AbstractTopDownBitArrayFragmentWrapper {
 		this.wrappedFragment = wrappedFragment;
 	}
 
-	public AbstractTopDownBitArrayFragmentWrapper(IFragment root,
-			Integer currentPeakIndexPointer) {
+	public AbstractTopDownBitArrayFragmentWrapper(IFragment root, Integer currentPeakIndexPointer) {
 		this.wrappedFragment = root;
 		this.currentPeakIndexPointer = currentPeakIndexPointer;
 	}

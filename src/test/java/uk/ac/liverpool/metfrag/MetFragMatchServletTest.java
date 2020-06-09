@@ -29,7 +29,7 @@ public class MetFragMatchServletTest {
 		new MetFragMatchServlet().doGet(null, response);
 		verify(response);
 	}
-	
+
 	/**
 	 * 
 	 * @throws IOException
@@ -40,7 +40,7 @@ public class MetFragMatchServletTest {
 		new MetFragMatchServlet().doPost(new MockMetFragMatchServletRequest(), response);
 		verify(response);
 	}
-	
+
 	/**
 	 * 
 	 * @param response
@@ -51,10 +51,11 @@ public class MetFragMatchServletTest {
 
 		final String resp = response.getWriterContent().toString();
 
-		try(final JsonReader jsonReader = Json.createReader(new StringReader(resp))) {
+		try (final JsonReader jsonReader = Json.createReader(new StringReader(resp))) {
 			final JsonArray results = jsonReader.readArray();
 			Assert.assertEquals(5, results.size());
-			Assert.assertEquals(1188.6403357016206, results.getJsonObject(0).getJsonNumber("FragmenterScore").doubleValue(), 1e-6); //$NON-NLS-1$
+			Assert.assertEquals(1188.6403357016206,
+					results.getJsonObject(0).getJsonNumber("FragmenterScore").doubleValue(), 1e-6); //$NON-NLS-1$
 		}
 	}
 }

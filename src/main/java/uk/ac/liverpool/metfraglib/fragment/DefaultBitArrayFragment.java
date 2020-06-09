@@ -1,6 +1,5 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
-
 import org.openscience.cdk.interfaces.IAtomContainer;
 
 import de.ipbhalle.metfraglib.FastBitArray;
@@ -61,7 +60,6 @@ public class DefaultBitArrayFragment extends AbstractFragment {
 		this.treeDepth = 0;
 	}
 
-	
 	@Override
 	public double getMonoisotopicMass(IMolecularStructure precursorMolecule) {
 		// return this.molecularFormula.getMonoisotopicMass();
@@ -74,7 +72,6 @@ public class DefaultBitArrayFragment extends AbstractFragment {
 		return mass;
 	}
 
-	
 	public byte matchToPeak(IMolecularStructure precursorMolecule, int precursorIonTypeIndex, boolean isPositive) {
 
 		double[] ionisationTypeMassCorrection = new double[] {
@@ -83,10 +80,10 @@ public class DefaultBitArrayFragment extends AbstractFragment {
 
 		for (int i = 0; i < ionisationTypeMassCorrection.length; i++) {
 			double currentFragmentMass = this.getMonoisotopicMass(precursorMolecule) + ionisationTypeMassCorrection[i];
-			
+
 			System.out.println(currentFragmentMass);
 		}
-		
+
 		return -1;
 	}
 
@@ -106,7 +103,6 @@ public class DefaultBitArrayFragment extends AbstractFragment {
 		this.numberHydrogens = (short) numberHydrogens;
 	}
 
-	
 	@Override
 	public IMolecularFormula getMolecularFormula(IMolecularStructure precursorMolecule) {
 		try {
@@ -119,16 +115,15 @@ public class DefaultBitArrayFragment extends AbstractFragment {
 		return null;
 	}
 
-
 	public void setTreeDepth(byte treeDepth) {
 		this.treeDepth = treeDepth;
 	}
-	
+
 	@Override
 	public byte getTreeDepth() {
 		return this.treeDepth;
 	}
-	
+
 	@Override
 	public int[] getBrokenBondIndeces() {
 		return this.brokenBondsFastBitArray.getSetIndeces();
@@ -241,12 +236,12 @@ public class DefaultBitArrayFragment extends AbstractFragment {
 	@Override
 	public void nullify() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void shallowNullify() {
 		// TODO Auto-generated method stub
-		
+
 	}
 }
