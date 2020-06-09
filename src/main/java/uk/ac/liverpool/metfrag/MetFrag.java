@@ -16,11 +16,9 @@ import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
 import de.ipbhalle.metfraglib.candidate.TopDownPrecursorCandidate;
-import de.ipbhalle.metfraglib.fragmenter.TopDownFragmenter;
-import de.ipbhalle.metfraglib.fragmenter.TopDownNeutralLossFragmenter;
+import uk.ac.liverpool.metfraglib.fragmenterassignerscorer.TopDownFragmenterAssignerScorer;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.CandidateList;
-import de.ipbhalle.metfraglib.list.FragmentList;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.process.CombinedMetFragProcess;
 import de.ipbhalle.metfraglib.settings.MetFragGlobalSettings;
@@ -55,11 +53,8 @@ public class MetFrag {
 		// Set other parameters:
 		settings.set(VariableNames.PRECURSOR_NEUTRAL_MASS_NAME, Double.valueOf(mz[mz.length - 1]));
 
-		// Set the following value to retain "original" score of 1197.3267765170576:
-		// settings.set(VariableNames.PRECURSOR_NEUTRAL_MASS_NAME, 253.966126);
-
-		final CombinedMetFragProcess metfragProcess = new CombinedMetFragProcess(settings, Level.ALL);
-		// metfragProcess.retrieveCompounds();
+		final CombinedMetFragProcess metfragProcess = new CombinedMetFragProcess(settings);
+		metfragProcess.retrieveCompounds();
 		metfragProcess.run();
 
 		final CandidateList scoredCandidateList = metfragProcess.getCandidateList();
@@ -170,24 +165,15 @@ public class MetFrag {
 	 */
 	private static IAtomContainer[] generateAllFragments(final String smiles, final int maximumTreeDepth)
 			throws Exception {
-		final MetFragGlobalSettings settings = getSettings();
 		final ICandidate candidate = new TopDownPrecursorCandidate(null, "IDENTIFIER", smiles); //$NON-NLS-1$
 		candidate.setUseSmiles(true);
 		candidate.initialisePrecursorCandidate();
 
-		settings.set(VariableNames.CANDIDATE_NAME, candidate);
-		settings.set(VariableNames.MAXIMUM_TREE_DEPTH_NAME, Byte.valueOf((byte) 2));
-		settings.set(VariableNames.MINIMUM_FRAGMENT_MASS_LIMIT_NAME, Double.valueOf(0.0));
-		settings.set(VariableNames.MAXIMUM_NUMBER_OF_TOPDOWN_FRAGMENT_ADDED_TO_QUEUE,
-				Byte.valueOf((byte) maximumTreeDepth));
 
-		final TopDownFragmenter fragmenter = new TopDownNeutralLossFragmenter(candidate, settings);
-		final FragmentList fragmentList = fragmenter.generateFragments();
-		final IAtomContainer[] fragments = new IAtomContainer[fragmentList.getNumberElements()];
-
-		for (int i = 0; i < fragmentList.getNumberElements(); i++) {
-			fragments[i] = fragmentList.getElement(i).getStructureAsIAtomContainer(candidate.getPrecursorMolecule());
-		}
+		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(candidate);
+		scorer.calculate();
+		
+		final IAtomContainer[] fragments = new IAtomContainer[0];
 
 		return fragments;
 	}

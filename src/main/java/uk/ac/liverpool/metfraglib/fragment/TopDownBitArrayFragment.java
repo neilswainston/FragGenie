@@ -1,11 +1,11 @@
-package de.ipbhalle.metfraglib.fragment;
+package uk.ac.liverpool.metfraglib.fragment;
 
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 import de.ipbhalle.metfraglib.precursor.BitArrayPrecursor;
 import de.ipbhalle.metfraglib.precursor.TopDownBitArrayPrecursor;
 
-public class TopDownBitArrayFragment extends de.ipbhalle.metfraglib.fragment.AbstractTopDownBitArrayFragment {
+public class TopDownBitArrayFragment extends AbstractTopDownBitArrayFragment {
 
 	/**
 	 * constructor setting all bits of atomsFastBitArray and bondsFastBitArray to
@@ -16,21 +16,6 @@ public class TopDownBitArrayFragment extends de.ipbhalle.metfraglib.fragment.Abs
 	 */
 	public TopDownBitArrayFragment(TopDownBitArrayPrecursor precursor) {
 		super(precursor);
-	}
-
-	@Override
-	public TopDownBitArrayFragment clone(IMolecularStructure precursorMolecule)
-			throws AtomTypeNotKnownFromInputListException {
-		TopDownBitArrayFragment clone = new TopDownBitArrayFragment((TopDownBitArrayPrecursor) precursorMolecule,
-				this.atomsFastBitArray.clone(), this.bondsFastBitArray.clone(), this.brokenBondsFastBitArray.clone(),
-				this.getNumberHydrogens());
-
-		clone.setID(this.ID);
-		clone.setTreeDepth(this.treeDepth);
-		if (clone.hasMatched)
-			clone.setHasMatched();
-		clone.setNumberHydrogens(this.getNumberHydrogens());
-		return clone;
 	}
 
 	/**
@@ -51,14 +36,6 @@ public class TopDownBitArrayFragment extends de.ipbhalle.metfraglib.fragment.Abs
 			throws AtomTypeNotKnownFromInputListException {
 		super(atomsFastBitArray, bondsFastBitArray, brokenBondsFastBitArray);
 		this.setNumberHydrogens(numberHydrogens);
-	}
-
-	@Override
-	public boolean equals(Object topDownFastBitArrayFragment) {
-		if (this.atomsFastBitArray
-				.equals(((TopDownBitArrayFragment) topDownFastBitArrayFragment).getAtomsFastBitArray()))
-			return true;
-		return false;
 	}
 
 	/**

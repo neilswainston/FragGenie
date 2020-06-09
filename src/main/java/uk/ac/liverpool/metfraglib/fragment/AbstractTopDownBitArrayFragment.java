@@ -1,7 +1,6 @@
-package de.ipbhalle.metfraglib.fragment;
+package uk.ac.liverpool.metfraglib.fragment;
 
 import de.ipbhalle.metfraglib.FastBitArray;
-import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 import de.ipbhalle.metfraglib.precursor.AbstractTopDownBitArrayPrecursor;
 
@@ -33,7 +32,7 @@ public abstract class AbstractTopDownBitArrayFragment extends DefaultBitArrayFra
 	}
 
 	public abstract AbstractTopDownBitArrayFragment[] traverseMolecule(IMolecularStructure precursorMolecule,
-			short bondIndexToRemove, short[] indecesOfBondConnectedAtoms) throws AtomTypeNotKnownFromInputListException;
+			short bondIndexToRemove, short[] indecesOfBondConnectedAtoms) throws Exception;
 
 	public int getMaximalIndexOfRemovedBond() {
 		return this.brokenBondsFastBitArray.getLastSetBit();
@@ -53,16 +52,6 @@ public abstract class AbstractTopDownBitArrayFragment extends DefaultBitArrayFra
 
 	public void setLastSkippedBond(short lastSkippedBond) {
 		this.lastSkippedBond = lastSkippedBond;
-	}
-
-	@Override
-	public void shallowNullify() {
-		super.shallowNullify();
-	}
-
-	@Override
-	public void nullify() {
-		super.nullify();
 	}
 
 	public byte getAddedToQueueCounts() {

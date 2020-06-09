@@ -1,17 +1,19 @@
-package de.ipbhalle.metfraglib.fragment;
+package uk.ac.liverpool.metfraglib.fragment;
+
+import de.ipbhalle.metfraglib.interfaces.IFragment;
 
 public class AbstractTopDownBitArrayFragmentWrapper {
 
 	protected Integer currentPeakIndexPointer;
-	protected AbstractTopDownBitArrayFragment wrappedFragment;
+	protected IFragment wrappedFragment;
 
 	public AbstractTopDownBitArrayFragmentWrapper(AbstractTopDownBitArrayFragment wrappedFragment) {
 		this.wrappedFragment = wrappedFragment;
 	}
 
-	public AbstractTopDownBitArrayFragmentWrapper(AbstractTopDownBitArrayFragment wrappedFragment,
+	public AbstractTopDownBitArrayFragmentWrapper(IFragment root,
 			Integer currentPeakIndexPointer) {
-		this.wrappedFragment = wrappedFragment;
+		this.wrappedFragment = root;
 		this.currentPeakIndexPointer = currentPeakIndexPointer;
 	}
 
@@ -23,7 +25,7 @@ public class AbstractTopDownBitArrayFragmentWrapper {
 		this.currentPeakIndexPointer = currentPeakIndexPointer;
 	}
 
-	public AbstractTopDownBitArrayFragment getWrappedFragment() {
+	public IFragment getWrappedFragment() {
 		return this.wrappedFragment;
 	}
 

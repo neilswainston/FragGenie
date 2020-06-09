@@ -1,18 +1,17 @@
-package de.ipbhalle.metfraglib.fragment;
+package uk.ac.liverpool.metfraglib.fragment;
 
-import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
 import de.ipbhalle.metfraglib.interfaces.IFragment;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 
-public abstract class AbstractFragment implements IFragment {
+public abstract class AbstractFragment implements IFragment{
 
-	protected Integer ID;
-	protected Byte treeDepth;
+	protected int ID;
+	protected byte treeDepth;
 	// protected final IMolecularStructure precursorMolecule;
-	protected Boolean hasMatched;
-	protected Boolean isBestMatchedFragment;
-	protected Boolean isValidFragment;
-	protected Boolean discardedForFragmentation;
+	protected boolean hasMatched;
+	protected boolean isBestMatchedFragment;
+	protected boolean isValidFragment;
+	protected boolean discardedForFragmentation;
 
 	/**
 	 * constructor setting precursor molecule of fragment
@@ -28,26 +27,19 @@ public abstract class AbstractFragment implements IFragment {
 		this.isBestMatchedFragment = false;
 	}
 
-	@Override
-	public void shallowNullify() {
-		this.discardedForFragmentation = null;
-		this.hasMatched = null;
-		this.isValidFragment = null;
-		this.ID = null;
-		this.isBestMatchedFragment = null;
-	}
-
 	/**
 	 * 
 	 * @return
 	 * @throws AtomTypeNotKnownFromInputListException
 	 */
 
+	
 	@Override
 	public void setID(int ID) {
 		this.ID = ID;
 	}
 
+	
 	@Override
 	public int getID() {
 		return this.ID;
@@ -58,21 +50,25 @@ public abstract class AbstractFragment implements IFragment {
 	 * 
 	 * @return
 	 */
+	
 	@Override
 	public byte getTreeDepth() {
 		return this.treeDepth;
 	}
 
+	
 	@Override
 	public boolean hasMatched() {
 		return this.hasMatched;
 	}
 
+	
 	@Override
 	public void setHasMatched() {
 		this.hasMatched = true;
 	}
 
+	
 	@Override
 	public void setIsBestMatchedFragment(boolean value) {
 		this.isBestMatchedFragment = value;
@@ -101,23 +97,8 @@ public abstract class AbstractFragment implements IFragment {
 	/**
 	 * 
 	 * @return
-	 * @throws AtomTypeNotKnownFromInputListException
 	 */
+	
 	@Override
-	public abstract IFragment clone(IMolecularStructure precursorMolecule)
-			throws AtomTypeNotKnownFromInputListException;
-
-	/**
-	 * delete all objects
-	 */
-	@Override
-	public void nullify() {
-		this.discardedForFragmentation = null;
-		this.hasMatched = null;
-		this.isValidFragment = null;
-		this.ID = null;
-		this.isBestMatchedFragment = null;
-		this.treeDepth = null;
-	}
-
+	public abstract IFragment clone(IMolecularStructure precursorMolecule);
 }
