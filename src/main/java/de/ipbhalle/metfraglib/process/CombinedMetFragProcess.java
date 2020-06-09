@@ -23,12 +23,12 @@ public class CombinedMetFragProcess implements Runnable {
 	 * Settings object containing all parameters.
 	 */
 	private final Settings settings;
-	
+
 	/**
 	 * Candidate list -> later also containing the scored candidates.
 	 */
 	private CandidateList candidateList;
-	
+
 	/**
 	 * 
 	 */
@@ -38,7 +38,7 @@ public class CombinedMetFragProcess implements Runnable {
 	 * 
 	 */
 	private Logger logger = Logger.getLogger(CombinedMetFragProcess.class);
-	
+
 	/**
 	 * 
 	 * @param settings
@@ -48,16 +48,15 @@ public class CombinedMetFragProcess implements Runnable {
 	public CombinedMetFragProcess(final Settings settings, final Level logLevel) throws Exception {
 		this.settings = settings;
 		this.settings.set(VariableNames.BOND_ENERGY_OBJECT_NAME, new BondEnergies());
-		
+
 		this.logger.setLevel(logLevel);
-		
+
 		final IDatabase database = new LocalCSVDatabase(this.settings);
 		java.util.ArrayList<String> databaseCandidateIdentifiers = database.getCandidateIdentifiers();
 		this.candidateList = database.getCandidateByIdentifier(databaseCandidateIdentifiers);
-		
-		
+
 	}
-	
+
 	/*
 	 * starts global metfrag process that starts a single thread for each candidate
 	 * 
@@ -67,36 +66,36 @@ public class CombinedMetFragProcess implements Runnable {
 	public void run() {
 		try {
 			final IPeakListReader peakListReader = new FilteredTandemMassPeakListReader(this.settings);
-			final SortedTandemMassPeakList peakList = (SortedTandemMassPeakList)peakListReader.read();
-			final CombinedSingleCandidateMetFragProcess[] processes = new CombinedSingleCandidateMetFragProcess[this.candidateList.getNumberElements()];
-			
-			for(int i = 0; i < this.candidateList.getNumberElements(); i++) 
-			{
+			final SortedTandemMassPeakList peakList = (SortedTandemMassPeakList) peakListReader.read();
+			final CombinedSingleCandidateMetFragProcess[] processes = new CombinedSingleCandidateMetFragProcess[this.candidateList
+					.getNumberElements()];
+
+			for (int i = 0; i < this.candidateList.getNumberElements(); i++) {
 				this.candidateList.getElement(i).setUseSmiles(true);
-				final MetFragSingleProcessSettings singleProcessSettings = new MetFragSingleProcessSettings(this.settings);
-				processes[i] = new CombinedSingleCandidateMetFragProcess(singleProcessSettings, this.candidateList.getElement(i), peakList, this.logger.getLevel());
+				final MetFragSingleProcessSettings singleProcessSettings = new MetFragSingleProcessSettings(
+						this.settings);
+				processes[i] = new CombinedSingleCandidateMetFragProcess(singleProcessSettings,
+						this.candidateList.getElement(i), peakList, this.logger.getLevel());
 			}
-			
+
 			final ExecutorService executer = Executors.newFixedThreadPool(this.numThreads);
 
-			for(Runnable process : processes) {
+			for (Runnable process : processes) {
 				executer.execute(process);
 			}
-			
+
 			executer.shutdown();
-			
-		    while(!executer.isTerminated())
-			{
+
+			while (!executer.isTerminated()) {
 				Thread.sleep(1000);
 			}
-			
-			this.logger.info("Stored " + this.candidateList.getNumberElements() + " candidate(s)");
-		}
-		catch(Exception e) {
+
+			this.logger.info("Stored " + this.candidateList.getNumberElements() + " candidate(s)"); //$NON-NLS-1$ //$NON-NLS-2$
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @return CandidateList

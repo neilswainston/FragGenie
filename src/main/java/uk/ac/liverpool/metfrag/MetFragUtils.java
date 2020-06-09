@@ -28,14 +28,14 @@ public abstract class MetFragUtils {
 	 * @param e
 	 * @throws IOException
 	 */
-	protected static void handleException(final Exception e) throws IOException{
+	protected static void handleException(final Exception e) throws IOException {
 		e.printStackTrace();
-		
+
 		final Writer writer = new StringWriter();
-        e.printStackTrace(new PrintWriter(writer));
+		e.printStackTrace(new PrintWriter(writer));
 		throw new IOException(writer.toString());
 	}
-	
+
 	/**
 	 * 
 	 * @param request
@@ -44,19 +44,19 @@ public abstract class MetFragUtils {
 	 */
 	protected static JsonReader getReader(final HttpServletRequest request) throws IOException {
 		final StringBuilder builder = new StringBuilder();
-		
-		try(final BufferedReader reader = request.getReader()) {
+
+		try (final BufferedReader reader = request.getReader()) {
 			String line;
-			
-	        while((line = reader.readLine()) != null) {
-	        	builder.append(line).append('\n');
-	        }
+
+			while ((line = reader.readLine()) != null) {
+				builder.append(line).append('\n');
+			}
 		}
 
-	    final String query = builder.toString();
-	    return Json.createReader(new StringReader(query));
+		final String query = builder.toString();
+		return Json.createReader(new StringReader(query));
 	}
-	
+
 	/**
 	 * 
 	 * @param json
@@ -68,7 +68,7 @@ public abstract class MetFragUtils {
 		response.setCharacterEncoding("UTF-8"); //$NON-NLS-1$
 		response.getWriter().print(json.toString());
 	}
-	
+
 	/**
 	 * 
 	 * @param jsonArray
@@ -76,14 +76,14 @@ public abstract class MetFragUtils {
 	 */
 	protected static String[] toStringArray(final JsonArray jsonArray) {
 		final String[] array = new String[jsonArray.size()];
-		
-		for(int i=0; i< jsonArray.size(); i++) {
+
+		for (int i = 0; i < jsonArray.size(); i++) {
 			array[i] = jsonArray.getString(i);
 		}
-		
+
 		return array;
 	}
-	
+
 	/**
 	 * 
 	 * @param jsonArray
@@ -91,14 +91,14 @@ public abstract class MetFragUtils {
 	 */
 	protected static double[] toDoubleArray(final JsonArray jsonArray) {
 		final double[] array = new double[jsonArray.size()];
-		
-		for(int i=0; i< jsonArray.size(); i++) {
+
+		for (int i = 0; i < jsonArray.size(); i++) {
 			array[i] = jsonArray.getJsonNumber(i).doubleValue();
 		}
-		
+
 		return array;
 	}
-	
+
 	/**
 	 * 
 	 * @param jsonArray
@@ -106,14 +106,14 @@ public abstract class MetFragUtils {
 	 */
 	protected static int[] toIntArray(final JsonArray jsonArray) {
 		final int[] array = new int[jsonArray.size()];
-		
-		for(int i=0; i< jsonArray.size(); i++) {
+
+		for (int i = 0; i < jsonArray.size(); i++) {
 			array[i] = jsonArray.getInt(i);
 		}
-		
+
 		return array;
 	}
-	
+
 	/**
 	 * 
 	 * @param array
@@ -121,11 +121,11 @@ public abstract class MetFragUtils {
 	 */
 	protected static JsonArray fromDoubleArray(final double[] array) {
 		final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-		
-		for(final double value : array) {
+
+		for (final double value : array) {
 			arrayBuilder.add(value);
 		}
-		
+
 		return arrayBuilder.build();
 	}
 }

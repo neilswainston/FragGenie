@@ -34,29 +34,28 @@ public class MetFragMatchServlet extends HttpServlet {
 	public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
 		try {
 			run(MetFragTestData.SMILES, MetFragTestData.MZ, MetFragTestData.INTEN, response);
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			MetFragUtils.handleException(e);
 		}
 	}
-	
+
 	@Override
 	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
-		try(final JsonReader jsonReader = MetFragUtils.getReader(request)) {
+		try (final JsonReader jsonReader = MetFragUtils.getReader(request)) {
 			final JsonObject json = jsonReader.readObject();
-			final JsonArray smiles = (JsonArray)json.get("smiles"); //$NON-NLS-1$
-			final JsonArray mz = (JsonArray)json.get("mz"); //$NON-NLS-1$
-			final JsonArray inten = (JsonArray)json.get("inten"); //$NON-NLS-1$
-			
+			final JsonArray smiles = (JsonArray) json.get("smiles"); //$NON-NLS-1$
+			final JsonArray mz = (JsonArray) json.get("mz"); //$NON-NLS-1$
+			final JsonArray inten = (JsonArray) json.get("inten"); //$NON-NLS-1$
+
 			try {
-				run(MetFragUtils.toStringArray(smiles), MetFragUtils.toDoubleArray(mz), MetFragUtils.toIntArray(inten), response);
-			}
-			catch(Exception e) {
+				run(MetFragUtils.toStringArray(smiles), MetFragUtils.toDoubleArray(mz), MetFragUtils.toIntArray(inten),
+						response);
+			} catch (Exception e) {
 				MetFragUtils.handleException(e);
 			}
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param smiles
@@ -65,8 +64,9 @@ public class MetFragMatchServlet extends HttpServlet {
 	 * @param response
 	 * @throws Exception
 	 */
-	private static void run(final String[] smiles, final double[] mz, final int[] inten, final HttpServletResponse response) throws Exception{
-		final Collection<Map<String,Object>> results = MetFrag.match(smiles, mz, inten);
+	private static void run(final String[] smiles, final double[] mz, final int[] inten,
+			final HttpServletResponse response) throws Exception {
+		final Collection<Map<String, Object>> results = MetFrag.match(smiles, mz, inten);
 		final JsonArray json = toJson(results);
 		MetFragUtils.sendJson(json, response);
 	}
@@ -76,32 +76,29 @@ public class MetFragMatchServlet extends HttpServlet {
 	 * @param results
 	 * @return JsonArray
 	 */
-	private static JsonArray toJson(final Collection<Map<String,Object>> results) {
+	private static JsonArray toJson(final Collection<Map<String, Object>> results) {
 		final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
 
-		for(Map<String,Object> result : results) {
+		for (Map<String, Object> result : results) {
 			final JsonObjectBuilder resBuilder = Json.createObjectBuilder();
-			
+
 			for (Map.Entry<String, Object> entry : result.entrySet()) {
 				final Object value = entry.getValue();
-				
-				if(value instanceof String) {
-					resBuilder.add(entry.getKey(), (String)value);
-				}
-				else if(value instanceof Byte) {
-					resBuilder.add(entry.getKey(), ((Byte)value).intValue());
-				}
-				else if(value instanceof Integer) {
-					resBuilder.add(entry.getKey(), ((Integer)value).intValue());
-				}
-				else if(value instanceof Double) {
-					resBuilder.add(entry.getKey(), ((Double)value).doubleValue());
+
+				if (value instanceof String) {
+					resBuilder.add(entry.getKey(), (String) value);
+				} else if (value instanceof Byte) {
+					resBuilder.add(entry.getKey(), ((Byte) value).intValue());
+				} else if (value instanceof Integer) {
+					resBuilder.add(entry.getKey(), ((Integer) value).intValue());
+				} else if (value instanceof Double) {
+					resBuilder.add(entry.getKey(), ((Double) value).doubleValue());
 				}
 			}
-			
+
 			arrayBuilder.add(resBuilder.build());
 		}
-		
+
 		return arrayBuilder.build();
 	}
 }

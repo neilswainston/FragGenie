@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import org.apache.log4j.Level;
-
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
@@ -47,7 +46,7 @@ public class MetFrag {
 
 		// Get settings:
 		final MetFragGlobalSettings settings = getSettings();
-		
+
 		// Set peak list and candidate list:
 		settings.set(VariableNames.PEAK_LIST_PATH_NAME, peakList);
 		settings.set(VariableNames.LOCAL_DATABASE_PATH_NAME, candidateList);
@@ -55,12 +54,12 @@ public class MetFrag {
 
 		// Set other parameters:
 		settings.set(VariableNames.PRECURSOR_NEUTRAL_MASS_NAME, Double.valueOf(mz[mz.length - 1]));
-		
+
 		// Set the following value to retain "original" score of 1197.3267765170576:
 		// settings.set(VariableNames.PRECURSOR_NEUTRAL_MASS_NAME, 253.966126);
 
-		final CombinedMetFragProcess metfragProcess = new CombinedMetFragProcess(settings);
-		metfragProcess.retrieveCompounds();
+		final CombinedMetFragProcess metfragProcess = new CombinedMetFragProcess(settings, Level.ALL);
+		// metfragProcess.retrieveCompounds();
 		metfragProcess.run();
 
 		final CandidateList scoredCandidateList = metfragProcess.getCandidateList();
@@ -70,50 +69,51 @@ public class MetFrag {
 		for (int i = 0; i < scoredCandidateList.getNumberElements(); i++) {
 			final ICandidate candidate = scoredCandidateList.getElement(i);
 			final Map<String, Object> properties = candidate.getProperties();
-			
+
 			// Get index:
-			final String identifier = (String)properties.remove("Identifier"); //$NON-NLS-1$
+			final String identifier = (String) properties.remove("Identifier"); //$NON-NLS-1$
 			properties.put("index", Integer.valueOf(Integer.parseInt(identifier.split("|")[0]))); //$NON-NLS-1$ //$NON-NLS-2$
-			
+
 			// Remove unnecessary fields:
 			properties.remove("InChI"); //$NON-NLS-1$
 			properties.remove("empty"); //$NON-NLS-1$
-			
+
 			results.add(properties);
 		}
 
 		return results;
 	}
-	
+
 	/**
 	 * 
 	 * @param smiles
 	 * @param maximumTreeDepth
 	 * @return double[]
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public static double[] getFragments(final String smiles, final int maximumTreeDepth) throws Exception {
 		// final double PROTON_MASS = 1.00727647;
-		// final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
+		// final SmilesParser parser = new
+		// SmilesParser(SilentChemObjectBuilder.getInstance());
 		// final IAtomContainer molecule = parser.parseSmiles(smiles);
-		
+
 		// Get settings:
 		final IAtomContainer[] fragments = generateAllFragments(smiles, maximumTreeDepth);
 		final Collection<Double> massesSet = new TreeSet<>();
-		
-		for(int i = 0; i < fragments.length; i++)  {
+
+		for (int i = 0; i < fragments.length; i++) {
 			IAtomContainer fragment = fragments[i];
 			final IMolecularFormula formula = MolecularFormulaManipulator.getMolecularFormula(fragment);
 			massesSet.add(Double.valueOf(MolecularFormulaManipulator.getMajorIsotopeMass(formula)));
 		}
-		
+
 		final double[] masses = new double[massesSet.size()];
 		int i = 0;
-		
-		for(final Double mass : massesSet) {
+
+		for (final Double mass : massesSet) {
 			masses[i++] = mass.doubleValue();
 		}
-		
+
 		return masses;
 	}
 
@@ -126,15 +126,16 @@ public class MetFrag {
 	private static String writeCandidateList(final String[] smiles) throws IOException {
 		try (final StringWriter writer = new StringWriter()) {
 			// Write header:
-			writer.write("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," + VariableNames.INCHI_NAME); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			writer.write("empty," + VariableNames.IDENTIFIER_NAME + "," + VariableNames.SMILES_NAME + "," //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					+ VariableNames.INCHI_NAME);
 			writer.write(System.lineSeparator());
-			
+
 			// Write data:
 			for (int i = 0; i < smiles.length; i++) {
 				writer.write("," + i + "," + smiles[i] + ",\"INVALID_INCHI\""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				writer.write(System.lineSeparator());
 			}
-			
+
 			return writer.toString();
 		}
 	}
@@ -155,11 +156,11 @@ public class MetFrag {
 				writer.write(mz[i] + " " + inten[i]); //$NON-NLS-1$
 				writer.write(System.lineSeparator());
 			}
-			
+
 			return writer.toString();
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param smiles
@@ -167,28 +168,30 @@ public class MetFrag {
 	 * @return IAtomContainer[]
 	 * @throws Exception
 	 */
-	private static IAtomContainer[] generateAllFragments(final String smiles, final int maximumTreeDepth) throws Exception {
+	private static IAtomContainer[] generateAllFragments(final String smiles, final int maximumTreeDepth)
+			throws Exception {
 		final MetFragGlobalSettings settings = getSettings();
 		final ICandidate candidate = new TopDownPrecursorCandidate(null, "IDENTIFIER", smiles); //$NON-NLS-1$
 		candidate.setUseSmiles(true);
 		candidate.initialisePrecursorCandidate();
 
 		settings.set(VariableNames.CANDIDATE_NAME, candidate);
-		settings.set(VariableNames.MAXIMUM_TREE_DEPTH_NAME, Byte.valueOf((byte)2));
+		settings.set(VariableNames.MAXIMUM_TREE_DEPTH_NAME, Byte.valueOf((byte) 2));
 		settings.set(VariableNames.MINIMUM_FRAGMENT_MASS_LIMIT_NAME, Double.valueOf(0.0));
-		settings.set(VariableNames.MAXIMUM_NUMBER_OF_TOPDOWN_FRAGMENT_ADDED_TO_QUEUE, Byte.valueOf((byte)maximumTreeDepth));
-		
-		final TopDownFragmenter fragmenter = new TopDownNeutralLossFragmenter(settings);
+		settings.set(VariableNames.MAXIMUM_NUMBER_OF_TOPDOWN_FRAGMENT_ADDED_TO_QUEUE,
+				Byte.valueOf((byte) maximumTreeDepth));
+
+		final TopDownFragmenter fragmenter = new TopDownNeutralLossFragmenter(candidate, settings);
 		final FragmentList fragmentList = fragmenter.generateFragments();
 		final IAtomContainer[] fragments = new IAtomContainer[fragmentList.getNumberElements()];
-		
-		for(int i = 0; i < fragmentList.getNumberElements(); i++) {
+
+		for (int i = 0; i < fragmentList.getNumberElements(); i++) {
 			fragments[i] = fragmentList.getElement(i).getStructureAsIAtomContainer(candidate.getPrecursorMolecule());
 		}
-		
+
 		return fragments;
 	}
-	
+
 	/**
 	 * 
 	 * @return MetFragGlobalSettings
@@ -198,16 +201,16 @@ public class MetFrag {
 
 		// Set logging:
 		settings.set(VariableNames.LOG_LEVEL_NAME, Level.ALL);
-	
+
 		// Use SMILES:
 		settings.set(VariableNames.USE_SMILES_NAME, Boolean.TRUE);
-		
+
 		// Remove pre-filter:
 		settings.set(VariableNames.METFRAG_PRE_PROCESSING_CANDIDATE_FILTER_NAME, new String[0]);
-		
+
 		return settings;
 	}
-	
+
 	/**
 	 * 
 	 * @param args
