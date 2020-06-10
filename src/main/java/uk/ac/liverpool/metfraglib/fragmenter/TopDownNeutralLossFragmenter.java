@@ -1,11 +1,11 @@
 package uk.ac.liverpool.metfraglib.fragmenter;
 
 import java.util.ArrayList;
+import java.util.Queue;
 
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.additionals.NeutralLosses;
-import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
-import de.ipbhalle.metfraglib.fragment.AbstractTopDownBitArrayFragment;
+import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
 import de.ipbhalle.metfraglib.fragment.BitArrayNeutralLoss;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.FragmentList;
@@ -31,7 +31,7 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 	}
 
 	@Override
-	public FragmentList generateFragments() throws AtomTypeNotKnownFromInputListException {
+	public FragmentList generateFragments() throws Exception {
 		FragmentList generatedFragments = new FragmentList();
 		java.util.Queue<AbstractTopDownBitArrayFragment> temporaryFragments = new java.util.LinkedList<>();
 		java.util.Queue<Byte> numberOfFragmentAddedToQueue = new java.util.LinkedList<>();
@@ -40,8 +40,8 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 		/*
 		 * set first fragment as root for fragment generation (precursor)
 		 */
-		AbstractTopDownBitArrayFragment root = ((AbstractTopDownBitArrayPrecursor) this.candidate
-				.getPrecursorMolecule()).toFragment();
+		AbstractTopDownBitArrayFragment root = (AbstractTopDownBitArrayFragment) this.candidate
+				.getPrecursorMolecule().toFragment();
 		root.setID(++this.numberOfGeneratedFragments);
 		root.setWasRingCleavedFragment(false);
 		generatedFragments.addElement(root);
@@ -50,7 +50,7 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 		nextBondIndecesToRemove.add(root.getBondsFastBitArray());
 
 		for (int k = 1; k <= this.maximumTreeDepth; k++) {
-			java.util.Queue<AbstractTopDownBitArrayFragment> newTemporaryFragments = new java.util.LinkedList<>();
+			Queue<AbstractTopDownBitArrayFragment> newTemporaryFragments = new java.util.LinkedList<>();
 			java.util.Queue<Byte> newNumberOfFragmentAddedToQueue = new java.util.LinkedList<>();
 			java.util.Queue<de.ipbhalle.metfraglib.FastBitArray> newNextBondIndecesToRemove = new java.util.LinkedList<>();
 
@@ -226,12 +226,11 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 	/**
 	 * generates all fragments of the given precursor fragment to reach the new tree
 	 * depth
-	 * 
-	 * @throws AtomTypeNotKnownFromInputListException
+	 * @throws Exception 
 	 */
 	@Override
 	public ArrayList<AbstractTopDownBitArrayFragment> getFragmentsOfNextTreeDepth(
-			AbstractTopDownBitArrayFragment precursorFragment) throws AtomTypeNotKnownFromInputListException {
+			AbstractTopDownBitArrayFragment precursorFragment) throws Exception {
 		FastBitArray ringBonds = new FastBitArray(precursorFragment.getBondsFastBitArray().getSize(), false);
 		java.util.Queue<AbstractTopDownBitArrayFragment> ringBondCuttedFragments = new java.util.LinkedList<>();
 		java.util.Queue<Short> lastCuttedBondOfRing = new java.util.LinkedList<>();
@@ -314,7 +313,7 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 	}
 
 	/**
-	 * @throws AtomTypeNotKnownFromInputListException
+	 * @throws Exception 
 	 * 
 	 */
 
@@ -325,7 +324,7 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 	@Override
 	protected void generateFragmentsOfSkippedBonds(
 			ArrayList<AbstractTopDownBitArrayFragment> newGeneratedTopDownFragments,
-			AbstractTopDownBitArrayFragment precursorFragment) throws AtomTypeNotKnownFromInputListException {
+			AbstractTopDownBitArrayFragment precursorFragment) throws Exception {
 		short lastSkippedBonds = precursorFragment.getLastSkippedBond();
 		short lastCuttedBond = (short) (precursorFragment.getMaximalIndexOfRemovedBond());
 		if (lastSkippedBonds == -1)

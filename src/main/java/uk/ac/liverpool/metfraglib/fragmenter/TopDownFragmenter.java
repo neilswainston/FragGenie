@@ -3,12 +3,10 @@ package uk.ac.liverpool.metfraglib.fragmenter;
 import java.util.ArrayList;
 
 import de.ipbhalle.metfraglib.FastBitArray;
-import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
-import de.ipbhalle.metfraglib.fragment.AbstractTopDownBitArrayFragment;
+import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.FragmentList;
 import de.ipbhalle.metfraglib.parameter.Constants;
-import de.ipbhalle.metfraglib.precursor.AbstractTopDownBitArrayPrecursor;
 import de.ipbhalle.metfraglib.precursor.BitArrayPrecursor;
 
 public class TopDownFragmenter {
@@ -41,8 +39,8 @@ public class TopDownFragmenter {
 		/*
 		 * set first fragment as root for fragment generation (precursor)
 		 */
-		AbstractTopDownBitArrayFragment root = ((AbstractTopDownBitArrayPrecursor) this.candidate
-				.getPrecursorMolecule()).toFragment();
+		AbstractTopDownBitArrayFragment root = (AbstractTopDownBitArrayFragment) this.candidate
+				.getPrecursorMolecule().toFragment();
 		root.setID(++this.numberOfGeneratedFragments);
 		temporaryFragments.add(root);
 		generatedFragments.addElement(root);
@@ -248,13 +246,13 @@ public class TopDownFragmenter {
 	 * @param ringBondFastBitArray
 	 * @param lastCuttedRingBond
 	 * @return
-	 * @throws AtomTypeNotKnownFromInputListException
+	 * @throws Exception 
 	 */
 	protected ArrayList<AbstractTopDownBitArrayFragment> createRingBondCleavedFragments(
 			ArrayList<AbstractTopDownBitArrayFragment> newGeneratedTopDownFragments,
 			AbstractTopDownBitArrayFragment precursorFragment,
 			java.util.Queue<AbstractTopDownBitArrayFragment> toProcess, FastBitArray ringBondFastBitArray,
-			java.util.Queue<Short> lastCuttedRingBond) throws AtomTypeNotKnownFromInputListException {
+			java.util.Queue<Short> lastCuttedRingBond) throws Exception {
 		/*
 		 * process all fragments that have been cutted in a ring without generating a
 		 * new one
