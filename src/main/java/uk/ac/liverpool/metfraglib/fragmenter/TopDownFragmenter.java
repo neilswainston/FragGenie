@@ -3,11 +3,11 @@ package uk.ac.liverpool.metfraglib.fragmenter;
 import java.util.ArrayList;
 
 import de.ipbhalle.metfraglib.FastBitArray;
-import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.FragmentList;
 import de.ipbhalle.metfraglib.parameter.Constants;
 import de.ipbhalle.metfraglib.precursor.BitArrayPrecursor;
+import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
 
 public class TopDownFragmenter {
 
@@ -39,8 +39,8 @@ public class TopDownFragmenter {
 		/*
 		 * set first fragment as root for fragment generation (precursor)
 		 */
-		AbstractTopDownBitArrayFragment root = (AbstractTopDownBitArrayFragment) this.candidate
-				.getPrecursorMolecule().toFragment();
+		AbstractTopDownBitArrayFragment root = (AbstractTopDownBitArrayFragment) this.candidate.getPrecursorMolecule()
+				.toFragment();
 		root.setID(++this.numberOfGeneratedFragments);
 		temporaryFragments.add(root);
 		generatedFragments.addElement(root);
@@ -246,7 +246,7 @@ public class TopDownFragmenter {
 	 * @param ringBondFastBitArray
 	 * @param lastCuttedRingBond
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	protected ArrayList<AbstractTopDownBitArrayFragment> createRingBondCleavedFragments(
 			ArrayList<AbstractTopDownBitArrayFragment> newGeneratedTopDownFragments,

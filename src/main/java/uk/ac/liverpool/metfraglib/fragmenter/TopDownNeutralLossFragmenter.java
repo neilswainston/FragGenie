@@ -5,12 +5,12 @@ import java.util.Queue;
 
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.additionals.NeutralLosses;
-import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
 import de.ipbhalle.metfraglib.fragment.BitArrayNeutralLoss;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.FragmentList;
 import de.ipbhalle.metfraglib.precursor.AbstractTopDownBitArrayPrecursor;
 import de.ipbhalle.metfraglib.precursor.BitArrayPrecursor;
+import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
 
 public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 
@@ -40,8 +40,8 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 		/*
 		 * set first fragment as root for fragment generation (precursor)
 		 */
-		AbstractTopDownBitArrayFragment root = (AbstractTopDownBitArrayFragment) this.candidate
-				.getPrecursorMolecule().toFragment();
+		AbstractTopDownBitArrayFragment root = (AbstractTopDownBitArrayFragment) this.candidate.getPrecursorMolecule()
+				.toFragment();
 		root.setID(++this.numberOfGeneratedFragments);
 		root.setWasRingCleavedFragment(false);
 		generatedFragments.addElement(root);
@@ -226,7 +226,8 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 	/**
 	 * generates all fragments of the given precursor fragment to reach the new tree
 	 * depth
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	@Override
 	public ArrayList<AbstractTopDownBitArrayFragment> getFragmentsOfNextTreeDepth(
@@ -313,7 +314,7 @@ public class TopDownNeutralLossFragmenter extends TopDownFragmenter {
 	}
 
 	/**
-	 * @throws Exception 
+	 * @throws Exception
 	 * 
 	 */
 
