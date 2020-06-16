@@ -2,43 +2,43 @@ package uk.ac.liverpool.metfraglib.fragmenter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
+
+import org.openscience.cdk.DefaultChemObjectBuilder;
+import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 
 import de.ipbhalle.metfraglib.FastBitArray;
-import de.ipbhalle.metfraglib.additionals.NeutralLosses;
-import de.ipbhalle.metfraglib.fragment.BitArrayNeutralLoss;
-import de.ipbhalle.metfraglib.list.FragmentList;
+import uk.ac.liverpool.metfraglib.fragment.BitArrayNeutralLoss;
 import de.ipbhalle.metfraglib.parameter.Constants;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
-import uk.ac.liverpool.metfraglib.candidate.PrecursorCandidate;
 import uk.ac.liverpool.metfraglib.fragment.Fragment;
 
 public class Fragmenter {
 
 	private Double minimumMassDeviationForFragmentGeneration = Constants.DEFAULT_MIN_MASS_DEV_FOR_FRAGMENT_GENERATION;
-	private Byte maximumNumberOfAFragmentAddedToQueue;
-	private boolean ringBondsInitialised;
+	private byte maximumNumberOfAFragmentAddedToQueue = 2;
+	private boolean ringBondsInitialised = false;
 	private FastBitArray ringBondFastBitArray;
-	private PrecursorCandidate candidate;
-	private Double minimumFragmentMassLimit;
+	private Precursor precursor;
+	private double minimumFragmentMassLimit = 0.0;
 	private BitArrayNeutralLoss[] detectedNeutralLosses;
 	private List<Short> brokenBondToNeutralLossIndex = new ArrayList<>();
 	private List<Integer> neutralLossIndex = new ArrayList<>();
+	
+	private final String[] smartPatterns = {"O", "C(=O)O", "N", "C[Si](C)(C)O", "C[Si](C)C", "CO", "CN"};
+	private final short[] minimumNumberImplicitHydrogens = {1, 1, 2, 9, 9, 1, 0};
+	
 
 	/**
 	 * 
-	 * @param candidate
+	 * @param precursor
 	 * @param maximumTreeDepth
 	 * @throws Exception
 	 */
-	public Fragmenter(final PrecursorCandidate candidate) throws Exception {
-		this.candidate = candidate;
-		this.minimumFragmentMassLimit = 0.0;
-		this.maximumNumberOfAFragmentAddedToQueue = 2;
-		this.ringBondsInitialised = false;
-		this.ringBondFastBitArray = new FastBitArray(this.candidate.getPrecursorMolecule().getNonHydrogenBondCount(),
-				false);
-		this.detectedNeutralLosses = new NeutralLosses().getMatchingAtoms(this.candidate.getPrecursorMolecule());
+	public Fragmenter(final Precursor precursor) throws Exception {
+		this.precursor = precursor;
+		this.ringBondFastBitArray = new FastBitArray(this.precursor.getNonHydrogenBondCount(), false);
+		this.detectedNeutralLosses = getMatchingAtoms(this.precursor);
 	}
 
 	/**
@@ -59,9 +59,9 @@ public class Fragmenter {
 			for (int ii = 0; ii < this.detectedNeutralLosses[i].getNumberNeutralLosses(); ii++) {
 				if (newGeneratedTopDownFragments[0].getAtomsFastBitArray()
 						.equals(this.detectedNeutralLosses[i].getNeutralLossAtomFastBitArray(ii))) {
-					newGeneratedTopDownFragments[1].getMolecularFormula(this.candidate.getPrecursorMolecule())
+					newGeneratedTopDownFragments[1].getMolecularFormula(this.precursor)
 							.setNumberHydrogens((short) (newGeneratedTopDownFragments[1]
-									.getMolecularFormula(this.candidate.getPrecursorMolecule()).getNumberHydrogens()
+									.getMolecularFormula(this.precursor).getNumberHydrogens()
 									+ this.detectedNeutralLosses[i].getHydrogenDifference()));
 					/*
 					 * check for previous broken bonds caused by neutral loss
@@ -77,10 +77,9 @@ public class Fragmenter {
 							continue;
 						}
 						if (index != -1) {
-							newGeneratedTopDownFragments[1].getMolecularFormula(this.candidate.getPrecursorMolecule())
+							newGeneratedTopDownFragments[1].getMolecularFormula(this.precursor)
 									.setNumberHydrogens((short) (newGeneratedTopDownFragments[1]
-											.getMolecularFormula(this.candidate.getPrecursorMolecule())
-											.getNumberHydrogens()
+											.getMolecularFormula(this.precursor).getNumberHydrogens()
 											+ this.detectedNeutralLosses[this.neutralLossIndex.get(index)]
 													.getHydrogenDifference()));
 						}
@@ -88,9 +87,9 @@ public class Fragmenter {
 					return true;
 				} else if (newGeneratedTopDownFragments[1].getAtomsFastBitArray()
 						.equals(this.detectedNeutralLosses[i].getNeutralLossAtomFastBitArray(ii))) {
-					newGeneratedTopDownFragments[0].getMolecularFormula(this.candidate.getPrecursorMolecule())
+					newGeneratedTopDownFragments[0].getMolecularFormula(this.precursor)
 							.setNumberHydrogens((short) (newGeneratedTopDownFragments[0]
-									.getMolecularFormula(this.candidate.getPrecursorMolecule()).getNumberHydrogens()
+									.getMolecularFormula(this.precursor).getNumberHydrogens()
 									+ this.detectedNeutralLosses[i].getHydrogenDifference()));
 					// newGeneratedTopDownFragments[0].setTreeDepth((byte)(newGeneratedTopDownFragments[0].getTreeDepth()
 					// - 1));
@@ -108,10 +107,9 @@ public class Fragmenter {
 							continue;
 						}
 						if (index != -1) {
-							newGeneratedTopDownFragments[0].getMolecularFormula(this.candidate.getPrecursorMolecule())
+							newGeneratedTopDownFragments[0].getMolecularFormula(this.precursor)
 									.setNumberHydrogens((short) (newGeneratedTopDownFragments[0]
-											.getMolecularFormula(this.candidate.getPrecursorMolecule())
-											.getNumberHydrogens()
+											.getMolecularFormula(this.precursor).getNumberHydrogens()
 											+ this.detectedNeutralLosses[this.neutralLossIndex.get(index)]
 													.getHydrogenDifference()));
 						}
@@ -152,13 +150,12 @@ public class Fragmenter {
 		for (short i = nextBrokenIndexBondIndexToRemove; i < precursorFragment.getBondsFastBitArray().getSize(); i++) {
 			if (!precursorFragment.getBondsFastBitArray().get(i))
 				continue;
-			short[] indecesOfBondConnectedAtoms = this.candidate.getPrecursorMolecule()
-					.getConnectedAtomIndecesOfBondIndex(i);
+			short[] indecesOfBondConnectedAtoms = this.precursor.getConnectedAtomIndecesOfBondIndex(i);
 			/*
 			 * try to generate at most two fragments by the removal of the given bond
 			 */
-			Fragment[] newGeneratedTopDownFragments = precursorFragment
-					.traverseMolecule(this.candidate.getPrecursorMolecule(), i, indecesOfBondConnectedAtoms);
+			Fragment[] newGeneratedTopDownFragments = precursorFragment.traverseMolecule(this.precursor, i,
+					indecesOfBondConnectedAtoms);
 			/*
 			 * in case the precursor wasn't splitted try to cleave an additional bond until
 			 * 
@@ -235,11 +232,10 @@ public class Fragmenter {
 			if (!precursorFragment.getBondsFastBitArray().get(currentBond))
 				continue;
 
-			short[] connectedAtomIndeces = this.candidate.getPrecursorMolecule()
-					.getConnectedAtomIndecesOfBondIndex(currentBond);
+			short[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesOfBondIndex(currentBond);
 
-			Fragment[] newFragments = precursorFragment.traverseMolecule(this.candidate.getPrecursorMolecule(),
-					currentBond, connectedAtomIndeces);
+			Fragment[] newFragments = precursorFragment.traverseMolecule(this.precursor, currentBond,
+					connectedAtomIndeces);
 
 			this.processGeneratedFragments(newFragments);
 			if (newFragments.length == 2) {
@@ -274,14 +270,12 @@ public class Fragmenter {
 		if (newGeneratedTopDownFragments.length == 2) {
 			newGeneratedTopDownFragments[0].setAddedToQueueCounts((byte) 1);
 			newGeneratedTopDownFragments[1].setAddedToQueueCounts((byte) 1);
-			if (newGeneratedTopDownFragments[0]
-					.getMonoisotopicMass(this.candidate.getPrecursorMolecule()) <= this.minimumFragmentMassLimit
-							- this.minimumMassDeviationForFragmentGeneration) {
+			if (newGeneratedTopDownFragments[0].getMonoisotopicMass(this.precursor) <= this.minimumFragmentMassLimit
+					- this.minimumMassDeviationForFragmentGeneration) {
 				newGeneratedTopDownFragments[0].setAsDiscardedForFragmentation();
 			}
-			if (newGeneratedTopDownFragments[1]
-					.getMonoisotopicMass(this.candidate.getPrecursorMolecule()) <= this.minimumFragmentMassLimit
-							- this.minimumMassDeviationForFragmentGeneration) {
+			if (newGeneratedTopDownFragments[1].getMonoisotopicMass(this.precursor) <= this.minimumFragmentMassLimit
+					- this.minimumMassDeviationForFragmentGeneration) {
 				newGeneratedTopDownFragments[1].setAsDiscardedForFragmentation();
 			}
 		}
@@ -319,10 +313,8 @@ public class Fragmenter {
 				if (currentFragment.getBrokenBondsFastBitArray().get(currentBond))
 					continue;
 				Fragment[] newFragments = { currentFragment };
-				short[] connectedAtomIndeces = this.candidate.getPrecursorMolecule()
-						.getConnectedAtomIndecesOfBondIndex(currentBond);
-				newFragments = currentFragment.traverseMolecule(this.candidate.getPrecursorMolecule(), currentBond,
-						connectedAtomIndeces);
+				short[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesOfBondIndex(currentBond);
+				newFragments = currentFragment.traverseMolecule(this.precursor, currentBond, connectedAtomIndeces);
 
 				//
 				// pre-processing of the generated fragment/s
@@ -359,5 +351,88 @@ public class Fragmenter {
 		}
 
 		return newGeneratedTopDownFragments;
+	}
+	
+	/**
+	 * 
+	 * @param precursorMolecule
+	 * @return
+	 */
+	public BitArrayNeutralLoss[] getMatchingAtoms(Precursor precursorMolecule) {
+		SMARTSQueryTool[] smartsQuerytools = new SMARTSQueryTool[smartPatterns.length];
+		for(int i = 0; i < smartsQuerytools.length; i++) {
+			smartsQuerytools[i] = new SMARTSQueryTool(smartPatterns[i], DefaultChemObjectBuilder.getInstance());
+		}
+		java.util.ArrayList<BitArrayNeutralLoss> matchedNeutralLossTypes = new java.util.ArrayList<>();
+		for(byte i = 0; i < smartsQuerytools.length; i++) {
+			try {
+				if(smartsQuerytools[i].matches(precursorMolecule.getStructureAsIAtomContainer())) {
+					/*
+					 * get atom indeces containing to a neutral loss
+					 */
+					java.util.List<java.util.List<Integer>> matchingAtoms = smartsQuerytools[i].getMatchingAtoms();
+					/*
+					 * store which is a valid loss based on the number of hydrogens
+					 */
+					boolean[] validMatches = new boolean[matchingAtoms.size()];
+					FastBitArray[] allMatches = new FastBitArray[matchingAtoms.size()];
+					int numberOfValidNeutralLosses = 0;
+					/*
+					 * check each part that is marked as neutral loss
+					 */
+					for(int ii = 0; ii < matchingAtoms.size(); ii++) {
+						java.util.List<Integer> part = matchingAtoms.get(ii);
+						/*
+						 * count number of implicit hydrogens of this neutral loss
+						 */
+						int numberImplicitHydrogens = 0;
+						allMatches[ii] = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount());
+						/*
+						 * check all atoms 
+						 */
+						for(int iii = 0; iii < part.size(); iii++) {
+							allMatches[ii].set(part.get(iii));
+							/*
+							 * count number of implicit hydrogens of this neutral loss
+							 */
+							numberImplicitHydrogens += precursorMolecule.getNumberHydrogensConnectedToAtomIndex(part.get(iii));
+						}
+						/*
+						 * valid neutral loss match if number implicit hydrogens are at least the number of hydrogens
+						 * needed for the certain neutral loss
+						 */
+						if(numberImplicitHydrogens >= minimumNumberImplicitHydrogens[i]) {
+							validMatches[ii] = true;
+							numberOfValidNeutralLosses++;
+						}
+					}
+					/*
+					 * create BitArrayNeutralLosses of valid neutral loss part detections
+					 */
+					if(numberOfValidNeutralLosses != 0) {
+						BitArrayNeutralLoss newDetectedNeutralLoss = 
+							new BitArrayNeutralLoss(numberOfValidNeutralLosses, i);
+						int neutralLossIndexOfBitArrayNeutralLoss = 0;
+						for(int k = 0; k < validMatches.length; k++) {
+							if(validMatches[k]) {
+								newDetectedNeutralLoss.setNeutralLoss(neutralLossIndexOfBitArrayNeutralLoss, allMatches[k]);
+								neutralLossIndexOfBitArrayNeutralLoss++;
+							}
+						}
+						/*
+						 * store them in vector
+						 */
+						matchedNeutralLossTypes.add(newDetectedNeutralLoss);
+					}
+				}
+			} catch (CDKException e) {
+				e.printStackTrace();
+			}
+		}
+		BitArrayNeutralLoss[] matchedNeutralLossTypesArray = new BitArrayNeutralLoss[matchedNeutralLossTypes.size()];
+		for(int i = 0; i < matchedNeutralLossTypes.size(); i++) {
+			matchedNeutralLossTypesArray[i] = matchedNeutralLossTypes.get(i);
+		}
+		return matchedNeutralLossTypesArray;
 	}
 }

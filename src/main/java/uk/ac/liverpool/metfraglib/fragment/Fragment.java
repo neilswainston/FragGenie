@@ -249,8 +249,8 @@ public class Fragment implements IFragment {
 	 * @param numberHydrogensOfNewFragment
 	 * @return
 	 */
-	private boolean traverseSingleDirection(Precursor precursorMolecule, short startAtomIndex,
-			int endAtomIndex, int bondIndexToRemove, de.ipbhalle.metfraglib.FastBitArray atomArrayOfNewFragment,
+	private boolean traverseSingleDirection(Precursor precursorMolecule, short startAtomIndex, int endAtomIndex,
+			int bondIndexToRemove, de.ipbhalle.metfraglib.FastBitArray atomArrayOfNewFragment,
 			de.ipbhalle.metfraglib.FastBitArray bondArrayOfNewFragment,
 			de.ipbhalle.metfraglib.FastBitArray brokenBondArrayOfNewFragment, int[] numberHydrogensOfNewFragment) {
 		de.ipbhalle.metfraglib.FastBitArray bondFastBitArrayOfCurrentFragment = this.getBondsFastBitArray();
@@ -268,8 +268,7 @@ public class Fragment implements IFragment {
 		 */
 		java.util.Stack<short[]> toProcessConnectedAtoms = new java.util.Stack<>();
 		java.util.Stack<Short> toProcessAtom = new java.util.Stack<>();
-		toProcessConnectedAtoms
-				.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(startAtomIndex));
+		toProcessConnectedAtoms.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(startAtomIndex));
 		toProcessAtom.push(startAtomIndex);
 		visited.set(startAtomIndex);
 		boolean stillOneFragment = false;
@@ -286,8 +285,7 @@ public class Fragment implements IFragment {
 				/*
 				 * did we visit the current atom already?
 				 */
-				int currentBondNumber = precursorMolecule
-						.getBondIndexFromAtomAdjacencyList(nextAtoms[i], midAtom) - 1;
+				int currentBondNumber = precursorMolecule.getBondIndexFromAtomAdjacencyList(nextAtoms[i], midAtom) - 1;
 
 				if (!bondFastBitArrayOfCurrentFragment.get(currentBondNumber)
 						|| currentBondNumber == bondIndexToRemove) {
@@ -315,11 +313,9 @@ public class Fragment implements IFragment {
 				 */
 				numberHydrogensOfNewFragment[0] += precursorMolecule
 						.getNumberHydrogensConnectedToAtomIndex(nextAtoms[i]);
-				bondArrayOfNewFragment.set(
-						precursorMolecule.getBondIndexFromAtomAdjacencyList(midAtom, nextAtoms[i])
-								- 1);
-				toProcessConnectedAtoms
-						.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(nextAtoms[i]));
+				bondArrayOfNewFragment
+						.set(precursorMolecule.getBondIndexFromAtomAdjacencyList(midAtom, nextAtoms[i]) - 1);
+				toProcessConnectedAtoms.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(nextAtoms[i]));
 				toProcessAtom.push(nextAtoms[i]);
 			}
 
@@ -370,7 +366,7 @@ public class Fragment implements IFragment {
 	@Override
 	public void setID(int id) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -444,7 +440,7 @@ public class Fragment implements IFragment {
 	@Override
 	public void setHasMatched() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -456,7 +452,7 @@ public class Fragment implements IFragment {
 	@Override
 	public void setIsBestMatchedFragment(boolean value) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -486,12 +482,12 @@ public class Fragment implements IFragment {
 	@Override
 	public void nullify() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void shallowNullify() {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

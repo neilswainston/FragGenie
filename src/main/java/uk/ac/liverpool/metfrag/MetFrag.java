@@ -20,8 +20,8 @@ import de.ipbhalle.metfraglib.list.CandidateList;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.process.CombinedMetFragProcess;
 import de.ipbhalle.metfraglib.settings.MetFragGlobalSettings;
-import uk.ac.liverpool.metfraglib.candidate.PrecursorCandidate;
 import uk.ac.liverpool.metfraglib.fragmenterassignerscorer.TopDownFragmenterAssignerScorer;
+import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 /**
  * 
@@ -165,9 +165,8 @@ public class MetFrag {
 	 */
 	private static IAtomContainer[] generateAllFragments(final String smiles, final int maximumTreeDepth)
 			throws Exception {
-		final PrecursorCandidate candidate = new PrecursorCandidate(smiles);
-
-		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(candidate);
+		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(
+				Precursor.fromSmiles(smiles));
 		scorer.calculate();
 
 		final IAtomContainer[] fragments = new IAtomContainer[0];

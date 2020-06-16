@@ -10,7 +10,7 @@ public class FragmentWrapper {
 	 * 
 	 */
 	private final Fragment fragment;
-	
+
 	/**
 	 * 
 	 */
@@ -25,7 +25,7 @@ public class FragmentWrapper {
 		this.fragment = fragment;
 		this.peakIndex = peakIndex;
 	}
-	
+
 	/**
 	 * 
 	 * @return
