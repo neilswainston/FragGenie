@@ -3,24 +3,13 @@ package uk.ac.liverpool.metfraglib.candidate;
 import org.openscience.cdk.interfaces.IAtomContainer;
 
 import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
-import de.ipbhalle.metfraglib.precursor.TopDownBitArrayPrecursor;
+import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 public class PrecursorCandidate {
 
-	private final String smiles;
-	private final TopDownBitArrayPrecursor structure;
+	private final Precursor structure;
 
 	public PrecursorCandidate(final String smiles) throws Exception {
-		this.smiles = smiles;
-		this.structure = new TopDownBitArrayPrecursor(this.getAtomContainer());
-		this.structure.preprocessPrecursor();
-	}
-
-	public TopDownBitArrayPrecursor getPrecursorMolecule() {
-		return this.structure;
-	}
-
-	private IAtomContainer getAtomContainer() throws Exception {
 		IAtomContainer molecule = null;
 
 		int trials = 1;
@@ -42,16 +31,16 @@ public class PrecursorCandidate {
 
 		MoleculeFunctions.prepareAtomContainer(molecule, true);
 		MoleculeFunctions.convertExplicitToImplicitHydrogens(molecule);
-		return molecule;
+		
+		this.structure = new Precursor(molecule);
+		this.structure.preprocessPrecursor();
 	}
 
-	@Override
-	public PrecursorCandidate clone() {
-		try {
-			return new PrecursorCandidate(this.smiles);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+	/**
+	 * 
+	 * @return
+	 */
+	public Precursor getPrecursorMolecule() {
+		return this.structure;
 	}
 }

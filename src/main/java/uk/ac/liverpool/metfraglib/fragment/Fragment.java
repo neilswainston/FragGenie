@@ -1,23 +1,26 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
+import org.openscience.cdk.interfaces.IAtomContainer;
+
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
+import de.ipbhalle.metfraglib.interfaces.IFragment;
+import de.ipbhalle.metfraglib.interfaces.IMatch;
 import de.ipbhalle.metfraglib.interfaces.IMolecularFormula;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
+import de.ipbhalle.metfraglib.interfaces.IPeak;
 import de.ipbhalle.metfraglib.molecularformula.BitArrayFragmentMolecularFormula;
 import de.ipbhalle.metfraglib.parameter.Constants;
-import de.ipbhalle.metfraglib.precursor.BitArrayPrecursor;
-import de.ipbhalle.metfraglib.precursor.DefaultPrecursor;
-import de.ipbhalle.metfraglib.precursor.TopDownBitArrayPrecursor;
+import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
-public class Fragment {
+public class Fragment implements IFragment {
 
 	private int addedToQueueCounts;
 	private short lastSkippedBond;
 	private FastBitArray atomsFastBitArray;
 	private FastBitArray bondsFastBitArray;
 	private FastBitArray brokenBondsFastBitArray;
-	private int treeDepth;
+	private byte treeDepth;
 	private int numberHydrogens;
 	private boolean isValidFragment;
 	private boolean discardedForFragmentation;
@@ -29,7 +32,7 @@ public class Fragment {
 	 * @param precursor
 	 * @throws AtomTypeNotKnownFromInputListException
 	 */
-	private Fragment(TopDownBitArrayPrecursor precursor) {
+	public Fragment(Precursor precursor) {
 		this.addedToQueueCounts = 0;
 		this.lastSkippedBond = -1;
 		this.atomsFastBitArray = new FastBitArray(precursor.getNonHydrogenAtomCount(), true);
@@ -71,7 +74,7 @@ public class Fragment {
 	 * @return
 	 * @throws AtomTypeNotKnownFromInputListException
 	 */
-	public Fragment[] traverseMolecule(IMolecularStructure precursorMolecule, short bondIndexToRemove,
+	public Fragment[] traverseMolecule(Precursor precursorMolecule, short bondIndexToRemove,
 			short[] indecesOfBondConnectedAtoms) throws AtomTypeNotKnownFromInputListException {
 
 		/*
@@ -133,10 +136,6 @@ public class Fragment {
 
 	}
 
-	public int getTreeDepth() {
-		return this.treeDepth;
-	}
-
 	public int getAddedToQueueCounts() {
 		return this.addedToQueueCounts;
 	}
@@ -169,22 +168,16 @@ public class Fragment {
 		this.lastSkippedBond = lastSkippedBond;
 	}
 
+	@Override
 	public int[] getBrokenBondIndeces() {
 		return this.brokenBondsFastBitArray.getSetIndeces();
 	}
 
-	public IMolecularFormula getMolecularFormula(IMolecularStructure precursorMolecule) {
-		try {
-			BitArrayFragmentMolecularFormula form = new BitArrayFragmentMolecularFormula(
-					(DefaultPrecursor) precursorMolecule, this.atomsFastBitArray);
-			return form;
-		} catch (AtomTypeNotKnownFromInputListException e) {
-			e.printStackTrace();
-		}
-		return null;
+	public IMolecularFormula getMolecularFormula(Precursor precursorMolecule) {
+		return new BitArrayFragmentMolecularFormula(precursorMolecule, this.atomsFastBitArray);
 	}
 
-	public double getMonoisotopicMass(IMolecularStructure precursorMolecule) {
+	public double getMonoisotopicMass(Precursor precursorMolecule) {
 		// return this.molecularFormula.getMonoisotopicMass();
 		double mass = 0.0;
 		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
@@ -195,7 +188,7 @@ public class Fragment {
 		return mass;
 	}
 
-	public byte matchToPeak(IMolecularStructure precursorMolecule, int precursorIonTypeIndex, boolean isPositive) {
+	public byte matchToPeak(Precursor precursorMolecule, int precursorIonTypeIndex, boolean isPositive) {
 
 		double[] ionisationTypeMassCorrection = new double[] {
 				Constants.getIonisationTypeMassCorrection(precursorIonTypeIndex, isPositive),
@@ -239,7 +232,7 @@ public class Fragment {
 		}
 	}
 
-	private void setTreeDepth(int treeDepth) {
+	private void setTreeDepth(byte treeDepth) {
 		this.treeDepth = treeDepth;
 	}
 
@@ -256,7 +249,7 @@ public class Fragment {
 	 * @param numberHydrogensOfNewFragment
 	 * @return
 	 */
-	private boolean traverseSingleDirection(IMolecularStructure precursorMolecule, short startAtomIndex,
+	private boolean traverseSingleDirection(Precursor precursorMolecule, short startAtomIndex,
 			int endAtomIndex, int bondIndexToRemove, de.ipbhalle.metfraglib.FastBitArray atomArrayOfNewFragment,
 			de.ipbhalle.metfraglib.FastBitArray bondArrayOfNewFragment,
 			de.ipbhalle.metfraglib.FastBitArray brokenBondArrayOfNewFragment, int[] numberHydrogensOfNewFragment) {
@@ -276,7 +269,7 @@ public class Fragment {
 		java.util.Stack<short[]> toProcessConnectedAtoms = new java.util.Stack<>();
 		java.util.Stack<Short> toProcessAtom = new java.util.Stack<>();
 		toProcessConnectedAtoms
-				.push(((BitArrayPrecursor) precursorMolecule).getConnectedAtomIndecesOfAtomIndex(startAtomIndex));
+				.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(startAtomIndex));
 		toProcessAtom.push(startAtomIndex);
 		visited.set(startAtomIndex);
 		boolean stillOneFragment = false;
@@ -285,8 +278,7 @@ public class Fragment {
 		 * cutted bond
 		 */
 		atomArrayOfNewFragment.set(startAtomIndex);
-		numberHydrogensOfNewFragment[0] += ((BitArrayPrecursor) precursorMolecule)
-				.getNumberHydrogensConnectedToAtomIndex(startAtomIndex);
+		numberHydrogensOfNewFragment[0] += precursorMolecule.getNumberHydrogensConnectedToAtomIndex(startAtomIndex);
 		while (!toProcessConnectedAtoms.isEmpty()) {
 			short[] nextAtoms = toProcessConnectedAtoms.pop();
 			short midAtom = toProcessAtom.pop();
@@ -294,7 +286,7 @@ public class Fragment {
 				/*
 				 * did we visit the current atom already?
 				 */
-				int currentBondNumber = ((BitArrayPrecursor) precursorMolecule)
+				int currentBondNumber = precursorMolecule
 						.getBondIndexFromAtomAdjacencyList(nextAtoms[i], midAtom) - 1;
 
 				if (!bondFastBitArrayOfCurrentFragment.get(currentBondNumber)
@@ -321,13 +313,13 @@ public class Fragment {
 				/*
 				 * add number of hydrogens of current atom
 				 */
-				numberHydrogensOfNewFragment[0] += ((BitArrayPrecursor) precursorMolecule)
+				numberHydrogensOfNewFragment[0] += precursorMolecule
 						.getNumberHydrogensConnectedToAtomIndex(nextAtoms[i]);
 				bondArrayOfNewFragment.set(
-						((BitArrayPrecursor) precursorMolecule).getBondIndexFromAtomAdjacencyList(midAtom, nextAtoms[i])
+						precursorMolecule.getBondIndexFromAtomAdjacencyList(midAtom, nextAtoms[i])
 								- 1);
 				toProcessConnectedAtoms
-						.push(((BitArrayPrecursor) precursorMolecule).getConnectedAtomIndecesOfAtomIndex(nextAtoms[i]));
+						.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(nextAtoms[i]));
 				toProcessAtom.push(nextAtoms[i]);
 			}
 
@@ -337,5 +329,169 @@ public class Fragment {
 		bondArrayOfNewFragment.set(bondIndexToRemove, false);
 
 		return stillOneFragment;
+	}
+
+	@Override
+	public IAtomContainer getStructureAsIAtomContainer(IMolecularStructure precursorMolecule) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getSmiles(IMolecularStructure precursorMolecule) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public double getMonoisotopicMass(IMolecularStructure precursorMolecule) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getNonHydrogenAtomCount() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getNonHydrogenBondCount() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public IMolecularFormula getMolecularFormula(IMolecularStructure precursorMolecule) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setID(int id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int getID() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public byte getTreeDepth() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public byte matchToPeak(IMolecularStructure precursorMolecule, IPeak peak, int precursorIonType, boolean isPositive,
+			IMatch[] match) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public byte shareEqualProperties(IMolecularStructure precursorMolecule, IFragment fragment)
+			throws AtomTypeNotKnownFromInputListException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean isRealSubStructure(IFragment molecularStructure) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isSubStructure(IFragment molecularStructure) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public IFragment getDifferenceFragment(IMolecularStructure precursorMolecule, IFragment molecularStructure) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IFragment getDifferenceFragment(IMolecularStructure precursorMolecule) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int[] getUniqueBrokenBondIndeces(IFragment molecularStructure) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isConnected(IMolecularStructure precursorMolecule) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean hasMatched() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setHasMatched() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean equals(IFragment fragment) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setIsBestMatchedFragment(boolean value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public IFragment clone(IMolecularStructure precursorMolecule) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getAtomsInfo() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getBondsInfo() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getBrokenBondsInfo() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void nullify() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void shallowNullify() {
+		// TODO Auto-generated method stub
+		
 	}
 }

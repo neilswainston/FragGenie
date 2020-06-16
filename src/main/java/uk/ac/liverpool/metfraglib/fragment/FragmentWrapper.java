@@ -9,60 +9,36 @@ public class FragmentWrapper {
 	/**
 	 * 
 	 */
-	private int peakIndex;
-
+	private final Fragment fragment;
+	
 	/**
 	 * 
 	 */
-	private Fragment fragment;
+	private final int peakIndex;
 
 	/**
 	 * 
-	 * @param wrappedFragment
-	 */
-	public FragmentWrapper(final Fragment fragment) {
-		this.fragment = fragment;
-	}
-
-	/**
-	 * 
-	 * @param root
-	 * @param currentPeakIndexPointer
+	 * @param fragment
+	 * @param peakIndex
 	 */
 	public FragmentWrapper(final Fragment fragment, final int peakIndex) {
 		this.fragment = fragment;
 		this.peakIndex = peakIndex;
 	}
-
+	
 	/**
 	 * 
 	 * @return
 	 */
-	public int getCurrentPeakIndexPointer() {
-		return this.peakIndex;
-	}
-
-	/**
-	 * 
-	 * @param peakIndex
-	 */
-	public void setCurrentPeakIndexPointer(final int peakIndex) {
-		this.peakIndex = peakIndex;
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	public Fragment getWrappedFragment() {
+	public Fragment getFragment() {
 		return this.fragment;
 	}
 
 	/**
 	 * 
-	 * @param fragment
+	 * @return
 	 */
-	public void setWrappedFragment(final Fragment fragment) {
-		this.fragment = fragment;
+	public int getPeakIndex() {
+		return this.peakIndex;
 	}
 }

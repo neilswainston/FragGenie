@@ -5,8 +5,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
-import de.ipbhalle.metfraglib.precursor.TopDownBitArrayPrecursor;
+import uk.ac.liverpool.metfraglib.precursor.Precursor;
 import uk.ac.liverpool.metfraglib.candidate.PrecursorCandidate;
 import uk.ac.liverpool.metfraglib.fragment.Fragment;
 import uk.ac.liverpool.metfraglib.fragment.FragmentWrapper;
@@ -17,7 +16,7 @@ public class TopDownFragmenterAssignerScorer {
 	/**
 	 * 
 	 */
-	private final Map<String, Integer> bitArrayToFragment = new HashMap<>();
+	private final Map<String, Byte> bitArrayToFragment = new HashMap<>();
 
 	/**
 	 * 
@@ -45,9 +44,8 @@ public class TopDownFragmenterAssignerScorer {
 	 */
 	public TopDownFragmenterAssignerScorer(final PrecursorCandidate candidate) throws Exception {
 		this.candidate = candidate;
-		// this.candidate.setProperty(VariableNames.MAXIMUM_TREE_DEPTH_NAME,
-		// Integer.valueOf(this.maximumTreeDepth));
-		this.fragmenter = new Fragmenter(this.candidate, this.maximumTreeDepth);
+		// this.candidate.setProperty(VariableNames.MAXIMUM_TREE_DEPTH_NAME, Integer.valueOf(this.maximumTreeDepth));
+		this.fragmenter = new Fragmenter(this.candidate);
 	}
 
 	/**
@@ -55,7 +53,7 @@ public class TopDownFragmenterAssignerScorer {
 	 * @throws Exception
 	 */
 	public void calculate() throws Exception {
-		final TopDownBitArrayPrecursor candidatePrecursor = this.candidate.getPrecursorMolecule();
+		final Precursor candidatePrecursor = this.candidate.getPrecursorMolecule();
 		// generate root fragment to start fragmentation
 		final Fragment root = candidatePrecursor.toFragment();
 
@@ -78,24 +76,23 @@ public class TopDownFragmenterAssignerScorer {
 				 */
 				FragmentWrapper wrappedPrecursorFragment = toProcessFragments.poll();
 
-				if (wrappedPrecursorFragment.getWrappedFragment().isDiscardedForFragmentation()) {
-					Fragment clonedFragment = (Fragment) wrappedPrecursorFragment.getWrappedFragment().clone();
+				if (wrappedPrecursorFragment.getFragment().isDiscardedForFragmentation()) {
+					Fragment clonedFragment = (Fragment) wrappedPrecursorFragment.getFragment().clone();
 					clonedFragment.setAsDiscardedForFragmentation();
 					if (clonedFragment.getTreeDepth() < this.maximumTreeDepth)
-						newToProcessFragments.add(new FragmentWrapper(clonedFragment,
-								wrappedPrecursorFragment.getCurrentPeakIndexPointer()));
+						newToProcessFragments.add(new FragmentWrapper(clonedFragment, wrappedPrecursorFragment.getPeakIndex()));
 					continue;
 				}
 				/*
 				 * generate fragments of next tree depth
 				 */
 				java.util.ArrayList<Fragment> fragmentsOfCurrentTreeDepth = this.fragmenter
-						.getFragmentsOfNextTreeDepth(wrappedPrecursorFragment.getWrappedFragment());
+						.getFragmentsOfNextTreeDepth(wrappedPrecursorFragment.getFragment());
 
 				/*
 				 * get peak pointer of current precursor fragment
 				 */
-				int currentPeakPointer = wrappedPrecursorFragment.getCurrentPeakIndexPointer();
+				int currentPeakPointer = wrappedPrecursorFragment.getPeakIndex();
 				/*
 				 * start loop over all child fragments from precursor fragment to try assigning
 				 * them to the current peak
@@ -165,15 +162,15 @@ public class TopDownFragmenterAssignerScorer {
 	 * @return boolean
 	 */
 	private boolean wasAlreadyGeneratedByHashtable(final Fragment currentFragment) {
-		String currentHash = currentFragment.getAtomsFastBitArray().toString();
-		Integer minimalTreeDepth = this.bitArrayToFragment.get(currentHash);
+		final String currentHash = currentFragment.getAtomsFastBitArray().toString();
+		final Byte minimalTreeDepth = this.bitArrayToFragment.get(currentHash);
 
 		if (minimalTreeDepth == null) {
-			this.bitArrayToFragment.put(currentHash, currentFragment.getTreeDepth());
+			this.bitArrayToFragment.put(currentHash, Byte.valueOf(currentFragment.getTreeDepth()));
 			return false;
 		}
 
-		if (minimalTreeDepth >= currentFragment.getTreeDepth()) {
+		if (minimalTreeDepth.intValue() >= currentFragment.getTreeDepth()) {
 			return false;
 		}
 
