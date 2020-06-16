@@ -1,15 +1,10 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
-import org.openscience.cdk.interfaces.IAtomContainer;
-
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
 import de.ipbhalle.metfraglib.fragment.AbstractFragment;
-import de.ipbhalle.metfraglib.interfaces.IFragment;
-import de.ipbhalle.metfraglib.interfaces.IMatch;
 import de.ipbhalle.metfraglib.interfaces.IMolecularFormula;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
-import de.ipbhalle.metfraglib.interfaces.IPeak;
 import de.ipbhalle.metfraglib.molecularformula.BitArrayFragmentMolecularFormula;
 import de.ipbhalle.metfraglib.parameter.Constants;
 import de.ipbhalle.metfraglib.precursor.DefaultPrecursor;
@@ -21,7 +16,7 @@ import de.ipbhalle.metfraglib.precursor.DefaultPrecursor;
  * @author c-ruttkies
  *
  */
-public class DefaultBitArrayFragment extends AbstractFragment {
+public abstract class DefaultBitArrayFragment extends AbstractFragment {
 
 	protected short numberHydrogens;
 
@@ -128,121 +123,5 @@ public class DefaultBitArrayFragment extends AbstractFragment {
 	@Override
 	public int[] getBrokenBondIndeces() {
 		return this.brokenBondsFastBitArray.getSetIndeces();
-	}
-
-	@Override
-	public IFragment clone(IMolecularStructure precursorMolecule) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IAtomContainer getStructureAsIAtomContainer(IMolecularStructure precursorMolecule) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getSmiles(IMolecularStructure precursorMolecule) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int getNonHydrogenAtomCount() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getNonHydrogenBondCount() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public byte matchToPeak(IMolecularStructure precursorMolecule, IPeak peak, int precursorIonType, boolean isPositive,
-			IMatch[] match) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public byte shareEqualProperties(IMolecularStructure precursorMolecule, IFragment fragment)
-			throws AtomTypeNotKnownFromInputListException {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public boolean isRealSubStructure(IFragment molecularStructure) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isSubStructure(IFragment molecularStructure) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public IFragment getDifferenceFragment(IMolecularStructure precursorMolecule, IFragment molecularStructure) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IFragment getDifferenceFragment(IMolecularStructure precursorMolecule) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int[] getUniqueBrokenBondIndeces(IFragment molecularStructure) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isConnected(IMolecularStructure precursorMolecule) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean equals(IFragment fragment) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String getAtomsInfo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getBondsInfo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getBrokenBondsInfo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void nullify() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void shallowNullify() {
-		// TODO Auto-generated method stub
-
 	}
 }

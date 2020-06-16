@@ -14,7 +14,7 @@ import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.fragment.AbstractFragment;
 import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
-import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragmentWrapper;
+import uk.ac.liverpool.metfraglib.fragment.FragmentWrapper;
 import uk.ac.liverpool.metfraglib.fragmenter.TopDownNeutralLossFragmenter;
 
 public class TopDownFragmenterAssignerScorer {
@@ -74,16 +74,16 @@ public class TopDownFragmenterAssignerScorer {
 		// generate root fragment to start fragmentation
 		final IFragment root = candidatePrecursor.toFragment();
 
-		Queue<AbstractTopDownBitArrayFragmentWrapper> toProcessFragments = new LinkedList<>();
+		Queue<FragmentWrapper> toProcessFragments = new LinkedList<>();
 
-		AbstractTopDownBitArrayFragmentWrapper rootFragmentWrapper = new AbstractTopDownBitArrayFragmentWrapper(root, Integer.valueOf(0));
+		FragmentWrapper rootFragmentWrapper = new FragmentWrapper(root, Integer.valueOf(0));
 		toProcessFragments.add(rootFragmentWrapper);
 
 		/*
 		 * iterate over the maximal allowed tree depth
 		 */
 		for (int k = 1; k <= this.maximumTreeDepth; k++) {
-			java.util.Queue<AbstractTopDownBitArrayFragmentWrapper> newToProcessFragments = new java.util.LinkedList<>();
+			java.util.Queue<FragmentWrapper> newToProcessFragments = new java.util.LinkedList<>();
 			/*
 			 * use each fragment that is marked as to be processed
 			 */
@@ -91,15 +91,14 @@ public class TopDownFragmenterAssignerScorer {
 				/*
 				 * generate fragments of new tree depth
 				 */
-				AbstractTopDownBitArrayFragmentWrapper wrappedPrecursorFragment = toProcessFragments.poll();
+				FragmentWrapper wrappedPrecursorFragment = toProcessFragments.poll();
 
 				if (((AbstractFragment) wrappedPrecursorFragment.getWrappedFragment()).isDiscardedForFragmentation()) {
 					AbstractTopDownBitArrayFragment clonedFragment = (AbstractTopDownBitArrayFragment) wrappedPrecursorFragment
 							.getWrappedFragment().clone(candidatePrecursor);
 					clonedFragment.setAsDiscardedForFragmentation();
 					if (clonedFragment.getTreeDepth() < this.maximumTreeDepth)
-						newToProcessFragments.add(new AbstractTopDownBitArrayFragmentWrapper(clonedFragment,
-								wrappedPrecursorFragment.getCurrentPeakIndexPointer()));
+						newToProcessFragments.add(new FragmentWrapper(clonedFragment, wrappedPrecursorFragment.getCurrentPeakIndexPointer()));
 					continue;
 				}
 				/*
@@ -122,8 +121,7 @@ public class TopDownFragmenterAssignerScorer {
 
 					if (!fragmentsOfCurrentTreeDepth.get(l).isValidFragment()) {
 						if (currentFragment.getTreeDepth() < this.maximumTreeDepth)
-							newToProcessFragments.add(new AbstractTopDownBitArrayFragmentWrapper(
-									fragmentsOfCurrentTreeDepth.get(l), currentPeakPointer));
+							newToProcessFragments.add(new FragmentWrapper(fragmentsOfCurrentTreeDepth.get(l), currentPeakPointer));
 						continue;
 					}
 					/*
@@ -134,8 +132,7 @@ public class TopDownFragmenterAssignerScorer {
 					if (this.wasAlreadyGeneratedByHashtable(currentFragment)) {
 						currentFragment.setAsDiscardedForFragmentation();
 						if (currentFragment.getTreeDepth() < this.maximumTreeDepth)
-							newToProcessFragments.add(
-									new AbstractTopDownBitArrayFragmentWrapper(currentFragment, currentPeakPointer));
+							newToProcessFragments.add(new FragmentWrapper(currentFragment, currentPeakPointer));
 						continue;
 					}
 
@@ -158,8 +155,7 @@ public class TopDownFragmenterAssignerScorer {
 							 * mark current fragment for further fragmentation
 							 */
 							if (currentFragment.getTreeDepth() < this.maximumTreeDepth)
-								newToProcessFragments.add(
-										new AbstractTopDownBitArrayFragmentWrapper(currentFragment, tempPeakPointer));
+								newToProcessFragments.add(new FragmentWrapper(currentFragment, tempPeakPointer));
 						}
 						/*
 						 * if the current fragment has matched to the current peak then set the current
