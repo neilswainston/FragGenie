@@ -12,7 +12,7 @@ import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.interfaces.IFragment;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
-import uk.ac.liverpool.metfraglib.fragment.AbstractFragment;
+import de.ipbhalle.metfraglib.fragment.AbstractFragment;
 import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
 import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragmentWrapper;
 import uk.ac.liverpool.metfraglib.fragmenter.TopDownNeutralLossFragmenter;
@@ -76,8 +76,7 @@ public class TopDownFragmenterAssignerScorer {
 
 		Queue<AbstractTopDownBitArrayFragmentWrapper> toProcessFragments = new LinkedList<>();
 
-		AbstractTopDownBitArrayFragmentWrapper rootFragmentWrapper = new AbstractTopDownBitArrayFragmentWrapper(root,
-				Integer.valueOf(0));
+		AbstractTopDownBitArrayFragmentWrapper rootFragmentWrapper = new AbstractTopDownBitArrayFragmentWrapper(root, Integer.valueOf(0));
 		toProcessFragments.add(rootFragmentWrapper);
 
 		/*
@@ -108,8 +107,7 @@ public class TopDownFragmenterAssignerScorer {
 				 */
 				java.util.ArrayList<AbstractTopDownBitArrayFragment> fragmentsOfCurrentTreeDepth = this.fragmenter
 						.getFragmentsOfNextTreeDepth(
-								(uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment) wrappedPrecursorFragment
-										.getWrappedFragment());
+								(AbstractTopDownBitArrayFragment)wrappedPrecursorFragment.getWrappedFragment());
 
 				/*
 				 * get peak pointer of current precursor fragment

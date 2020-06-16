@@ -7,7 +7,7 @@ public class AbstractTopDownBitArrayFragmentWrapper {
 	protected Integer currentPeakIndexPointer;
 	protected IFragment wrappedFragment;
 
-	public AbstractTopDownBitArrayFragmentWrapper(AbstractTopDownBitArrayFragment wrappedFragment) {
+	public AbstractTopDownBitArrayFragmentWrapper(IFragment wrappedFragment) {
 		this.wrappedFragment = wrappedFragment;
 	}
 

@@ -4,6 +4,7 @@ import org.openscience.cdk.interfaces.IAtomContainer;
 
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
+import de.ipbhalle.metfraglib.fragment.AbstractFragment;
 import de.ipbhalle.metfraglib.interfaces.IFragment;
 import de.ipbhalle.metfraglib.interfaces.IMatch;
 import de.ipbhalle.metfraglib.interfaces.IMolecularFormula;
