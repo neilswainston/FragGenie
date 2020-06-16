@@ -15,12 +15,12 @@ import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
-import de.ipbhalle.metfraglib.candidate.TopDownPrecursorCandidate;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.CandidateList;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.process.CombinedMetFragProcess;
 import de.ipbhalle.metfraglib.settings.MetFragGlobalSettings;
+import uk.ac.liverpool.metfraglib.candidate.PrecursorCandidate;
 import uk.ac.liverpool.metfraglib.fragmenterassignerscorer.TopDownFragmenterAssignerScorer;
 
 /**
@@ -165,9 +165,7 @@ public class MetFrag {
 	 */
 	private static IAtomContainer[] generateAllFragments(final String smiles, final int maximumTreeDepth)
 			throws Exception {
-		final ICandidate candidate = new TopDownPrecursorCandidate(null, "IDENTIFIER", smiles); //$NON-NLS-1$
-		candidate.setUseSmiles(true);
-		candidate.initialisePrecursorCandidate();
+		final PrecursorCandidate candidate = new PrecursorCandidate(smiles);
 
 		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(candidate);
 		scorer.calculate();

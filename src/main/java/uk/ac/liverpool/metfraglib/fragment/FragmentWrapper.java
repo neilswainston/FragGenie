@@ -10,7 +10,7 @@ public class FragmentWrapper {
 	 * 
 	 */
 	private int peakIndex;
-	
+
 	/**
 	 * 
 	 */

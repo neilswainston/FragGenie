@@ -5,24 +5,14 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import de.ipbhalle.metfraglib.interfaces.ICandidate;
-import de.ipbhalle.metfraglib.interfaces.IFragment;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
-import de.ipbhalle.metfraglib.parameter.VariableNames;
-import de.ipbhalle.metfraglib.fragment.AbstractFragment;
+import de.ipbhalle.metfraglib.precursor.TopDownBitArrayPrecursor;
+import uk.ac.liverpool.metfraglib.candidate.PrecursorCandidate;
 import uk.ac.liverpool.metfraglib.fragment.Fragment;
 import uk.ac.liverpool.metfraglib.fragment.FragmentWrapper;
 import uk.ac.liverpool.metfraglib.fragmenter.Fragmenter;
 
 public class TopDownFragmenterAssignerScorer {
-
-	/**
-	 * 
-	 */
-	private final Logger logger = Logger.getLogger(TopDownFragmenterAssignerScorer.class);
 
 	/**
 	 * 
@@ -42,7 +32,7 @@ public class TopDownFragmenterAssignerScorer {
 	/**
 	 * 
 	 */
-	private final ICandidate candidate;
+	private final PrecursorCandidate candidate;
 
 	/**
 	 * 
@@ -51,18 +41,13 @@ public class TopDownFragmenterAssignerScorer {
 
 	/**
 	 * 
-	 * @param settings
 	 * @param candidate
 	 */
-	public TopDownFragmenterAssignerScorer(final ICandidate candidate) throws Exception {
-
+	public TopDownFragmenterAssignerScorer(final PrecursorCandidate candidate) throws Exception {
 		this.candidate = candidate;
-		this.candidate.initialisePrecursorCandidate();
-		this.candidate.setProperty(VariableNames.MAXIMUM_TREE_DEPTH_NAME, Integer.valueOf(this.maximumTreeDepth));
-
+		// this.candidate.setProperty(VariableNames.MAXIMUM_TREE_DEPTH_NAME,
+		// Integer.valueOf(this.maximumTreeDepth));
 		this.fragmenter = new Fragmenter(this.candidate, this.maximumTreeDepth);
-
-		this.logger.setLevel(Level.ALL);
 	}
 
 	/**
@@ -70,7 +55,7 @@ public class TopDownFragmenterAssignerScorer {
 	 * @throws Exception
 	 */
 	public void calculate() throws Exception {
-		final IMolecularStructure candidatePrecursor = this.candidate.getPrecursorMolecule();
+		final TopDownBitArrayPrecursor candidatePrecursor = this.candidate.getPrecursorMolecule();
 		// generate root fragment to start fragmentation
 		final Fragment root = candidatePrecursor.toFragment();
 
@@ -94,10 +79,11 @@ public class TopDownFragmenterAssignerScorer {
 				FragmentWrapper wrappedPrecursorFragment = toProcessFragments.poll();
 
 				if (wrappedPrecursorFragment.getWrappedFragment().isDiscardedForFragmentation()) {
-					Fragment clonedFragment = (Fragment)wrappedPrecursorFragment.getWrappedFragment().clone();
+					Fragment clonedFragment = (Fragment) wrappedPrecursorFragment.getWrappedFragment().clone();
 					clonedFragment.setAsDiscardedForFragmentation();
 					if (clonedFragment.getTreeDepth() < this.maximumTreeDepth)
-						newToProcessFragments.add(new FragmentWrapper(clonedFragment, wrappedPrecursorFragment.getCurrentPeakIndexPointer()));
+						newToProcessFragments.add(new FragmentWrapper(clonedFragment,
+								wrappedPrecursorFragment.getCurrentPeakIndexPointer()));
 					continue;
 				}
 				/*
@@ -119,7 +105,8 @@ public class TopDownFragmenterAssignerScorer {
 
 					if (!fragmentsOfCurrentTreeDepth.get(l).isValidFragment()) {
 						if (currentFragment.getTreeDepth() < this.maximumTreeDepth)
-							newToProcessFragments.add(new FragmentWrapper(fragmentsOfCurrentTreeDepth.get(l), currentPeakPointer));
+							newToProcessFragments
+									.add(new FragmentWrapper(fragmentsOfCurrentTreeDepth.get(l), currentPeakPointer));
 						continue;
 					}
 					/*

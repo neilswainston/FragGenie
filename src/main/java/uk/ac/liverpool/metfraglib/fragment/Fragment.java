@@ -14,14 +14,14 @@ public class Fragment {
 
 	private int addedToQueueCounts;
 	private short lastSkippedBond;
-	private de.ipbhalle.metfraglib.FastBitArray atomsFastBitArray;
-	private de.ipbhalle.metfraglib.FastBitArray bondsFastBitArray;
-	private de.ipbhalle.metfraglib.FastBitArray brokenBondsFastBitArray;
+	private FastBitArray atomsFastBitArray;
+	private FastBitArray bondsFastBitArray;
+	private FastBitArray brokenBondsFastBitArray;
 	private int treeDepth;
 	private int numberHydrogens;
 	private boolean isValidFragment;
 	private boolean discardedForFragmentation;
-	
+
 	/**
 	 * constructor setting all bits of atomsFastBitArray and bondsFastBitArray to
 	 * true entire structure is represented
@@ -71,9 +71,8 @@ public class Fragment {
 	 * @return
 	 * @throws AtomTypeNotKnownFromInputListException
 	 */
-	public Fragment[] traverseMolecule(IMolecularStructure precursorMolecule,
-			short bondIndexToRemove, short[] indecesOfBondConnectedAtoms)
-			throws AtomTypeNotKnownFromInputListException {
+	public Fragment[] traverseMolecule(IMolecularStructure precursorMolecule, short bondIndexToRemove,
+			short[] indecesOfBondConnectedAtoms) throws AtomTypeNotKnownFromInputListException {
 
 		/*
 		 * generate first fragment
@@ -134,20 +133,18 @@ public class Fragment {
 
 	}
 
-
-	
 	public int getTreeDepth() {
 		return this.treeDepth;
 	}
-	
+
 	public int getAddedToQueueCounts() {
 		return this.addedToQueueCounts;
 	}
-	
+
 	public void setAddedToQueueCounts(byte addedToQueueCounts) {
 		this.addedToQueueCounts = addedToQueueCounts;
 	}
-	
+
 	public de.ipbhalle.metfraglib.FastBitArray getAtomsFastBitArray() {
 		return this.atomsFastBitArray;
 	}
@@ -159,11 +156,11 @@ public class Fragment {
 	public de.ipbhalle.metfraglib.FastBitArray getBrokenBondsFastBitArray() {
 		return this.brokenBondsFastBitArray;
 	}
-	
+
 	public int getMaximalIndexOfRemovedBond() {
 		return this.brokenBondsFastBitArray.getLastSetBit();
 	}
-	
+
 	public short getLastSkippedBond() {
 		return this.lastSkippedBond;
 	}
@@ -171,11 +168,11 @@ public class Fragment {
 	public void setLastSkippedBond(short lastSkippedBond) {
 		this.lastSkippedBond = lastSkippedBond;
 	}
-	
+
 	public int[] getBrokenBondIndeces() {
 		return this.brokenBondsFastBitArray.getSetIndeces();
 	}
-	
+
 	public IMolecularFormula getMolecularFormula(IMolecularStructure precursorMolecule) {
 		try {
 			BitArrayFragmentMolecularFormula form = new BitArrayFragmentMolecularFormula(
@@ -186,7 +183,7 @@ public class Fragment {
 		}
 		return null;
 	}
-	
+
 	public double getMonoisotopicMass(IMolecularStructure precursorMolecule) {
 		// return this.molecularFormula.getMonoisotopicMass();
 		double mass = 0.0;
@@ -197,7 +194,7 @@ public class Fragment {
 		}
 		return mass;
 	}
-	
+
 	public byte matchToPeak(IMolecularStructure precursorMolecule, int precursorIonTypeIndex, boolean isPositive) {
 
 		double[] ionisationTypeMassCorrection = new double[] {
@@ -212,7 +209,7 @@ public class Fragment {
 
 		return -1;
 	}
-	
+
 	public boolean isValidFragment() {
 		return isValidFragment;
 	}
@@ -220,7 +217,7 @@ public class Fragment {
 	public void setAsValidFragment() {
 		this.isValidFragment = true;
 	}
-	
+
 	public boolean isDiscardedForFragmentation() {
 		return this.discardedForFragmentation;
 	}
@@ -232,20 +229,20 @@ public class Fragment {
 	@Override
 	public Object clone() {
 		try {
-			Fragment clone = new Fragment(this.atomsFastBitArray.clone(), this.bondsFastBitArray.clone(), this.brokenBondsFastBitArray.clone(), this.numberHydrogens);
+			Fragment clone = new Fragment(this.atomsFastBitArray.clone(), this.bondsFastBitArray.clone(),
+					this.brokenBondsFastBitArray.clone(), this.numberHydrogens);
 			clone.setTreeDepth(this.treeDepth);
 			return clone;
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
-	
+
 	private void setTreeDepth(int treeDepth) {
 		this.treeDepth = treeDepth;
 	}
-	
+
 	/**
 	 * traverse the fragment to one direction starting from startAtomIndex to set
 	 * FastBitArrays of new fragment
