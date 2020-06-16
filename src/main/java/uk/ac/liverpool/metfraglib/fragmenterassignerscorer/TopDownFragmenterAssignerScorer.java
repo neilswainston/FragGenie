@@ -13,9 +13,9 @@ import de.ipbhalle.metfraglib.interfaces.IFragment;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.fragment.AbstractFragment;
-import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
+import uk.ac.liverpool.metfraglib.fragment.Fragment;
 import uk.ac.liverpool.metfraglib.fragment.FragmentWrapper;
-import uk.ac.liverpool.metfraglib.fragmenter.TopDownNeutralLossFragmenter;
+import uk.ac.liverpool.metfraglib.fragmenter.Fragmenter;
 
 public class TopDownFragmenterAssignerScorer {
 
@@ -47,7 +47,7 @@ public class TopDownFragmenterAssignerScorer {
 	/**
 	 * 
 	 */
-	private final TopDownNeutralLossFragmenter fragmenter;
+	private final Fragmenter fragmenter;
 
 	/**
 	 * 
@@ -60,7 +60,7 @@ public class TopDownFragmenterAssignerScorer {
 		this.candidate.initialisePrecursorCandidate();
 		this.candidate.setProperty(VariableNames.MAXIMUM_TREE_DEPTH_NAME, Integer.valueOf(this.maximumTreeDepth));
 
-		this.fragmenter = new TopDownNeutralLossFragmenter(this.candidate, this.maximumTreeDepth);
+		this.fragmenter = new Fragmenter(this.candidate, this.maximumTreeDepth);
 
 		this.logger.setLevel(Level.ALL);
 	}
@@ -72,7 +72,7 @@ public class TopDownFragmenterAssignerScorer {
 	public void calculate() throws Exception {
 		final IMolecularStructure candidatePrecursor = this.candidate.getPrecursorMolecule();
 		// generate root fragment to start fragmentation
-		final IFragment root = candidatePrecursor.toFragment();
+		final Fragment root = candidatePrecursor.toFragment();
 
 		Queue<FragmentWrapper> toProcessFragments = new LinkedList<>();
 
@@ -93,9 +93,8 @@ public class TopDownFragmenterAssignerScorer {
 				 */
 				FragmentWrapper wrappedPrecursorFragment = toProcessFragments.poll();
 
-				if (((AbstractFragment) wrappedPrecursorFragment.getWrappedFragment()).isDiscardedForFragmentation()) {
-					AbstractTopDownBitArrayFragment clonedFragment = (AbstractTopDownBitArrayFragment) wrappedPrecursorFragment
-							.getWrappedFragment().clone(candidatePrecursor);
+				if (wrappedPrecursorFragment.getWrappedFragment().isDiscardedForFragmentation()) {
+					Fragment clonedFragment = (Fragment)wrappedPrecursorFragment.getWrappedFragment().clone();
 					clonedFragment.setAsDiscardedForFragmentation();
 					if (clonedFragment.getTreeDepth() < this.maximumTreeDepth)
 						newToProcessFragments.add(new FragmentWrapper(clonedFragment, wrappedPrecursorFragment.getCurrentPeakIndexPointer()));
@@ -104,9 +103,8 @@ public class TopDownFragmenterAssignerScorer {
 				/*
 				 * generate fragments of next tree depth
 				 */
-				java.util.ArrayList<AbstractTopDownBitArrayFragment> fragmentsOfCurrentTreeDepth = this.fragmenter
-						.getFragmentsOfNextTreeDepth(
-								(AbstractTopDownBitArrayFragment)wrappedPrecursorFragment.getWrappedFragment());
+				java.util.ArrayList<Fragment> fragmentsOfCurrentTreeDepth = this.fragmenter
+						.getFragmentsOfNextTreeDepth(wrappedPrecursorFragment.getWrappedFragment());
 
 				/*
 				 * get peak pointer of current precursor fragment
@@ -117,7 +115,7 @@ public class TopDownFragmenterAssignerScorer {
 				 * them to the current peak
 				 */
 				for (int l = 0; l < fragmentsOfCurrentTreeDepth.size(); l++) {
-					AbstractTopDownBitArrayFragment currentFragment = fragmentsOfCurrentTreeDepth.get(l);
+					Fragment currentFragment = fragmentsOfCurrentTreeDepth.get(l);
 
 					if (!fragmentsOfCurrentTreeDepth.get(l).isValidFragment()) {
 						if (currentFragment.getTreeDepth() < this.maximumTreeDepth)
@@ -179,12 +177,12 @@ public class TopDownFragmenterAssignerScorer {
 	 * @param currentFragment
 	 * @return boolean
 	 */
-	private boolean wasAlreadyGeneratedByHashtable(final AbstractTopDownBitArrayFragment currentFragment) {
+	private boolean wasAlreadyGeneratedByHashtable(final Fragment currentFragment) {
 		String currentHash = currentFragment.getAtomsFastBitArray().toString();
 		Integer minimalTreeDepth = this.bitArrayToFragment.get(currentHash);
 
 		if (minimalTreeDepth == null) {
-			this.bitArrayToFragment.put(currentHash, (int) currentFragment.getTreeDepth());
+			this.bitArrayToFragment.put(currentHash, currentFragment.getTreeDepth());
 			return false;
 		}
 

@@ -1,26 +1,38 @@
 package uk.ac.liverpool.metfraglib.fragmenter;
 
 import java.util.ArrayList;
+import java.util.Queue;
 
 import de.ipbhalle.metfraglib.FastBitArray;
+import de.ipbhalle.metfraglib.additionals.NeutralLosses;
+import de.ipbhalle.metfraglib.fragment.BitArrayNeutralLoss;
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.FragmentList;
 import de.ipbhalle.metfraglib.parameter.Constants;
+import de.ipbhalle.metfraglib.precursor.AbstractTopDownBitArrayPrecursor;
 import de.ipbhalle.metfraglib.precursor.BitArrayPrecursor;
-import uk.ac.liverpool.metfraglib.fragment.AbstractTopDownBitArrayFragment;
+import uk.ac.liverpool.metfraglib.fragment.Fragment;
 
-public class TopDownFragmenter {
+public class Fragmenter {
 
-	protected Double minimumMassDeviationForFragmentGeneration = Constants.DEFAULT_MIN_MASS_DEV_FOR_FRAGMENT_GENERATION;
-	protected Byte maximumNumberOfAFragmentAddedToQueue;
-	protected int numberOfGeneratedFragments = 0;
-	protected boolean ringBondsInitialised;
-	protected FastBitArray ringBondFastBitArray;
-	protected ICandidate candidate;
-	protected int maximumTreeDepth;
-	protected Double minimumFragmentMassLimit;
+	private Double minimumMassDeviationForFragmentGeneration = Constants.DEFAULT_MIN_MASS_DEV_FOR_FRAGMENT_GENERATION;
+	private Byte maximumNumberOfAFragmentAddedToQueue;
+	private boolean ringBondsInitialised;
+	private FastBitArray ringBondFastBitArray;
+	private ICandidate candidate;
+	private int maximumTreeDepth;
+	private Double minimumFragmentMassLimit;
+	private BitArrayNeutralLoss[] detectedNeutralLosses;
+	private java.util.ArrayList<Short> brokenBondToNeutralLossIndex = new java.util.ArrayList<>();
+	private java.util.ArrayList<Integer> neutralLossIndex = new java.util.ArrayList<>();
 
-	public TopDownFragmenter(final ICandidate candidate, final int maximumTreeDepth) throws Exception {
+	/**
+	 * 
+	 * @param candidate
+	 * @param maximumTreeDepth
+	 * @throws Exception
+	 */
+	public Fragmenter(final ICandidate candidate, final int maximumTreeDepth) throws Exception {
 		this.candidate = candidate;
 		this.maximumTreeDepth = maximumTreeDepth;
 		this.minimumFragmentMassLimit = 0.0;
@@ -28,32 +40,34 @@ public class TopDownFragmenter {
 		this.ringBondsInitialised = false;
 		this.ringBondFastBitArray = new FastBitArray(this.candidate.getPrecursorMolecule().getNonHydrogenBondCount(),
 				false);
+		this.detectedNeutralLosses = new NeutralLosses()
+				.getMatchingAtoms((AbstractTopDownBitArrayPrecursor) this.candidate.getPrecursorMolecule());
 	}
 
 	public FragmentList generateFragments() throws Exception {
 		FragmentList generatedFragments = new FragmentList();
-		java.util.Queue<AbstractTopDownBitArrayFragment> temporaryFragments = new java.util.LinkedList<>();
+		java.util.Queue<Fragment> temporaryFragments = new java.util.LinkedList<>();
 		java.util.Queue<Byte> numberOfFragmentAddedToQueue = new java.util.LinkedList<>();
 		java.util.Queue<de.ipbhalle.metfraglib.FastBitArray> nextBondIndecesToRemove = new java.util.LinkedList<>();
 
 		/*
 		 * set first fragment as root for fragment generation (precursor)
 		 */
-		AbstractTopDownBitArrayFragment root = (AbstractTopDownBitArrayFragment) this.candidate.getPrecursorMolecule()
+		Fragment root = (Fragment) this.candidate.getPrecursorMolecule()
 				.toFragment();
-		root.setID(++this.numberOfGeneratedFragments);
-		temporaryFragments.add(root);
+		// root.setWasRingCleavedFragment(false);
 		generatedFragments.addElement(root);
+		temporaryFragments.add(root);
 		numberOfFragmentAddedToQueue.add((byte) 1);
 		nextBondIndecesToRemove.add(root.getBondsFastBitArray());
 
 		for (int k = 1; k <= this.maximumTreeDepth; k++) {
-			java.util.Queue<AbstractTopDownBitArrayFragment> newTemporaryFragments = new java.util.LinkedList<>();
+			Queue<Fragment> newTemporaryFragments = new java.util.LinkedList<>();
 			java.util.Queue<Byte> newNumberOfFragmentAddedToQueue = new java.util.LinkedList<>();
 			java.util.Queue<de.ipbhalle.metfraglib.FastBitArray> newNextBondIndecesToRemove = new java.util.LinkedList<>();
 
 			while (!temporaryFragments.isEmpty()) {
-				AbstractTopDownBitArrayFragment nextTopDownFragmentForFragmentation = temporaryFragments.poll();
+				Fragment nextTopDownFragmentForFragmentation = temporaryFragments.poll();
 				byte numberOfNextTopDownFragmentForFragmentationAddedToQueue = numberOfFragmentAddedToQueue.poll();
 				int[] indecesOfSetBondsOfNextTopDownFragment = nextBondIndecesToRemove.poll().getSetIndeces();
 
@@ -68,13 +82,13 @@ public class TopDownFragmenter {
 							|| !nextTopDownFragmentForFragmentation.getBondsFastBitArray().get(nextBondIndexToRemove)) {
 						continue;
 					}
-					short[] indecesOfBondConnectedAtoms = ((BitArrayPrecursor) this.candidate.getPrecursorMolecule())
-							.getConnectedAtomIndecesOfBondIndex(nextBondIndexToRemove);
+					short[] indecesOfBondConnectedAtoms = ((AbstractTopDownBitArrayPrecursor) this.candidate
+							.getPrecursorMolecule()).getConnectedAtomIndecesOfBondIndex(nextBondIndexToRemove);
 					/*
 					 * getting fragment generated by cleavage of the current bond
 					 * "nextBondIndexToRemove"
 					 */
-					AbstractTopDownBitArrayFragment[] newGeneratedTopDownFragments = nextTopDownFragmentForFragmentation
+					Fragment[] newGeneratedTopDownFragments = nextTopDownFragmentForFragmentation
 							.traverseMolecule(this.candidate.getPrecursorMolecule(), nextBondIndexToRemove,
 									indecesOfBondConnectedAtoms);
 
@@ -82,10 +96,11 @@ public class TopDownFragmenter {
 					 * if we got two fragments then save these as valid ones
 					 */
 					if (newGeneratedTopDownFragments.length == 2) {
+						this.checkForNeutralLossesAdaptMolecularFormulas(newGeneratedTopDownFragments,
+								nextBondIndexToRemove);
 						if (newGeneratedTopDownFragments[0].getMonoisotopicMass(
 								this.candidate.getPrecursorMolecule()) > this.minimumFragmentMassLimit
 										- this.minimumMassDeviationForFragmentGeneration) {
-							newGeneratedTopDownFragments[0].setID(++this.numberOfGeneratedFragments);
 							generatedFragments.addElement(newGeneratedTopDownFragments[0]);
 							newNextBondIndecesToRemove.add(newGeneratedTopDownFragments[0].getBondsFastBitArray());
 							newNumberOfFragmentAddedToQueue.add((byte) 1);
@@ -94,13 +109,11 @@ public class TopDownFragmenter {
 						if (newGeneratedTopDownFragments[1].getMonoisotopicMass(
 								this.candidate.getPrecursorMolecule()) > this.minimumFragmentMassLimit
 										- this.minimumMassDeviationForFragmentGeneration) {
-							newGeneratedTopDownFragments[1].setID(++this.numberOfGeneratedFragments);
 							generatedFragments.addElement(newGeneratedTopDownFragments[1]);
 							newNextBondIndecesToRemove.add(newGeneratedTopDownFragments[1].getBondsFastBitArray());
 							newNumberOfFragmentAddedToQueue.add((byte) 1);
 							newTemporaryFragments.add(newGeneratedTopDownFragments[1]);
 						}
-
 					}
 					/*
 					 * if just one fragment then we have to cleave once again
@@ -137,27 +150,87 @@ public class TopDownFragmenter {
 	}
 
 	/**
+	 * return true if neutral loss has been detected before true is returned mass as
+	 * well as molecular formula is modified
 	 * 
 	 * @param newGeneratedTopDownFragments
+	 * @return
 	 */
-	protected void processGeneratedFragments(AbstractTopDownBitArrayFragment[] newGeneratedTopDownFragments) {
-		if (newGeneratedTopDownFragments.length == 2) {
-			newGeneratedTopDownFragments[0].setID(++this.numberOfGeneratedFragments);
-			newGeneratedTopDownFragments[0].setAddedToQueueCounts((byte) 1);
-			newGeneratedTopDownFragments[1].setID(++this.numberOfGeneratedFragments);
-			newGeneratedTopDownFragments[1].setAddedToQueueCounts((byte) 1);
-			if (newGeneratedTopDownFragments[0]
-					.getMonoisotopicMass(this.candidate.getPrecursorMolecule()) <= this.minimumFragmentMassLimit
-							- this.minimumMassDeviationForFragmentGeneration) {
-				newGeneratedTopDownFragments[0].setAsDiscardedForFragmentation();
+	private boolean checkForNeutralLossesAdaptMolecularFormulas(
+			Fragment[] newGeneratedTopDownFragments, short removedBondIndex) {
+		if (newGeneratedTopDownFragments.length != 2) {
+			System.err.println("Error: Cannot check for neutral losses for these fragments."); //$NON-NLS-1$
+			return false;
+		}
+		byte neutralLossFragment = -1;
+		for (int i = 0; i < this.detectedNeutralLosses.length; i++) {
+			for (int ii = 0; ii < this.detectedNeutralLosses[i].getNumberNeutralLosses(); ii++) {
+				if (newGeneratedTopDownFragments[0].getAtomsFastBitArray()
+						.equals(this.detectedNeutralLosses[i].getNeutralLossAtomFastBitArray(ii))) {
+					newGeneratedTopDownFragments[1].getMolecularFormula(this.candidate.getPrecursorMolecule())
+							.setNumberHydrogens((short) (newGeneratedTopDownFragments[1]
+									.getMolecularFormula(this.candidate.getPrecursorMolecule()).getNumberHydrogens()
+									+ this.detectedNeutralLosses[i].getHydrogenDifference()));
+					/*
+					 * check for previous broken bonds caused by neutral loss
+					 */
+					int[] brokenBondIndeces = newGeneratedTopDownFragments[1].getBrokenBondIndeces();
+					for (int s = 0; s < brokenBondIndeces.length; s++) {
+						int index = this.brokenBondToNeutralLossIndex.indexOf((short) brokenBondIndeces[s]);
+						if ((short) brokenBondIndeces[s] == removedBondIndex) {
+							if (index == -1) {
+								this.brokenBondToNeutralLossIndex.add(removedBondIndex);
+								this.neutralLossIndex.add(i);
+							}
+							continue;
+						}
+						if (index != -1) {
+							newGeneratedTopDownFragments[1].getMolecularFormula(this.candidate.getPrecursorMolecule())
+									.setNumberHydrogens((short) (newGeneratedTopDownFragments[1]
+											.getMolecularFormula(this.candidate.getPrecursorMolecule())
+											.getNumberHydrogens()
+											+ this.detectedNeutralLosses[this.neutralLossIndex.get(index)]
+													.getHydrogenDifference()));
+						}
+					}
+					return true;
+				} else if (newGeneratedTopDownFragments[1].getAtomsFastBitArray()
+						.equals(this.detectedNeutralLosses[i].getNeutralLossAtomFastBitArray(ii))) {
+					newGeneratedTopDownFragments[0].getMolecularFormula(this.candidate.getPrecursorMolecule())
+							.setNumberHydrogens((short) (newGeneratedTopDownFragments[0]
+									.getMolecularFormula(this.candidate.getPrecursorMolecule()).getNumberHydrogens()
+									+ this.detectedNeutralLosses[i].getHydrogenDifference()));
+					// newGeneratedTopDownFragments[0].setTreeDepth((byte)(newGeneratedTopDownFragments[0].getTreeDepth()
+					// - 1));
+					/*
+					 * check for previous broken bonds caused by neutral loss
+					 */
+					int[] brokenBondIndeces = newGeneratedTopDownFragments[0].getBrokenBondIndeces();
+					for (int s = 0; s < brokenBondIndeces.length; s++) {
+						int index = this.brokenBondToNeutralLossIndex.indexOf((short) brokenBondIndeces[s]);
+						if ((short) brokenBondIndeces[s] == removedBondIndex) {
+							if (index == -1) {
+								this.brokenBondToNeutralLossIndex.add(removedBondIndex);
+								this.neutralLossIndex.add(i);
+							}
+							continue;
+						}
+						if (index != -1) {
+							newGeneratedTopDownFragments[0].getMolecularFormula(this.candidate.getPrecursorMolecule())
+									.setNumberHydrogens((short) (newGeneratedTopDownFragments[0]
+											.getMolecularFormula(this.candidate.getPrecursorMolecule())
+											.getNumberHydrogens()
+											+ this.detectedNeutralLosses[this.neutralLossIndex.get(index)]
+													.getHydrogenDifference()));
+						}
+					}
+					return true;
+				}
 			}
-			if (newGeneratedTopDownFragments[1]
-					.getMonoisotopicMass(this.candidate.getPrecursorMolecule()) <= this.minimumFragmentMassLimit
-							- this.minimumMassDeviationForFragmentGeneration) {
-				newGeneratedTopDownFragments[1].setAsDiscardedForFragmentation();
-			}
-		} else
-			newGeneratedTopDownFragments[0].setID(++this.numberOfGeneratedFragments);
+		}
+		if (neutralLossFragment == -1)
+			return false;
+		return true;
 	}
 
 	/**
@@ -166,18 +239,17 @@ public class TopDownFragmenter {
 	 * 
 	 * @throws Exception
 	 */
-	public ArrayList<AbstractTopDownBitArrayFragment> getFragmentsOfNextTreeDepth(
-			AbstractTopDownBitArrayFragment precursorFragment) throws Exception {
+	public ArrayList<Fragment> getFragmentsOfNextTreeDepth(
+			Fragment precursorFragment) throws Exception {
 		FastBitArray ringBonds = new FastBitArray(precursorFragment.getBondsFastBitArray().getSize(), false);
-		java.util.Queue<AbstractTopDownBitArrayFragment> ringBondCuttedFragments = new java.util.LinkedList<>();
+		java.util.Queue<Fragment> ringBondCuttedFragments = new java.util.LinkedList<>();
 		java.util.Queue<Short> lastCuttedBondOfRing = new java.util.LinkedList<>();
-		ArrayList<AbstractTopDownBitArrayFragment> fragmentsOfNextTreeDepth = new ArrayList<>();
+		ArrayList<Fragment> fragmentsOfNextTreeDepth = new ArrayList<>();
 		/*
 		 * generate fragments of skipped bonds
 		 */
 		if (this.ringBondsInitialised)
 			this.generateFragmentsOfSkippedBonds(fragmentsOfNextTreeDepth, precursorFragment);
-
 		/*
 		 * get the last bond index that was removed; from there on the next bonds will
 		 * be removed
@@ -194,7 +266,7 @@ public class TopDownFragmenter {
 			/*
 			 * try to generate at most two fragments by the removal of the given bond
 			 */
-			AbstractTopDownBitArrayFragment[] newGeneratedTopDownFragments = precursorFragment
+			Fragment[] newGeneratedTopDownFragments = precursorFragment
 					.traverseMolecule(this.candidate.getPrecursorMolecule(), i, indecesOfBondConnectedAtoms);
 			/*
 			 * in case the precursor wasn't splitted try to cleave an additional bond until
@@ -204,6 +276,7 @@ public class TopDownFragmenter {
 			 */
 			if (newGeneratedTopDownFragments.length == 1) {
 				ringBonds.set(i, true);
+				newGeneratedTopDownFragments[0].setLastSkippedBond((short) (i + 1));
 				ringBondCuttedFragments.add(newGeneratedTopDownFragments[0]);
 				lastCuttedBondOfRing.add(i);
 				if (!this.ringBondsInitialised)
@@ -217,6 +290,7 @@ public class TopDownFragmenter {
 			 * if two new fragments have been generated set them as valid
 			 */
 			if (newGeneratedTopDownFragments.length == 2) {
+				this.checkForNeutralLossesAdaptMolecularFormulas(newGeneratedTopDownFragments, i);
 				newGeneratedTopDownFragments[0].setAsValidFragment();
 				newGeneratedTopDownFragments[1].setAsValidFragment();
 			}
@@ -224,8 +298,18 @@ public class TopDownFragmenter {
 			 * add fragment/s to vector after setting the proper precursor
 			 */
 			for (int k = 0; k < newGeneratedTopDownFragments.length; k++) {
+				// precursorFragment.addChild(newGeneratedTopDownFragments[k]);
 				if (newGeneratedTopDownFragments.length == 2)
 					fragmentsOfNextTreeDepth.add(newGeneratedTopDownFragments[k]);
+				/*
+				 * if (precursorFragment.isValidFragment()) {
+				 * newGeneratedTopDownFragments[k].setPrecursorFragment(precursorFragment); }
+				 * else {
+				 * newGeneratedTopDownFragments[k].setPrecursorFragment(precursorFragment.
+				 * hasPrecursorFragment() ? precursorFragment.getPrecursorFragment() :
+				 * precursorFragment); }
+				 */
+
 			}
 		}
 		/*
@@ -239,6 +323,81 @@ public class TopDownFragmenter {
 	}
 
 	/**
+	 * @throws Exception
+	 * 
+	 */
+
+	/*
+	 * generate fragments by removing bonds that were skipped due to ring bond
+	 * cleavage
+	 */
+	private void generateFragmentsOfSkippedBonds(
+			ArrayList<Fragment> newGeneratedTopDownFragments,
+			Fragment precursorFragment) throws Exception {
+		short lastSkippedBonds = precursorFragment.getLastSkippedBond();
+		short lastCuttedBond = (short) (precursorFragment.getMaximalIndexOfRemovedBond());
+		if (lastSkippedBonds == -1)
+			return;
+		for (short currentBond = lastSkippedBonds; currentBond < lastCuttedBond; currentBond++) {
+
+			if (this.ringBondFastBitArray.get(currentBond))
+				continue;
+			if (!precursorFragment.getBondsFastBitArray().get(currentBond))
+				continue;
+
+			short[] connectedAtomIndeces = ((BitArrayPrecursor) this.candidate.getPrecursorMolecule())
+					.getConnectedAtomIndecesOfBondIndex(currentBond);
+
+			Fragment[] newFragments = precursorFragment
+					.traverseMolecule(this.candidate.getPrecursorMolecule(), currentBond, connectedAtomIndeces);
+
+			this.processGeneratedFragments(newFragments);
+			if (newFragments.length == 2) {
+				this.checkForNeutralLossesAdaptMolecularFormulas(newFragments, currentBond);
+				newFragments[0].setAsValidFragment();
+				newFragments[1].setAsValidFragment();
+			} else {
+				System.err.println("problem generating fragments"); //$NON-NLS-1$
+				System.exit(1);
+			}
+
+			for (int k = 0; k < newFragments.length; k++) {
+				// precursorFragment.addChild(newFragments[k]);
+				/*
+				 * if (precursorFragment.isValidFragment())
+				 * newFragments[k].setPrecursorFragment(precursorFragment); else
+				 * newFragments[k].setPrecursorFragment(precursorFragment.hasPrecursorFragment()
+				 * ? precursorFragment.getPrecursorFragment() : precursorFragment);
+				 */
+				if (newFragments.length == 2) {
+					newGeneratedTopDownFragments.add(newFragments[k]);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @param newGeneratedTopDownFragments
+	 */
+	private void processGeneratedFragments(Fragment[] newGeneratedTopDownFragments) {
+		if (newGeneratedTopDownFragments.length == 2) {
+			newGeneratedTopDownFragments[0].setAddedToQueueCounts((byte) 1);
+			newGeneratedTopDownFragments[1].setAddedToQueueCounts((byte) 1);
+			if (newGeneratedTopDownFragments[0]
+					.getMonoisotopicMass(this.candidate.getPrecursorMolecule()) <= this.minimumFragmentMassLimit
+							- this.minimumMassDeviationForFragmentGeneration) {
+				newGeneratedTopDownFragments[0].setAsDiscardedForFragmentation();
+			}
+			if (newGeneratedTopDownFragments[1]
+					.getMonoisotopicMass(this.candidate.getPrecursorMolecule()) <= this.minimumFragmentMassLimit
+							- this.minimumMassDeviationForFragmentGeneration) {
+				newGeneratedTopDownFragments[1].setAsDiscardedForFragmentation();
+			}
+		}
+	}
+	
+	/**
 	 * 
 	 * @param newGeneratedTopDownFragments
 	 * @param precursorFragment
@@ -248,10 +407,10 @@ public class TopDownFragmenter {
 	 * @return
 	 * @throws Exception
 	 */
-	protected ArrayList<AbstractTopDownBitArrayFragment> createRingBondCleavedFragments(
-			ArrayList<AbstractTopDownBitArrayFragment> newGeneratedTopDownFragments,
-			AbstractTopDownBitArrayFragment precursorFragment,
-			java.util.Queue<AbstractTopDownBitArrayFragment> toProcess, FastBitArray ringBondFastBitArray,
+	private ArrayList<Fragment> createRingBondCleavedFragments(
+			ArrayList<Fragment> newGeneratedTopDownFragments,
+			Fragment precursorFragment,
+			java.util.Queue<Fragment> toProcess, FastBitArray ringBondFastBitArray,
 			java.util.Queue<Short> lastCuttedRingBond) throws Exception {
 		/*
 		 * process all fragments that have been cutted in a ring without generating a
@@ -261,7 +420,7 @@ public class TopDownFragmenter {
 			/*
 			 * 
 			 */
-			AbstractTopDownBitArrayFragment currentFragment = toProcess.poll();
+			Fragment currentFragment = toProcess.poll();
 			short nextRingBondToCut = (short) (lastCuttedRingBond.poll() + 1);
 			/*
 			 * 
@@ -271,7 +430,7 @@ public class TopDownFragmenter {
 					continue;
 				if (currentFragment.getBrokenBondsFastBitArray().get(currentBond))
 					continue;
-				AbstractTopDownBitArrayFragment[] newFragments = { currentFragment };
+				Fragment[] newFragments = { currentFragment };
 				short[] connectedAtomIndeces = ((BitArrayPrecursor) this.candidate.getPrecursorMolecule())
 						.getConnectedAtomIndecesOfBondIndex(currentBond);
 				newFragments = currentFragment.traverseMolecule(this.candidate.getPrecursorMolecule(), currentBond,
@@ -312,42 +471,5 @@ public class TopDownFragmenter {
 		}
 
 		return newGeneratedTopDownFragments;
-	}
-
-	/*
-	 * generate fragments by removing bonds that were skipped due to ring bond
-	 * cleavage
-	 */
-	protected void generateFragmentsOfSkippedBonds(
-			ArrayList<AbstractTopDownBitArrayFragment> newGeneratedTopDownFragments,
-			AbstractTopDownBitArrayFragment precursorFragment) throws Exception {
-		short lastSkippedBonds = precursorFragment.getLastSkippedBond();
-		if (lastSkippedBonds == -1 || precursorFragment.getNonHydrogenBondCount() <= lastSkippedBonds)
-			return;
-
-		for (short currentBond = lastSkippedBonds; currentBond < this.ringBondFastBitArray.getSize(); currentBond++) {
-			if (!this.ringBondFastBitArray.get(currentBond))
-				continue;
-			if (!precursorFragment.getBondsFastBitArray().get(currentBond))
-				continue;
-			short[] connectedAtomIndeces = ((BitArrayPrecursor) this.candidate.getPrecursorMolecule())
-					.getConnectedAtomIndecesOfBondIndex(currentBond);
-			AbstractTopDownBitArrayFragment[] newFragments = precursorFragment
-					.traverseMolecule(this.candidate.getPrecursorMolecule(), currentBond, connectedAtomIndeces);
-			this.processGeneratedFragments(newFragments);
-			if (newFragments.length == 2) {
-				newFragments[0].setAsValidFragment();
-				newFragments[1].setAsValidFragment();
-			} else {
-				System.err.println("problem generating fragments"); //$NON-NLS-1$
-				System.exit(1);
-			}
-
-			for (int k = 0; k < newFragments.length; k++) {
-				if (newFragments.length == 2) {
-					newGeneratedTopDownFragments.add(newFragments[k]);
-				}
-			}
-		}
 	}
 }

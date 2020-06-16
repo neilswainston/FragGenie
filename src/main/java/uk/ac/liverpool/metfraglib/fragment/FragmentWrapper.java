@@ -1,7 +1,5 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
-import de.ipbhalle.metfraglib.interfaces.IFragment;
-
 /**
  * 
  * @author neilswainston
@@ -16,13 +14,13 @@ public class FragmentWrapper {
 	/**
 	 * 
 	 */
-	private IFragment fragment;
+	private Fragment fragment;
 
 	/**
 	 * 
 	 * @param wrappedFragment
 	 */
-	public FragmentWrapper(final IFragment fragment) {
+	public FragmentWrapper(final Fragment fragment) {
 		this.fragment = fragment;
 	}
 
@@ -31,7 +29,7 @@ public class FragmentWrapper {
 	 * @param root
 	 * @param currentPeakIndexPointer
 	 */
-	public FragmentWrapper(final IFragment fragment, final int peakIndex) {
+	public FragmentWrapper(final Fragment fragment, final int peakIndex) {
 		this.fragment = fragment;
 		this.peakIndex = peakIndex;
 	}
@@ -56,7 +54,7 @@ public class FragmentWrapper {
 	 * 
 	 * @return
 	 */
-	public IFragment getWrappedFragment() {
+	public Fragment getWrappedFragment() {
 		return this.fragment;
 	}
 
@@ -64,7 +62,7 @@ public class FragmentWrapper {
 	 * 
 	 * @param fragment
 	 */
-	public void setWrappedFragment(final AbstractTopDownBitArrayFragment fragment) {
+	public void setWrappedFragment(final Fragment fragment) {
 		this.fragment = fragment;
 	}
 }
