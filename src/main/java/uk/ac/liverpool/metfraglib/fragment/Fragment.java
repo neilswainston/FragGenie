@@ -14,12 +14,13 @@ import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
+import de.ipbhalle.metfraglib.exceptions.ExplicitHydrogenRepresentationException;
 import de.ipbhalle.metfraglib.interfaces.IFragment;
 import de.ipbhalle.metfraglib.interfaces.IMatch;
 import de.ipbhalle.metfraglib.interfaces.IMolecularFormula;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 import de.ipbhalle.metfraglib.interfaces.IPeak;
-import uk.ac.liverpool.metfraglib.molecularformula.BitArrayFragmentMolecularFormula;
+import uk.ac.liverpool.metfraglib.molecularformula.MolecularFormula;
 import de.ipbhalle.metfraglib.parameter.Constants;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
@@ -183,8 +184,8 @@ public class Fragment implements IFragment {
 		return this.brokenBondsFastBitArray.getSetIndeces();
 	}
 
-	public IMolecularFormula getMolecularFormula(Precursor precursorMolecule) throws AtomTypeNotKnownFromInputListException {
-		return new BitArrayFragmentMolecularFormula(precursorMolecule, this.atomsFastBitArray);
+	public MolecularFormula getMolecularFormula(Precursor precursorMolecule) throws AtomTypeNotKnownFromInputListException, ExplicitHydrogenRepresentationException {
+		return new MolecularFormula(precursorMolecule, this.atomsFastBitArray);
 	}
 
 	public double getMonoisotopicMass(Precursor precursorMolecule) {

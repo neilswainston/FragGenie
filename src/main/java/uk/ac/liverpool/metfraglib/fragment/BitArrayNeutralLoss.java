@@ -3,33 +3,62 @@ package uk.ac.liverpool.metfraglib.fragment;
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.additionals.NeutralLosses;
 
+/**
+ * 
+ * @author neilswainston
+ */
 public class BitArrayNeutralLoss {
-
-	private FastBitArray[] neutralLossAtoms;
-	/*
-	 * relates to de.ipbhalle.metfrag.additionals.NeutralLosses
+	/**
+	 * 
 	 */
-	private byte neutralLossIndex;
+	private final FastBitArray[] neutralLossAtoms;
 	
-	public BitArrayNeutralLoss(int numberNeutralLosses, byte neutralLossIndex) {
+	/**
+	 * 
+	 */
+	private final byte neutralLossIndex;
+	
+	/**
+	 * 
+	 * @param numberNeutralLosses
+	 * @param neutralLossIndex
+	 */
+	public BitArrayNeutralLoss(final int numberNeutralLosses, final byte neutralLossIndex) {
 		this.neutralLossAtoms = new FastBitArray[numberNeutralLosses];
 		this.neutralLossIndex = neutralLossIndex;
 	}
 	
-	public FastBitArray getNeutralLossAtomFastBitArray(int index) {
+	/**
+	 * 
+	 * @param index
+	 * @return
+	 */
+	public FastBitArray getNeutralLossAtomFastBitArray(final int index) {
 		return this.neutralLossAtoms[index];
 	}
 	
+	/**
+	 * 
+	 * @return int
+	 */
 	public int getNumberNeutralLosses() {
 		return this.neutralLossAtoms.length;
 	}
 	
-	public void setNeutralLoss(int index, FastBitArray neutralLossAtoms) {
+	/**
+	 * 
+	 * @param index
+	 * @param neutralLossAtoms
+	 */
+	public void setNeutralLoss(final int index, final FastBitArray neutralLossAtoms) {
 		this.neutralLossAtoms[index] = neutralLossAtoms;
 	}
 	
+	/**
+	 * 
+	 * @return byte
+	 */
 	public byte getHydrogenDifference() {
 		return new NeutralLosses().getHydrogenDifference(this.neutralLossIndex);
 	}
-	
 }

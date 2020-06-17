@@ -9,6 +9,7 @@ import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
+import de.ipbhalle.metfraglib.exceptions.ExplicitHydrogenRepresentationException;
 import uk.ac.liverpool.metfraglib.fragment.BitArrayNeutralLoss;
 import de.ipbhalle.metfraglib.parameter.Constants;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
@@ -49,9 +50,10 @@ public class Fragmenter {
 	 * @param newGeneratedTopDownFragments
 	 * @return
 	 * @throws AtomTypeNotKnownFromInputListException 
+	 * @throws ExplicitHydrogenRepresentationException 
 	 */
 	private boolean checkForNeutralLossesAdaptMolecularFormulas(Fragment[] newGeneratedTopDownFragments,
-			short removedBondIndex) throws AtomTypeNotKnownFromInputListException {
+			short removedBondIndex) throws AtomTypeNotKnownFromInputListException, ExplicitHydrogenRepresentationException {
 		if (newGeneratedTopDownFragments.length != 2) {
 			System.err.println("Error: Cannot check for neutral losses for these fragments."); //$NON-NLS-1$
 			return false;
@@ -191,15 +193,6 @@ public class Fragmenter {
 				// precursorFragment.addChild(newGeneratedTopDownFragments[k]);
 				if (newGeneratedTopDownFragments.length == 2)
 					fragmentsOfNextTreeDepth.add(newGeneratedTopDownFragments[k]);
-				/*
-				 * if (precursorFragment.isValidFragment()) {
-				 * newGeneratedTopDownFragments[k].setPrecursorFragment(precursorFragment); }
-				 * else {
-				 * newGeneratedTopDownFragments[k].setPrecursorFragment(precursorFragment.
-				 * hasPrecursorFragment() ? precursorFragment.getPrecursorFragment() :
-				 * precursorFragment); }
-				 */
-
 			}
 		}
 		/*
@@ -412,8 +405,7 @@ public class Fragmenter {
 					 * create BitArrayNeutralLosses of valid neutral loss part detections
 					 */
 					if(numberOfValidNeutralLosses != 0) {
-						BitArrayNeutralLoss newDetectedNeutralLoss = 
-							new BitArrayNeutralLoss(numberOfValidNeutralLosses, i);
+						BitArrayNeutralLoss newDetectedNeutralLoss =  new BitArrayNeutralLoss(numberOfValidNeutralLosses, i);
 						int neutralLossIndexOfBitArrayNeutralLoss = 0;
 						for(int k = 0; k < validMatches.length; k++) {
 							if(validMatches[k]) {
