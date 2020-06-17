@@ -297,7 +297,6 @@ public class Precursor implements IMolecularStructure {
 
 	@Override
 	public IAtomContainer getStructureAsIAtomContainer() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.precursorMolecule;
 	}
 }

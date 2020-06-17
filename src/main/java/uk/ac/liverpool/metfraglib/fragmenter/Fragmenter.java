@@ -8,6 +8,7 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 
 import de.ipbhalle.metfraglib.FastBitArray;
+import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
 import uk.ac.liverpool.metfraglib.fragment.BitArrayNeutralLoss;
 import de.ipbhalle.metfraglib.parameter.Constants;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
@@ -47,9 +48,10 @@ public class Fragmenter {
 	 * 
 	 * @param newGeneratedTopDownFragments
 	 * @return
+	 * @throws AtomTypeNotKnownFromInputListException 
 	 */
 	private boolean checkForNeutralLossesAdaptMolecularFormulas(Fragment[] newGeneratedTopDownFragments,
-			short removedBondIndex) {
+			short removedBondIndex) throws AtomTypeNotKnownFromInputListException {
 		if (newGeneratedTopDownFragments.length != 2) {
 			System.err.println("Error: Cannot check for neutral losses for these fragments."); //$NON-NLS-1$
 			return false;
