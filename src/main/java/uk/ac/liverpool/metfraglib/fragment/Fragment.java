@@ -1,5 +1,6 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -199,19 +200,26 @@ public class Fragment implements IFragment {
 		return mass;
 	}
 
-	public byte matchToPeak(Precursor precursorMolecule, int precursorIonTypeIndex, boolean isPositive) {
-
-		double[] ionisationTypeMassCorrection = new double[] {
+	/**
+	 * 
+	 * @param precursorMolecule
+	 * @param precursorIonTypeIndex
+	 * @param isPositive
+	 * @return List<Double>
+	 */
+	public List<Double> getMasses(Precursor precursorMolecule, int precursorIonTypeIndex, boolean isPositive) {
+		final List<Double> masses = new ArrayList<>();
+		
+		final double[] ionisationTypeMassCorrection = new double[] {
 				Constants.getIonisationTypeMassCorrection(precursorIonTypeIndex, isPositive),
 				Constants.getIonisationTypeMassCorrection(0, isPositive) };
 
 		for (int i = 0; i < ionisationTypeMassCorrection.length; i++) {
-			double currentFragmentMass = this.getMonoisotopicMass(precursorMolecule) + ionisationTypeMassCorrection[i];
-
-			System.out.println(currentFragmentMass);
+			final double mass = this.getMonoisotopicMass(precursorMolecule) + ionisationTypeMassCorrection[i];
+			masses.add(mass);
 		}
 
-		return -1;
+		return masses;
 	}
 
 	public boolean isValidFragment() {

@@ -8,12 +8,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.TreeSet;
 
 import org.apache.log4j.Level;
-import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IMolecularFormula;
-import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 
 import de.ipbhalle.metfraglib.interfaces.ICandidate;
 import de.ipbhalle.metfraglib.list.CandidateList;
@@ -93,23 +89,8 @@ public class MetFrag {
 		// final IAtomContainer molecule = parser.parseSmiles(smiles);
 
 		// Get settings:
-		final IAtomContainer[] fragments = generateAllFragments(smiles, maximumTreeDepth);
-		final Collection<Double> massesSet = new TreeSet<>();
-
-		for (int i = 0; i < fragments.length; i++) {
-			IAtomContainer fragment = fragments[i];
-			final IMolecularFormula formula = MolecularFormulaManipulator.getMolecularFormula(fragment);
-			massesSet.add(Double.valueOf(MolecularFormulaManipulator.getMajorIsotopeMass(formula)));
-		}
-
-		final double[] masses = new double[massesSet.size()];
-		int i = 0;
-
-		for (final Double mass : massesSet) {
-			masses[i++] = mass.doubleValue();
-		}
-
-		return masses;
+		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(Precursor.fromSmiles(smiles));
+		return scorer.getMasses();
 	}
 
 	/**
@@ -154,24 +135,6 @@ public class MetFrag {
 
 			return writer.toString();
 		}
-	}
-
-	/**
-	 * 
-	 * @param smiles
-	 * @param maximumTreeDepth
-	 * @return IAtomContainer[]
-	 * @throws Exception
-	 */
-	private static IAtomContainer[] generateAllFragments(final String smiles, final int maximumTreeDepth)
-			throws Exception {
-		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(
-				Precursor.fromSmiles(smiles));
-		scorer.calculate();
-
-		final IAtomContainer[] fragments = new IAtomContainer[0];
-
-		return fragments;
 	}
 
 	/**

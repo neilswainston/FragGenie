@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
 
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
 import uk.ac.liverpool.metfraglib.fragment.Fragment;
@@ -43,16 +45,17 @@ public class TopDownFragmenterAssignerScorer {
 	 */
 	public TopDownFragmenterAssignerScorer(final Precursor precursor) throws Exception {
 		this.precursor = precursor;
-		// this.candidate.setProperty(VariableNames.MAXIMUM_TREE_DEPTH_NAME,
-		// Integer.valueOf(this.maximumTreeDepth));
 		this.fragmenter = new Fragmenter(this.precursor);
 	}
 
 	/**
 	 * 
+	 * @return
 	 * @throws Exception
 	 */
-	public void calculate() throws Exception {
+	public double[] getMasses() throws Exception {
+		final Set<Double> masses = new TreeSet<>();
+		
 		// generate root fragment to start fragmentation
 		final Fragment root = this.precursor.toFragment();
 
@@ -118,42 +121,42 @@ public class TopDownFragmenterAssignerScorer {
 						continue;
 					}
 
-					byte matched = -1;
 					int tempPeakPointer = peakIndex;
-					while (matched != 1 && tempPeakPointer >= 0) {
+					while (tempPeakPointer >= 0) {
 
 						/*
 						 * calculate match
 						 */
-						matched = currentFragment.matchToPeak(this.precursor, 2, this.positiveMode);
+						masses.addAll(currentFragment.getMasses(this.precursor, 2, this.positiveMode));
 
 						/*
 						 * if the mass of the current fragment was greater than the peak mass then
 						 * assign the current peak ID to the peak IDs of the child fragments as they
 						 * have smaller masses
 						 */
-						if (matched == 1 || tempPeakPointer == 0) {
+						if (tempPeakPointer == 0) {
 							/*
 							 * mark current fragment for further fragmentation
 							 */
 							if (currentFragment.getTreeDepth() < this.maximumTreeDepth)
 								newToProcessFragments.add(new FragmentWrapper(currentFragment, tempPeakPointer));
 						}
-						/*
-						 * if the current fragment has matched to the current peak then set the current
-						 * peak index to the next peak as the current fragment can also match to the
-						 * next peak if the current fragment mass was smaller than that of the current
-						 * peak then set the current peak index to the next peak (reduce the index) as
-						 * the next peak mass is smaller and could match the current smaller fragment
-						 * mass
-						 */
-						if (matched == 0 || matched == -1)
-							tempPeakPointer--;
+						
+						tempPeakPointer--;
 					}
 				}
 			}
 			toProcessFragments = newToProcessFragments;
 		}
+		
+		final double[] massesArray = new double[masses.size()];
+		int i = 0;
+		
+		for(Double mass: masses) {
+			massesArray[i++] = mass.doubleValue();
+		}
+		
+		return massesArray;
 	}
 
 	/**
