@@ -11,13 +11,11 @@ import org.openscience.cdk.ringsearch.AllRingsFinder;
 
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
-import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
 import de.ipbhalle.metfraglib.interfaces.IMolecularFormula;
-import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 import de.ipbhalle.metfraglib.parameter.Constants;
 import uk.ac.liverpool.metfraglib.fragment.Fragment;
 
-public class Precursor implements IMolecularStructure {
+public class Precursor { // implements IMolecularStructure {
 
 	private java.util.ArrayList<short[]> atomIndexToConnectedAtomIndeces;
 	private short[][] bondIndexToConnectedAtomIndeces;
@@ -53,7 +51,7 @@ public class Precursor implements IMolecularStructure {
 		return new Precursor(molecule);
 	}
 
-	@Override
+	
 	public double getMeanNodeDegree() {
 		double meanNodeDegree = 0.0;
 		for (int i = 0; i < this.atomIndexToConnectedAtomIndeces.size(); i++) {
@@ -63,7 +61,7 @@ public class Precursor implements IMolecularStructure {
 		return meanNodeDegree;
 	}
 
-	@Override
+	
 	public int getNumNodeDegreeOne() {
 		int numDegreeOne = 0;
 		for (int i = 0; i < this.atomIndexToConnectedAtomIndeces.size(); i++) {
@@ -72,7 +70,7 @@ public class Precursor implements IMolecularStructure {
 		return numDegreeOne;
 	}
 
-	@Override
+	
 	public int getNumberHydrogensConnectedToAtomIndex(int atomIndex) {
 		return this.numberHydrogensConnectedToAtom[atomIndex];
 	}
@@ -108,7 +106,7 @@ public class Precursor implements IMolecularStructure {
 		}
 	}
 
-	@Override
+	
 	public double getMassOfAtom(int index) {
 		return this.massesOfAtoms[index] + this.getNumberHydrogensConnectedToAtomIndex(index)
 				* Constants.MONOISOTOPIC_MASSES.get(Constants.H_INDEX);
@@ -237,65 +235,36 @@ public class Precursor implements IMolecularStructure {
 		return row * this.getNonHydrogenAtomCount() + col - ((row + 1) * (row + 2)) / 2;
 	}
 
-	@Override
+	
 	public Fragment toFragment() {
 		return new Fragment(this);
 	}
 
-	@Override
+	
 	public short getNumberHydrogens() {
 		return this.molecularFormula.getNumberHydrogens();
 	}
 
-	@Override
+	
 	public double getNeutralMonoisotopicMass() {
 		return this.neutralMonoisotopicMass;
 	}
 
-	@Override
+	
 	public int getNonHydrogenAtomCount() {
 		return this.precursorMolecule.getAtomCount();
 	}
 
-	@Override
+	
 	public int getNonHydrogenBondCount() {
 		return this.precursorMolecule.getBondCount();
 	}
 
-	@Override
+	
 	public IMolecularFormula getMolecularFormula() {
 		return this.molecularFormula;
 	}
-
-	@Override
-	public boolean isAromaticBond(int index) {
-		return false;
-	}
-
-	@Override
-	public void nullify() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void resetAtomContainer() {
-		this.precursorMolecule = null;
-	}
-
-	@Override
-	public void preprocessPrecursor() throws AtomTypeNotKnownFromInputListException, Exception {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setAtomContainer(IAtomContainer molecule) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
+	
 	public IAtomContainer getStructureAsIAtomContainer() {
 		return this.precursorMolecule;
 	}

@@ -3,9 +3,6 @@ package uk.ac.liverpool.metfraglib.molecularformula;
 import org.openscience.cdk.interfaces.IIsotope;
 
 import de.ipbhalle.metfraglib.FastBitArray;
-import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
-import de.ipbhalle.metfraglib.exceptions.ExplicitHydrogenRepresentationException;
-import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 import de.ipbhalle.metfraglib.parameter.Constants;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
@@ -32,10 +29,9 @@ public class MolecularFormula {
 	 * 
 	 * @param precursorMolecule
 	 * @param atomsFastBitArray
-	 * @throws AtomTypeNotKnownFromInputListException
-	 * @throws ExplicitHydrogenRepresentationException 
+	 * @throws Exception
 	 */
-	public MolecularFormula(Precursor precursorMolecule, FastBitArray atomsFastBitArray) throws AtomTypeNotKnownFromInputListException, ExplicitHydrogenRepresentationException {
+	public MolecularFormula(Precursor precursorMolecule, FastBitArray atomsFastBitArray) throws Exception {
 		initialise(precursorMolecule);
 		this.precursorMolecule = precursorMolecule;
 
@@ -64,15 +60,15 @@ public class MolecularFormula {
 	 * @param molecule
 	 * @throws ExplicitHydrogenRepresentationException 
 	 */
-	private void initialise(IMolecularStructure precursorMolecule) 
+	private void initialise(Precursor precursorMolecule2) 
 			throws 	de.ipbhalle.metfraglib.exceptions.ExplicitHydrogenRepresentationException, 
 					de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException {
 		this.numberHydrogens = 0;
 		java.util.Map<Byte, Short> elementsToCount = new java.util.HashMap<>();
 		int numberElementsPresentInPrecursorMolecule = 0;
 		
-		for(int i = 0; i < precursorMolecule.getStructureAsIAtomContainer().getAtomCount(); i++) {
-			String currentAtomSymbol = this.getAtomSymbol(precursorMolecule.getStructureAsIAtomContainer().getAtom(i));
+		for(int i = 0; i < precursorMolecule2.getStructureAsIAtomContainer().getAtomCount(); i++) {
+			String currentAtomSymbol = this.getAtomSymbol(precursorMolecule2.getStructureAsIAtomContainer().getAtom(i));
 			byte byteToAtomSymbol = (byte)Constants.ELEMENTS.indexOf(currentAtomSymbol);
 
 			if(byteToAtomSymbol == -1) {
@@ -86,7 +82,7 @@ public class MolecularFormula {
 				elementsToCount.put(byteToAtomSymbol, (short)1);
 				numberElementsPresentInPrecursorMolecule++;
 			}
-			this.numberHydrogens += precursorMolecule.getStructureAsIAtomContainer().getAtom(i).getImplicitHydrogenCount();
+			this.numberHydrogens += precursorMolecule2.getStructureAsIAtomContainer().getAtom(i).getImplicitHydrogenCount();
 		}
 		
 		java.util.Iterator<Byte> keys = elementsToCount.keySet().iterator();

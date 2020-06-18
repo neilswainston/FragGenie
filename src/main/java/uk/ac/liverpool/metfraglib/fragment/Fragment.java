@@ -14,18 +14,12 @@ import org.openscience.cdk.interfaces.IChemObjectBuilder;
 
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
-import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
-import de.ipbhalle.metfraglib.exceptions.ExplicitHydrogenRepresentationException;
-import de.ipbhalle.metfraglib.interfaces.IFragment;
-import de.ipbhalle.metfraglib.interfaces.IMatch;
-import de.ipbhalle.metfraglib.interfaces.IMolecularFormula;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
-import de.ipbhalle.metfraglib.interfaces.IPeak;
 import uk.ac.liverpool.metfraglib.molecularformula.MolecularFormula;
 import de.ipbhalle.metfraglib.parameter.Constants;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
-public class Fragment implements IFragment {
+public class Fragment {
 
 	private int addedToQueueCounts;
 	private short lastSkippedBond;
@@ -62,12 +56,12 @@ public class Fragment implements IFragment {
 	 * @param bondsFastBitArray
 	 * @param brokenBondsFastBitArray
 	 * @param numberHydrogens
-	 * @throws AtomTypeNotKnownFromInputListException
+	 * @throws Exception
 	 */
 	private Fragment(de.ipbhalle.metfraglib.FastBitArray atomsFastBitArray,
 			de.ipbhalle.metfraglib.FastBitArray bondsFastBitArray,
 			de.ipbhalle.metfraglib.FastBitArray brokenBondsFastBitArray, int numberHydrogens)
-			throws AtomTypeNotKnownFromInputListException {
+			throws Exception {
 		this.atomsFastBitArray = atomsFastBitArray;
 		this.bondsFastBitArray = bondsFastBitArray;
 		this.brokenBondsFastBitArray = brokenBondsFastBitArray;
@@ -83,11 +77,11 @@ public class Fragment implements IFragment {
 	 * @param fragment
 	 * @param bondNumber
 	 * @param bondAtoms
-	 * @return
-	 * @throws AtomTypeNotKnownFromInputListException
+	 * @return Fragment[]
+	 * @throws Exception
 	 */
 	public Fragment[] traverseMolecule(Precursor precursorMolecule, short bondIndexToRemove,
-			short[] indecesOfBondConnectedAtoms) throws AtomTypeNotKnownFromInputListException {
+			short[] indecesOfBondConnectedAtoms) throws Exception {
 
 		/*
 		 * generate first fragment
@@ -180,12 +174,18 @@ public class Fragment implements IFragment {
 		this.lastSkippedBond = lastSkippedBond;
 	}
 
-	@Override
+	
 	public int[] getBrokenBondIndeces() {
 		return this.brokenBondsFastBitArray.getSetIndeces();
 	}
 
-	public MolecularFormula getMolecularFormula(Precursor precursorMolecule) throws AtomTypeNotKnownFromInputListException, ExplicitHydrogenRepresentationException {
+	/**
+	 * 
+	 * @param precursorMolecule
+	 * @return MolecularFormula
+	 * @throws Exception
+	 */
+	public MolecularFormula getMolecularFormula(Precursor precursorMolecule) throws Exception {
 		return new MolecularFormula(precursorMolecule, this.atomsFastBitArray);
 	}
 
@@ -238,6 +238,7 @@ public class Fragment implements IFragment {
 		this.discardedForFragmentation = true;
 	}
 
+	
 	@Override
 	public Object clone() {
 		try {
@@ -346,7 +347,7 @@ public class Fragment implements IFragment {
 		return stillOneFragment;
 	}
 	
-	@Override
+	
 	public IAtomContainer getStructureAsIAtomContainer(IMolecularStructure precursorMolecule) {
 		return this.getStructureAsIAtomContainer(precursorMolecule, null, null);
 	}
@@ -421,163 +422,5 @@ public class Fragment implements IFragment {
 		
 		fragmentStructure = MoleculeFunctions.convertExplicitToImplicitHydrogens(fragmentStructure);
 		return fragmentStructure;
-	}
-
-	@Override
-	public String getSmiles(IMolecularStructure precursorMolecule) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public double getMonoisotopicMass(IMolecularStructure precursorMolecule) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getNonHydrogenAtomCount() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getNonHydrogenBondCount() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public IMolecularFormula getMolecularFormula(IMolecularStructure precursorMolecule) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setID(int id) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public int getID() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public byte getTreeDepth() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public byte matchToPeak(IMolecularStructure precursorMolecule, IPeak peak, int precursorIonType, boolean isPositive,
-			IMatch[] match) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public byte shareEqualProperties(IMolecularStructure precursorMolecule, IFragment fragment)
-			throws AtomTypeNotKnownFromInputListException {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public boolean isRealSubStructure(IFragment molecularStructure) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isSubStructure(IFragment molecularStructure) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public IFragment getDifferenceFragment(IMolecularStructure precursorMolecule, IFragment molecularStructure) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IFragment getDifferenceFragment(IMolecularStructure precursorMolecule) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int[] getUniqueBrokenBondIndeces(IFragment molecularStructure) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isConnected(IMolecularStructure precursorMolecule) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean hasMatched() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void setHasMatched() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public boolean equals(IFragment fragment) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void setIsBestMatchedFragment(boolean value) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public IFragment clone(IMolecularStructure precursorMolecule) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getAtomsInfo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getBondsInfo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getBrokenBondsInfo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void nullify() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void shallowNullify() {
-		// TODO Auto-generated method stub
-
 	}
 }

@@ -81,7 +81,7 @@ public class TopDownFragmenterAssignerScorer {
 				if (wrappedPrecursorFragment.getFragment().isDiscardedForFragmentation()) {
 					Fragment clonedFragment = (Fragment) wrappedPrecursorFragment.getFragment().clone();
 					clonedFragment.setAsDiscardedForFragmentation();
-					if (clonedFragment.getTreeDepth() < this.maximumTreeDepth)
+					if (0 < this.maximumTreeDepth)
 						newToProcessFragments
 								.add(new FragmentWrapper(clonedFragment, wrappedPrecursorFragment.getPeakIndex()));
 					continue;
@@ -104,7 +104,7 @@ public class TopDownFragmenterAssignerScorer {
 					Fragment currentFragment = fragmentsOfCurrentTreeDepth.get(l);
 
 					if (!fragmentsOfCurrentTreeDepth.get(l).isValidFragment()) {
-						if (currentFragment.getTreeDepth() < this.maximumTreeDepth)
+						if (0 < this.maximumTreeDepth)
 							newToProcessFragments
 									.add(new FragmentWrapper(fragmentsOfCurrentTreeDepth.get(l), peakIndex));
 						continue;
@@ -116,7 +116,7 @@ public class TopDownFragmenterAssignerScorer {
 
 					if (this.wasAlreadyGeneratedByHashtable(currentFragment)) {
 						currentFragment.setAsDiscardedForFragmentation();
-						if (currentFragment.getTreeDepth() < this.maximumTreeDepth)
+						if (0 < this.maximumTreeDepth)
 							newToProcessFragments.add(new FragmentWrapper(currentFragment, peakIndex));
 						continue;
 					}
@@ -138,7 +138,7 @@ public class TopDownFragmenterAssignerScorer {
 							/*
 							 * mark current fragment for further fragmentation
 							 */
-							if (currentFragment.getTreeDepth() < this.maximumTreeDepth)
+							if (0 < this.maximumTreeDepth)
 								newToProcessFragments.add(new FragmentWrapper(currentFragment, tempPeakPointer));
 						}
 						
@@ -169,11 +169,11 @@ public class TopDownFragmenterAssignerScorer {
 		final Byte minimalTreeDepth = this.bitArrayToFragment.get(currentHash);
 
 		if (minimalTreeDepth == null) {
-			this.bitArrayToFragment.put(currentHash, Byte.valueOf(currentFragment.getTreeDepth()));
+			this.bitArrayToFragment.put(currentHash, Byte.valueOf((byte)0));
 			return false;
 		}
 
-		if (minimalTreeDepth.intValue() >= currentFragment.getTreeDepth()) {
+		if (minimalTreeDepth.intValue() >= 0) {
 			return false;
 		}
 
