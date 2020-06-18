@@ -68,6 +68,11 @@
 			<version>1.1</version>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.8</version>
+		</dependency>
+		<dependency>
 			<groupId>com.github.neilswainston.MetFragRelaunched</groupId>
 			<artifactId>MetFragLib</artifactId>
 			<version>f3794ba</version>

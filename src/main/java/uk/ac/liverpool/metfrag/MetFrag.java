@@ -155,14 +155,4 @@ public class MetFrag {
 
 		return settings;
 	}
-
-	/**
-	 * 
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		final double[] result = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2); //$NON-NLS-1$
-		System.out.println(result);
-	}
 }
