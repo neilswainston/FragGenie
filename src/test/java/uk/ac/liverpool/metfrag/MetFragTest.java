@@ -35,31 +35,21 @@ public class MetFragTest {
 	 */
 	@Test
 	public void testGetFragments() throws Exception {
-		final double[] expected = {
-			90.97445,
-			106.94476,
-			// 115.98965,
-			117.9854,
-			133.95592,
-			143.98846,
-			144.99625,
-			// 146.0041,
-			151.94641,
-			160.96668,
-			163.00682,
-			// 172.99055,
-			178.95724,
-			178.97725,
-			// 180.97293,
-			// 196.96778,
-			208.9678,
-			236.96245
-		};
-		
+		final double[] expected = { 90.97445, 106.94476,
+				// 115.98965,
+				117.9854, 133.95592, 143.98846, 144.99625,
+				// 146.0041,
+				151.94641, 160.96668, 163.00682,
+				// 172.99055,
+				178.95724, 178.97725,
+				// 180.97293,
+				// 196.96778,
+				208.9678, 236.96245 };
+
 		final double[] fragments = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2); //$NON-NLS-1$
 		final double epsilon = 1e-3;
-		
-		for(double mass : expected) {
+
+		for (double mass : expected) {
 			Assert.assertTrue(DoubleStream.of(fragments).anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
 		}
 	}
