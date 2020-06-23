@@ -1,8 +1,12 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
+import de.ipbhalle.metfraglib.parameter.Constants;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 public class Fragment {
@@ -169,6 +173,28 @@ public class Fragment {
 			}
 		}
 		return mass;
+	}
+	
+	/**
+	 * 
+	 * @param precursorMolecule
+	 * @param precursorIonTypeIndex
+	 * @param isPositive
+	 * @return List<Double>
+	 */
+	public List<Double> getMasses(Precursor precursorMolecule, int precursorIonTypeIndex, boolean isPositive) {
+		final List<Double> masses = new ArrayList<>();
+
+		final double[] ionisationTypeMassCorrection = new double[] {
+				Constants.getIonisationTypeMassCorrection(precursorIonTypeIndex, isPositive),
+				Constants.getIonisationTypeMassCorrection(0, isPositive) };
+
+		for (int i = 0; i < ionisationTypeMassCorrection.length; i++) {
+			final double mass = this.getMonoisotopicMass(precursorMolecule) + ionisationTypeMassCorrection[i];
+			masses.add(mass);
+		}
+
+		return masses;
 	}
 
 	@Override
