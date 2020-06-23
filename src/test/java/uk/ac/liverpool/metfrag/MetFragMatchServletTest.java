@@ -23,6 +23,7 @@ public class MetFragMatchServletTest {
 	 * 
 	 * @throws IOException
 	 */
+	@SuppressWarnings("static-method")
 	@Test
 	public void testGet() throws IOException {
 		final MockHttpServletResponse response = new MockHttpServletResponse();
@@ -34,6 +35,7 @@ public class MetFragMatchServletTest {
 	 * 
 	 * @throws IOException
 	 */
+	@SuppressWarnings("static-method")
 	@Test
 	public void testPost() throws IOException {
 		final MockHttpServletResponse response = new MockHttpServletResponse();
