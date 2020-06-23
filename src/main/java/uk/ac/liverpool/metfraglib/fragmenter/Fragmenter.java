@@ -25,7 +25,7 @@ public class Fragmenter {
 	private List<Short> brokenBondToNeutralLossIndex = new ArrayList<>();
 	private List<Integer> neutralLossIndex = new ArrayList<>();
 
-	private final String[] smartPatterns = { "O", "C(=O)O", "N", "C[Si](C)(C)O", "C[Si](C)C", "CO", "CN" };
+	private final String[] smartPatterns = { "O", "C(=O)O", "N", "C[Si](C)(C)O", "C[Si](C)C", "CO", "CN" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
 	private final short[] minimumNumberImplicitHydrogens = { 1, 1, 2, 9, 9, 1, 0 };
 
 	/**
@@ -350,9 +350,9 @@ public class Fragmenter {
 	 * @return
 	 */
 	public BitArrayNeutralLoss[] getMatchingAtoms(Precursor precursorMolecule) {
-		SMARTSQueryTool[] smartsQuerytools = new SMARTSQueryTool[smartPatterns.length];
+		SMARTSQueryTool[] smartsQuerytools = new SMARTSQueryTool[this.smartPatterns.length];
 		for (int i = 0; i < smartsQuerytools.length; i++) {
-			smartsQuerytools[i] = new SMARTSQueryTool(smartPatterns[i], DefaultChemObjectBuilder.getInstance());
+			smartsQuerytools[i] = new SMARTSQueryTool(this.smartPatterns[i], DefaultChemObjectBuilder.getInstance());
 		}
 		java.util.ArrayList<BitArrayNeutralLoss> matchedNeutralLossTypes = new java.util.ArrayList<>();
 		for (byte i = 0; i < smartsQuerytools.length; i++) {
@@ -393,7 +393,7 @@ public class Fragmenter {
 						 * valid neutral loss match if number implicit hydrogens are at least the number
 						 * of hydrogens needed for the certain neutral loss
 						 */
-						if (numberImplicitHydrogens >= minimumNumberImplicitHydrogens[i]) {
+						if (numberImplicitHydrogens >= this.minimumNumberImplicitHydrogens[i]) {
 							validMatches[ii] = true;
 							numberOfValidNeutralLosses++;
 						}

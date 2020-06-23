@@ -27,7 +27,7 @@ public class TopDownFragmenterAssignerScorer {
 	/**
 	 * 
 	 */
-	private final int maximumTreeDepth = 2;
+	private final int maximumTreeDepth;
 
 	/**
 	 * 
@@ -41,10 +41,12 @@ public class TopDownFragmenterAssignerScorer {
 
 	/**
 	 * 
+	 * @param maximumTreeDepth 
 	 * @param candidate
 	 */
-	public TopDownFragmenterAssignerScorer(final Precursor precursor) throws Exception {
+	public TopDownFragmenterAssignerScorer(final Precursor precursor, int maximumTreeDepth) throws Exception {
 		this.precursor = precursor;
+		this.maximumTreeDepth = maximumTreeDepth;
 		this.fragmenter = new Fragmenter(this.precursor);
 	}
 

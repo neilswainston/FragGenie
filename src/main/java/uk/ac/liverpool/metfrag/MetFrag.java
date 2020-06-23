@@ -83,14 +83,7 @@ public class MetFrag {
 	 * @throws Exception
 	 */
 	public static double[] getFragments(final String smiles, final int maximumTreeDepth) throws Exception {
-		// final double PROTON_MASS = 1.00727647;
-		// final SmilesParser parser = new
-		// SmilesParser(SilentChemObjectBuilder.getInstance());
-		// final IAtomContainer molecule = parser.parseSmiles(smiles);
-
-		// Get settings:
-		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(
-				Precursor.fromSmiles(smiles));
+		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(Precursor.fromSmiles(smiles), maximumTreeDepth);
 		return scorer.getMasses();
 	}
 

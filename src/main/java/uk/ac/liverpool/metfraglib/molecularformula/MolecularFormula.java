@@ -40,7 +40,7 @@ public class MolecularFormula {
 		for (int i = 0; i < this.numberOfAtoms.length; i++)
 			this.numberOfAtoms[i] = 0;
 		for (int i = 0; i < this.precursorMolecule.getStructureAsIAtomContainer().getAtomCount(); i++) {
-			String currentAtomSymbol = this
+			String currentAtomSymbol = MolecularFormula
 					.getAtomSymbol(this.precursorMolecule.getStructureAsIAtomContainer().getAtom(i));
 			byte atomNumber = (byte) Constants.ELEMENTS.indexOf(currentAtomSymbol);
 
@@ -70,7 +70,7 @@ public class MolecularFormula {
 		int numberElementsPresentInPrecursorMolecule = 0;
 
 		for (int i = 0; i < precursorMolecule2.getStructureAsIAtomContainer().getAtomCount(); i++) {
-			String currentAtomSymbol = this.getAtomSymbol(precursorMolecule2.getStructureAsIAtomContainer().getAtom(i));
+			String currentAtomSymbol = MolecularFormula.getAtomSymbol(precursorMolecule2.getStructureAsIAtomContainer().getAtom(i));
 			byte byteToAtomSymbol = (byte) Constants.ELEMENTS.indexOf(currentAtomSymbol);
 
 			if (byteToAtomSymbol == -1) {
@@ -110,7 +110,7 @@ public class MolecularFormula {
 			this.numberHydrogens = numberHydrogens;
 	}
 
-	public String getAtomSymbol(IIsotope atom) {
+	public static String getAtomSymbol(IIsotope atom) {
 		String symbol = atom.getSymbol();
 		if (atom.getMassNumber() != null)
 			symbol = "[" + atom.getMassNumber() + symbol + "]"; //$NON-NLS-1$ //$NON-NLS-2$

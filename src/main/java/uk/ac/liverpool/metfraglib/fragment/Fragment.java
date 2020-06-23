@@ -222,7 +222,7 @@ public class Fragment {
 	}
 
 	public boolean isValidFragment() {
-		return isValidFragment;
+		return this.isValidFragment;
 	}
 
 	public void setAsValidFragment() {

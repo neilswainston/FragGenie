@@ -52,7 +52,6 @@ public class MetFragTest {
 		final double epsilon = 1e-3;
 
 		for (double mass : expected) {
-			System.out.println(mass);
 			Assert.assertTrue(DoubleStream.of(fragments).anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
 		}
 	}
