@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import uk.ac.liverpool.metfraglib.fragment.Fragment;
-import uk.ac.liverpool.metfraglib.fragment.FragmentWrapper;
 import uk.ac.liverpool.metfraglib.fragmenter.Fragmenter;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
@@ -61,16 +60,15 @@ public class TopDownFragmenterAssignerScorer {
 		// generate root fragment to start fragmentation
 		final Fragment root = new Fragment(this.precursor);
 
-		Queue<FragmentWrapper> toProcessFragments = new LinkedList<>();
+		Queue<Fragment> toProcessFragments = new LinkedList<>();
 
-		FragmentWrapper rootFragmentWrapper = new FragmentWrapper(root, Integer.valueOf(0));
-		toProcessFragments.add(rootFragmentWrapper);
+		toProcessFragments.add(root);
 
 		/*
 		 * iterate over the maximal allowed tree depth
 		 */
 		for (int k = 1; k <= this.maximumTreeDepth; k++) {
-			java.util.Queue<FragmentWrapper> newToProcessFragments = new java.util.LinkedList<>();
+			Queue<Fragment> newToProcessFragments = new LinkedList<>();
 			/*
 			 * use each fragment that is marked as to be processed
 			 */
@@ -78,26 +76,25 @@ public class TopDownFragmenterAssignerScorer {
 				/*
 				 * generate fragments of new tree depth
 				 */
-				FragmentWrapper wrappedPrecursorFragment = toProcessFragments.poll();
+				Fragment wrappedPrecursorFragment = toProcessFragments.poll();
 
-				if (wrappedPrecursorFragment.getFragment().isDiscardedForFragmentation()) {
-					Fragment clonedFragment = (Fragment) wrappedPrecursorFragment.getFragment().clone();
+				if (wrappedPrecursorFragment.isDiscardedForFragmentation()) {
+					Fragment clonedFragment = (Fragment) wrappedPrecursorFragment.clone();
 					clonedFragment.setAsDiscardedForFragmentation();
 					if (0 < this.maximumTreeDepth)
-						newToProcessFragments
-								.add(new FragmentWrapper(clonedFragment, wrappedPrecursorFragment.getPeakIndex()));
+						newToProcessFragments.add(clonedFragment);
 					continue;
 				}
 				/*
 				 * generate fragments of next tree depth
 				 */
 				java.util.ArrayList<Fragment> fragmentsOfCurrentTreeDepth = this.fragmenter
-						.getFragmentsOfNextTreeDepth(wrappedPrecursorFragment.getFragment());
+						.getFragmentsOfNextTreeDepth(wrappedPrecursorFragment);
 
 				/*
 				 * get peak pointer of current precursor fragment
 				 */
-				int peakIndex = wrappedPrecursorFragment.getPeakIndex();
+				int peakIndex = 0;
 				/*
 				 * start loop over all child fragments from precursor fragment to try assigning
 				 * them to the current peak
@@ -107,8 +104,7 @@ public class TopDownFragmenterAssignerScorer {
 
 					if (!fragmentsOfCurrentTreeDepth.get(l).isValidFragment()) {
 						if (0 < this.maximumTreeDepth)
-							newToProcessFragments
-									.add(new FragmentWrapper(fragmentsOfCurrentTreeDepth.get(l), peakIndex));
+							newToProcessFragments.add(fragmentsOfCurrentTreeDepth.get(l));
 						continue;
 					}
 					/*
@@ -119,7 +115,7 @@ public class TopDownFragmenterAssignerScorer {
 					if (this.wasAlreadyGeneratedByHashtable(currentFragment)) {
 						currentFragment.setAsDiscardedForFragmentation();
 						if (0 < this.maximumTreeDepth)
-							newToProcessFragments.add(new FragmentWrapper(currentFragment, peakIndex));
+							newToProcessFragments.add(currentFragment);
 						continue;
 					}
 
@@ -141,7 +137,7 @@ public class TopDownFragmenterAssignerScorer {
 							 * mark current fragment for further fragmentation
 							 */
 							if (0 < this.maximumTreeDepth)
-								newToProcessFragments.add(new FragmentWrapper(currentFragment, tempPeakPointer));
+								newToProcessFragments.add(currentFragment);
 						}
 
 						tempPeakPointer--;
