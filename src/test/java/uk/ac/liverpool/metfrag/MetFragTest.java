@@ -20,6 +20,7 @@ public class MetFragTest {
 	 * 
 	 * @throws Exception
 	 */
+	@SuppressWarnings("static-method")
 	@Test
 	public void testMatch() throws Exception {
 		final List<Map<String, Object>> results = (List<Map<String, Object>>) MetFrag.match(MetFragTestData.SMILES,
@@ -33,6 +34,7 @@ public class MetFragTest {
 	 * 
 	 * @throws Exception
 	 */
+	@SuppressWarnings("static-method")
 	@Test
 	public void testGetFragments() throws Exception {
 		final double[] expected = { 90.97445, 106.94476,
@@ -50,6 +52,7 @@ public class MetFragTest {
 		final double epsilon = 1e-3;
 
 		for (double mass : expected) {
+			System.out.println(mass);
 			Assert.assertTrue(DoubleStream.of(fragments).anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
 		}
 	}
