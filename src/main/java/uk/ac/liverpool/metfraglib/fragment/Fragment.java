@@ -1,6 +1,5 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,7 +15,6 @@ import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
-import de.ipbhalle.metfraglib.parameter.Constants;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 public class Fragment {
@@ -178,7 +176,6 @@ public class Fragment {
 	}
 
 	public double getMonoisotopicMass(Precursor precursorMolecule) {
-		// return this.molecularFormula.getMonoisotopicMass();
 		double mass = 0.0;
 		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
 			if (this.atomsFastBitArray.get(i)) {
@@ -186,28 +183,6 @@ public class Fragment {
 			}
 		}
 		return mass;
-	}
-
-	/**
-	 * 
-	 * @param precursorMolecule
-	 * @param precursorIonTypeIndex
-	 * @param isPositive
-	 * @return List<Double>
-	 */
-	public List<Double> getMasses(Precursor precursorMolecule, int precursorIonTypeIndex, boolean isPositive) {
-		final List<Double> masses = new ArrayList<>();
-
-		final double[] ionisationTypeMassCorrection = new double[] {
-				Constants.getIonisationTypeMassCorrection(precursorIonTypeIndex, isPositive),
-				Constants.getIonisationTypeMassCorrection(0, isPositive) };
-
-		for (int i = 0; i < ionisationTypeMassCorrection.length; i++) {
-			final double mass = this.getMonoisotopicMass(precursorMolecule) + ionisationTypeMassCorrection[i];
-			masses.add(mass);
-		}
-
-		return masses;
 	}
 
 	public boolean isValidFragment() {
