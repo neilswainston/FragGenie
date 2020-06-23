@@ -8,19 +8,16 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 
 import de.ipbhalle.metfraglib.FastBitArray;
-import de.ipbhalle.metfraglib.parameter.Constants;
 import uk.ac.liverpool.metfraglib.fragment.BitArrayNeutralLoss;
 import uk.ac.liverpool.metfraglib.fragment.Fragment;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 public class Fragmenter {
 
-	private Double minimumMassDeviationForFragmentGeneration = Constants.DEFAULT_MIN_MASS_DEV_FOR_FRAGMENT_GENERATION;
 	private byte maximumNumberOfAFragmentAddedToQueue = 2;
 	private boolean ringBondsInitialised = false;
 	private FastBitArray ringBondFastBitArray;
 	private Precursor precursor;
-	private double minimumFragmentMassLimit = 0.0;
 	private BitArrayNeutralLoss[] detectedNeutralLosses;
 	private List<Short> brokenBondToNeutralLossIndex = new ArrayList<>();
 	private List<Integer> neutralLossIndex = new ArrayList<>();
@@ -150,14 +147,12 @@ public class Fragmenter {
 			/*
 			 * pre-processing of the generated fragment/s
 			 */
-			this.processGeneratedFragments(newGeneratedTopDownFragments);
+			Fragmenter.processGeneratedFragments(newGeneratedTopDownFragments);
 			/*
 			 * if two new fragments have been generated set them as valid
 			 */
 			if (newGeneratedTopDownFragments.length == 2) {
 				this.checkForNeutralLossesAdaptMolecularFormulas(newGeneratedTopDownFragments, i);
-				newGeneratedTopDownFragments[0].setAsValidFragment();
-				newGeneratedTopDownFragments[1].setAsValidFragment();
 			}
 			/*
 			 * add fragment/s to vector after setting the proper precursor
@@ -205,11 +200,9 @@ public class Fragmenter {
 			Fragment[] newFragments = precursorFragment.traverseMolecule(this.precursor, currentBond,
 					connectedAtomIndeces);
 
-			this.processGeneratedFragments(newFragments);
+			Fragmenter.processGeneratedFragments(newFragments);
 			if (newFragments.length == 2) {
 				this.checkForNeutralLossesAdaptMolecularFormulas(newFragments, currentBond);
-				newFragments[0].setAsValidFragment();
-				newFragments[1].setAsValidFragment();
 			} else {
 				System.err.println("problem generating fragments"); //$NON-NLS-1$
 				System.exit(1);
@@ -234,18 +227,10 @@ public class Fragmenter {
 	 * 
 	 * @param newGeneratedTopDownFragments
 	 */
-	private void processGeneratedFragments(Fragment[] newGeneratedTopDownFragments) {
+	private static void processGeneratedFragments(Fragment[] newGeneratedTopDownFragments) {
 		if (newGeneratedTopDownFragments.length == 2) {
 			newGeneratedTopDownFragments[0].setAddedToQueueCounts((byte) 1);
 			newGeneratedTopDownFragments[1].setAddedToQueueCounts((byte) 1);
-			if (newGeneratedTopDownFragments[0].getMonoisotopicMass(this.precursor) <= this.minimumFragmentMassLimit
-					- this.minimumMassDeviationForFragmentGeneration) {
-				newGeneratedTopDownFragments[0].setAsDiscardedForFragmentation();
-			}
-			if (newGeneratedTopDownFragments[1].getMonoisotopicMass(this.precursor) <= this.minimumFragmentMassLimit
-					- this.minimumMassDeviationForFragmentGeneration) {
-				newGeneratedTopDownFragments[1].setAsDiscardedForFragmentation();
-			}
 		}
 	}
 
@@ -287,13 +272,11 @@ public class Fragmenter {
 				//
 				// pre-processing of the generated fragment/s
 				//
-				this.processGeneratedFragments(newFragments);
+				Fragmenter.processGeneratedFragments(newFragments);
 				//
 				// if two new fragments have been generated set them as valid
 				//
 				if (newFragments.length == 2) {
-					newFragments[0].setAsValidFragment();
-					newFragments[1].setAsValidFragment();
 					newFragments[0].setLastSkippedBond(currentFragment.getLastSkippedBond());
 					newFragments[1].setLastSkippedBond(currentFragment.getLastSkippedBond());
 				}
@@ -326,7 +309,7 @@ public class Fragmenter {
 	 * @param precursorMolecule
 	 * @return
 	 */
-	public BitArrayNeutralLoss[] getMatchingAtoms(Precursor precursorMolecule) {
+	private BitArrayNeutralLoss[] getMatchingAtoms(Precursor precursorMolecule) {
 		SMARTSQueryTool[] smartsQuerytools = new SMARTSQueryTool[this.smartPatterns.length];
 		for (int i = 0; i < smartsQuerytools.length; i++) {
 			smartsQuerytools[i] = new SMARTSQueryTool(this.smartPatterns[i], DefaultChemObjectBuilder.getInstance());

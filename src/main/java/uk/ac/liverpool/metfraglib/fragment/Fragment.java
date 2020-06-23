@@ -1,20 +1,8 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import org.openscience.cdk.Bond;
-import org.openscience.cdk.DefaultChemObjectBuilder;
-import org.openscience.cdk.Element;
-import org.openscience.cdk.interfaces.IAtom;
-import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IBond;
-import org.openscience.cdk.interfaces.IChemObjectBuilder;
 
 import de.ipbhalle.metfraglib.FastBitArray;
-import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
-import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 public class Fragment {
@@ -26,9 +14,7 @@ public class Fragment {
 	private FastBitArray brokenBondsFastBitArray;
 	private byte treeDepth;
 	private int numberHydrogens;
-	private boolean isValidFragment;
-	private boolean discardedForFragmentation;
-
+	
 	/**
 	 * constructor setting all bits of atomsFastBitArray and bondsFastBitArray to
 	 * true entire structure is represented
@@ -36,7 +22,7 @@ public class Fragment {
 	 * @param precursor
 	 * @throws AtomTypeNotKnownFromInputListException
 	 */
-	public Fragment(Precursor precursor) {
+	public Fragment(final Precursor precursor) {
 		this.addedToQueueCounts = 0;
 		this.lastSkippedBond = -1;
 		this.atomsFastBitArray = new FastBitArray(precursor.getNonHydrogenAtomCount(), true);
@@ -185,22 +171,6 @@ public class Fragment {
 		return mass;
 	}
 
-	public boolean isValidFragment() {
-		return this.isValidFragment;
-	}
-
-	public void setAsValidFragment() {
-		this.isValidFragment = true;
-	}
-
-	public boolean isDiscardedForFragmentation() {
-		return this.discardedForFragmentation;
-	}
-
-	public void setAsDiscardedForFragmentation() {
-		this.discardedForFragmentation = true;
-	}
-
 	@Override
 	public Object clone() {
 		try {
@@ -307,91 +277,5 @@ public class Fragment {
 		bondArrayOfNewFragment.set(bondIndexToRemove, false);
 
 		return stillOneFragment;
-	}
-
-	public IAtomContainer getStructureAsIAtomContainer(IMolecularStructure precursorMolecule) {
-		return this.getStructureAsIAtomContainer(precursorMolecule, null, null);
-	}
-
-	private IAtomContainer getStructureAsIAtomContainer(IMolecularStructure precursorMolecule, IAtom atomToAdd,
-			Integer atomPositionToAdd) {
-		IChemObjectBuilder builder = DefaultChemObjectBuilder.getInstance();
-		IAtomContainer fragmentStructure = builder.newInstance(IAtomContainer.class);
-		if (this.atomsFastBitArray.cardinality() == 1) {
-			IAtom curAtom = precursorMolecule.getStructureAsIAtomContainer()
-					.getAtom(this.atomsFastBitArray.getFirstSetBit());
-			if (atomToAdd != null
-					&& precursorMolecule.getStructureAsIAtomContainer().indexOf(curAtom) == atomPositionToAdd) {
-				IBond newBond = new Bond(curAtom, atomToAdd);
-				fragmentStructure.addAtom(atomToAdd);
-				fragmentStructure.addBond(newBond);
-			}
-			fragmentStructure.addAtom(curAtom);
-			return fragmentStructure;
-		}
-		for (int i = 0; i < this.bondsFastBitArray.getSize(); i++) {
-			if (this.bondsFastBitArray.get(i)) {
-				IBond curBond = precursorMolecule.getStructureAsIAtomContainer().getBond(i);
-				for (IAtom atom : curBond.atoms()) {
-					if (atomToAdd != null
-							&& precursorMolecule.getStructureAsIAtomContainer().indexOf(atom) == atomPositionToAdd) {
-						IBond newBond = new Bond(atom, atomToAdd);
-						fragmentStructure.addAtom(atomToAdd);
-						fragmentStructure.addBond(newBond);
-					}
-					fragmentStructure.addAtom(atom);
-				}
-				fragmentStructure.addBond(curBond);
-			}
-		}
-		// loss of hydrogens
-		// MoleculeFunctions.prepareAtomContainer(fragmentStructure);
-
-		List<IAtom> atomsToAdd = new LinkedList<>();
-		List<IBond> bondsToAdd = new LinkedList<>();
-
-		for (int i = 0; i < fragmentStructure.getAtomCount(); i++) {
-			int bondOrderSum = 0;
-			java.util.List<IBond> bonds = fragmentStructure.getConnectedBondsList(fragmentStructure.getAtom(i));
-			for (int ii = 0; ii < bonds.size(); ii++) {
-				bondOrderSum += bonds.get(ii).getOrder().numeric();
-			}
-			if (fragmentStructure.getAtom(i).getBondOrderSum() != null
-					&& fragmentStructure.getAtom(i).getBondOrderSum() > bondOrderSum) {
-				for (int k = 0; k < (fragmentStructure.getAtom(i).getBondOrderSum() - bondOrderSum); k++) {
-					org.openscience.cdk.Atom hydrogenAtom = new org.openscience.cdk.Atom(new Element("H")); //$NON-NLS-1$
-					IBond bond = new Bond(hydrogenAtom, fragmentStructure.getAtom(i));
-					atomsToAdd.add(hydrogenAtom);
-					bondsToAdd.add(bond);
-				}
-				fragmentStructure.getAtom(i).setImplicitHydrogenCount(0);
-			}
-		}
-		for (IBond bond : bondsToAdd)
-			fragmentStructure.addBond(bond);
-		for (IAtom atom : atomsToAdd)
-			fragmentStructure.addAtom(atom);
-		atomsToAdd = new LinkedList<>();
-		bondsToAdd = new LinkedList<>();
-		for (int i = 0; i < fragmentStructure.getAtomCount(); i++) {
-			if (fragmentStructure.getAtom(i).getImplicitHydrogenCount() != null
-					&& fragmentStructure.getAtom(i).getImplicitHydrogenCount() > 0) {
-				for (int k = 0; k < fragmentStructure.getAtom(i).getImplicitHydrogenCount(); k++) {
-					org.openscience.cdk.Atom hydrogenAtom = new org.openscience.cdk.Atom(new Element("H")); //$NON-NLS-1$
-					IBond bond = new Bond(hydrogenAtom, fragmentStructure.getAtom(i));
-					atomsToAdd.add(hydrogenAtom);
-					bondsToAdd.add(bond);
-				}
-				fragmentStructure.getAtom(i).setImplicitHydrogenCount(0);
-			}
-		}
-		for (IBond bond : bondsToAdd)
-			fragmentStructure.addBond(bond);
-		for (IAtom atom : atomsToAdd)
-			fragmentStructure.addAtom(atom);
-		// MoleculeFunctions.removeHydrogens(fragmentStructure);
-
-		fragmentStructure = MoleculeFunctions.convertExplicitToImplicitHydrogens(fragmentStructure);
-		return fragmentStructure;
 	}
 }
