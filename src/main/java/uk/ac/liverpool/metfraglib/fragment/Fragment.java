@@ -17,7 +17,6 @@ import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
 import de.ipbhalle.metfraglib.interfaces.IMolecularStructure;
 import de.ipbhalle.metfraglib.parameter.Constants;
-import uk.ac.liverpool.metfraglib.molecularformula.MolecularFormula;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 public class Fragment {
@@ -176,16 +175,6 @@ public class Fragment {
 
 	public int[] getBrokenBondIndeces() {
 		return this.brokenBondsFastBitArray.getSetIndeces();
-	}
-
-	/**
-	 * 
-	 * @param precursorMolecule
-	 * @return MolecularFormula
-	 * @throws Exception
-	 */
-	public MolecularFormula getMolecularFormula(Precursor precursorMolecule) throws Exception {
-		return new MolecularFormula(precursorMolecule, this.atomsFastBitArray);
 	}
 
 	public double getMonoisotopicMass(Precursor precursorMolecule) {

@@ -59,10 +59,6 @@ public class Fragmenter {
 			for (int ii = 0; ii < this.detectedNeutralLosses[i].getNumberNeutralLosses(); ii++) {
 				if (newGeneratedTopDownFragments[0].getAtomsFastBitArray()
 						.equals(this.detectedNeutralLosses[i].getNeutralLossAtomFastBitArray(ii))) {
-					newGeneratedTopDownFragments[1].getMolecularFormula(this.precursor)
-							.setNumberHydrogens((short) (newGeneratedTopDownFragments[1]
-									.getMolecularFormula(this.precursor).getNumberHydrogens()
-									+ this.detectedNeutralLosses[i].getHydrogenDifference()));
 					/*
 					 * check for previous broken bonds caused by neutral loss
 					 */
@@ -76,23 +72,11 @@ public class Fragmenter {
 							}
 							continue;
 						}
-						if (index != -1) {
-							newGeneratedTopDownFragments[1].getMolecularFormula(this.precursor)
-									.setNumberHydrogens((short) (newGeneratedTopDownFragments[1]
-											.getMolecularFormula(this.precursor).getNumberHydrogens()
-											+ this.detectedNeutralLosses[this.neutralLossIndex.get(index)]
-													.getHydrogenDifference()));
-						}
 					}
 					return true;
 				} else if (newGeneratedTopDownFragments[1].getAtomsFastBitArray()
 						.equals(this.detectedNeutralLosses[i].getNeutralLossAtomFastBitArray(ii))) {
-					newGeneratedTopDownFragments[0].getMolecularFormula(this.precursor)
-							.setNumberHydrogens((short) (newGeneratedTopDownFragments[0]
-									.getMolecularFormula(this.precursor).getNumberHydrogens()
-									+ this.detectedNeutralLosses[i].getHydrogenDifference()));
-					// newGeneratedTopDownFragments[0].setTreeDepth((byte)(newGeneratedTopDownFragments[0].getTreeDepth()
-					// - 1));
+					
 					/*
 					 * check for previous broken bonds caused by neutral loss
 					 */
@@ -105,13 +89,6 @@ public class Fragmenter {
 								this.neutralLossIndex.add(i);
 							}
 							continue;
-						}
-						if (index != -1) {
-							newGeneratedTopDownFragments[0].getMolecularFormula(this.precursor)
-									.setNumberHydrogens((short) (newGeneratedTopDownFragments[0]
-											.getMolecularFormula(this.precursor).getNumberHydrogens()
-											+ this.detectedNeutralLosses[this.neutralLossIndex.get(index)]
-													.getHydrogenDifference()));
 						}
 					}
 					return true;

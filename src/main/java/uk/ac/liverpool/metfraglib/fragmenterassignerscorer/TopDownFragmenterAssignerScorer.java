@@ -59,7 +59,7 @@ public class TopDownFragmenterAssignerScorer {
 		final Set<Double> masses = new TreeSet<>();
 
 		// generate root fragment to start fragmentation
-		final Fragment root = this.precursor.toFragment();
+		final Fragment root = new Fragment(this.precursor);
 
 		Queue<FragmentWrapper> toProcessFragments = new LinkedList<>();
 
