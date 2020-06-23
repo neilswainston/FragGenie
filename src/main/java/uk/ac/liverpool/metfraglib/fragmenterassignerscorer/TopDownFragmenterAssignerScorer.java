@@ -14,17 +14,12 @@ public class TopDownFragmenterAssignerScorer {
 	/**
 	 * 
 	 */
-	private final static double PROTON_MASS = 1.00728;
-	
-	/**
-	 * 
-	 */
-	private final int maximumTreeDepth;
+	private final int maxTreeDepth;
 
 	/**
 	 * 
 	 */
-	private final Precursor precursor;
+	private final Precursor prec;
 
 	/**
 	 * 
@@ -33,14 +28,14 @@ public class TopDownFragmenterAssignerScorer {
 
 	/**
 	 * 
-	 * @param prec
-	 * @param maxTreeDepth
+	 * @param precursor
+	 * @param maximumTreeDepth
 	 * @throws Exception
 	 */
-	public TopDownFragmenterAssignerScorer(final Precursor prec, int maxTreeDepth) throws Exception {
-		this.precursor = prec;
-		this.maximumTreeDepth = maxTreeDepth;
-		this.fragmenter = new Fragmenter(this.precursor);
+	public TopDownFragmenterAssignerScorer(final Precursor precursor, int maximumTreeDepth) throws Exception {
+		this.prec = precursor;
+		this.maxTreeDepth = maximumTreeDepth;
+		this.fragmenter = new Fragmenter(this.prec);
 	}
 
 	/**
@@ -51,24 +46,19 @@ public class TopDownFragmenterAssignerScorer {
 	public double[] getMasses() throws Exception {
 		final Set<Double> masses = new TreeSet<>();
 
-		// Generate root fragment to start fragmentation:
 		Queue<Fragment> fragments = new LinkedList<>();
-		fragments.add(new Fragment(this.precursor));
+		fragments.add(new Fragment(this.prec));
 
-		for(int k = 1; k <= this.maximumTreeDepth; k++) {
+		for (int k = 1; k <= this.maxTreeDepth; k++) {
 			Queue<Fragment> newFragments = new LinkedList<>();
-			
-			// Use each fragment that is marked as to be processed:
-			while(!fragments.isEmpty()) {
-				// Generate fragments of new tree depth:
-				final Fragment fragment = fragments.poll();
-				
-				// Loop over all child fragments from precursor fragment:
-				for(final Fragment childFragment : this.fragmenter.getFragmentsOfNextTreeDepth(fragment)) {
-					masses.add(Double.valueOf(childFragment.getMonoisotopicMass(this.precursor) + PROTON_MASS));
 
-					// Mark current fragment for further fragmentation:
-					if(this.maximumTreeDepth > 0) {
+			while(!fragments.isEmpty()) {
+				final Fragment fragment = fragments.poll();
+
+				for(final Fragment childFragment : this.fragmenter.getFragmentsOfNextTreeDepth(fragment)) {
+					masses.addAll(childFragment.getMasses(this.prec, 2, true));
+
+					if(this.maxTreeDepth > 0) {
 						newFragments.add(childFragment);
 					}	
 				}
