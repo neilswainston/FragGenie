@@ -8,10 +8,10 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 
 import de.ipbhalle.metfraglib.FastBitArray;
-import uk.ac.liverpool.metfraglib.fragment.BitArrayNeutralLoss;
 import de.ipbhalle.metfraglib.parameter.Constants;
-import uk.ac.liverpool.metfraglib.precursor.Precursor;
+import uk.ac.liverpool.metfraglib.fragment.BitArrayNeutralLoss;
 import uk.ac.liverpool.metfraglib.fragment.Fragment;
+import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 public class Fragmenter {
 
@@ -24,10 +24,9 @@ public class Fragmenter {
 	private BitArrayNeutralLoss[] detectedNeutralLosses;
 	private List<Short> brokenBondToNeutralLossIndex = new ArrayList<>();
 	private List<Integer> neutralLossIndex = new ArrayList<>();
-	
-	private final String[] smartPatterns = {"O", "C(=O)O", "N", "C[Si](C)(C)O", "C[Si](C)C", "CO", "CN"};
-	private final short[] minimumNumberImplicitHydrogens = {1, 1, 2, 9, 9, 1, 0};
-	
+
+	private final String[] smartPatterns = { "O", "C(=O)O", "N", "C[Si](C)(C)O", "C[Si](C)C", "CO", "CN" };
+	private final short[] minimumNumberImplicitHydrogens = { 1, 1, 2, 9, 9, 1, 0 };
 
 	/**
 	 * 
@@ -47,7 +46,7 @@ public class Fragmenter {
 	 * 
 	 * @param newGeneratedTopDownFragments
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private boolean checkForNeutralLossesAdaptMolecularFormulas(Fragment[] newGeneratedTopDownFragments,
 			short removedBondIndex) throws Exception {
@@ -344,7 +343,7 @@ public class Fragmenter {
 
 		return newGeneratedTopDownFragments;
 	}
-	
+
 	/**
 	 * 
 	 * @param precursorMolecule
@@ -352,13 +351,13 @@ public class Fragmenter {
 	 */
 	public BitArrayNeutralLoss[] getMatchingAtoms(Precursor precursorMolecule) {
 		SMARTSQueryTool[] smartsQuerytools = new SMARTSQueryTool[smartPatterns.length];
-		for(int i = 0; i < smartsQuerytools.length; i++) {
+		for (int i = 0; i < smartsQuerytools.length; i++) {
 			smartsQuerytools[i] = new SMARTSQueryTool(smartPatterns[i], DefaultChemObjectBuilder.getInstance());
 		}
 		java.util.ArrayList<BitArrayNeutralLoss> matchedNeutralLossTypes = new java.util.ArrayList<>();
-		for(byte i = 0; i < smartsQuerytools.length; i++) {
+		for (byte i = 0; i < smartsQuerytools.length; i++) {
 			try {
-				if(smartsQuerytools[i].matches(precursorMolecule.getStructureAsIAtomContainer())) {
+				if (smartsQuerytools[i].matches(precursorMolecule.getStructureAsIAtomContainer())) {
 					/*
 					 * get atom indeces containing to a neutral loss
 					 */
@@ -372,7 +371,7 @@ public class Fragmenter {
 					/*
 					 * check each part that is marked as neutral loss
 					 */
-					for(int ii = 0; ii < matchingAtoms.size(); ii++) {
+					for (int ii = 0; ii < matchingAtoms.size(); ii++) {
 						java.util.List<Integer> part = matchingAtoms.get(ii);
 						/*
 						 * count number of implicit hydrogens of this neutral loss
@@ -380,20 +379,21 @@ public class Fragmenter {
 						int numberImplicitHydrogens = 0;
 						allMatches[ii] = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount());
 						/*
-						 * check all atoms 
+						 * check all atoms
 						 */
-						for(int iii = 0; iii < part.size(); iii++) {
+						for (int iii = 0; iii < part.size(); iii++) {
 							allMatches[ii].set(part.get(iii));
 							/*
 							 * count number of implicit hydrogens of this neutral loss
 							 */
-							numberImplicitHydrogens += precursorMolecule.getNumberHydrogensConnectedToAtomIndex(part.get(iii));
+							numberImplicitHydrogens += precursorMolecule
+									.getNumberHydrogensConnectedToAtomIndex(part.get(iii));
 						}
 						/*
-						 * valid neutral loss match if number implicit hydrogens are at least the number of hydrogens
-						 * needed for the certain neutral loss
+						 * valid neutral loss match if number implicit hydrogens are at least the number
+						 * of hydrogens needed for the certain neutral loss
 						 */
-						if(numberImplicitHydrogens >= minimumNumberImplicitHydrogens[i]) {
+						if (numberImplicitHydrogens >= minimumNumberImplicitHydrogens[i]) {
 							validMatches[ii] = true;
 							numberOfValidNeutralLosses++;
 						}
@@ -401,12 +401,14 @@ public class Fragmenter {
 					/*
 					 * create BitArrayNeutralLosses of valid neutral loss part detections
 					 */
-					if(numberOfValidNeutralLosses != 0) {
-						BitArrayNeutralLoss newDetectedNeutralLoss =  new BitArrayNeutralLoss(numberOfValidNeutralLosses, i);
+					if (numberOfValidNeutralLosses != 0) {
+						BitArrayNeutralLoss newDetectedNeutralLoss = new BitArrayNeutralLoss(numberOfValidNeutralLosses,
+								i);
 						int neutralLossIndexOfBitArrayNeutralLoss = 0;
-						for(int k = 0; k < validMatches.length; k++) {
-							if(validMatches[k]) {
-								newDetectedNeutralLoss.setNeutralLoss(neutralLossIndexOfBitArrayNeutralLoss, allMatches[k]);
+						for (int k = 0; k < validMatches.length; k++) {
+							if (validMatches[k]) {
+								newDetectedNeutralLoss.setNeutralLoss(neutralLossIndexOfBitArrayNeutralLoss,
+										allMatches[k]);
 								neutralLossIndexOfBitArrayNeutralLoss++;
 							}
 						}
@@ -421,7 +423,7 @@ public class Fragmenter {
 			}
 		}
 		BitArrayNeutralLoss[] matchedNeutralLossTypesArray = new BitArrayNeutralLoss[matchedNeutralLossTypes.size()];
-		for(int i = 0; i < matchedNeutralLossTypes.size(); i++) {
+		for (int i = 0; i < matchedNeutralLossTypes.size(); i++) {
 			matchedNeutralLossTypesArray[i] = matchedNeutralLossTypes.get(i);
 		}
 		return matchedNeutralLossTypesArray;

@@ -7,10 +7,10 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 
-import uk.ac.liverpool.metfraglib.precursor.Precursor;
 import uk.ac.liverpool.metfraglib.fragment.Fragment;
 import uk.ac.liverpool.metfraglib.fragment.FragmentWrapper;
 import uk.ac.liverpool.metfraglib.fragmenter.Fragmenter;
+import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 public class TopDownFragmenterAssignerScorer {
 
@@ -55,7 +55,7 @@ public class TopDownFragmenterAssignerScorer {
 	 */
 	public double[] getMasses() throws Exception {
 		final Set<Double> masses = new TreeSet<>();
-		
+
 		// generate root fragment to start fragmentation
 		final Fragment root = this.precursor.toFragment();
 
@@ -141,21 +141,21 @@ public class TopDownFragmenterAssignerScorer {
 							if (0 < this.maximumTreeDepth)
 								newToProcessFragments.add(new FragmentWrapper(currentFragment, tempPeakPointer));
 						}
-						
+
 						tempPeakPointer--;
 					}
 				}
 			}
 			toProcessFragments = newToProcessFragments;
 		}
-		
+
 		final double[] massesArray = new double[masses.size()];
 		int i = 0;
-		
-		for(Double mass: masses) {
+
+		for (Double mass : masses) {
 			massesArray[i++] = mass.doubleValue();
 		}
-		
+
 		return massesArray;
 	}
 
@@ -169,7 +169,7 @@ public class TopDownFragmenterAssignerScorer {
 		final Byte minimalTreeDepth = this.bitArrayToFragment.get(currentHash);
 
 		if (minimalTreeDepth == null) {
-			this.bitArrayToFragment.put(currentHash, Byte.valueOf((byte)0));
+			this.bitArrayToFragment.put(currentHash, Byte.valueOf((byte) 0));
 			return false;
 		}
 

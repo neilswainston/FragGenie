@@ -1,7 +1,7 @@
 package uk.ac.liverpool.metfraglib.precursor;
 
-import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.aromaticity.Aromaticity;
+import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -51,7 +51,6 @@ public class Precursor { // implements IMolecularStructure {
 		return new Precursor(molecule);
 	}
 
-	
 	public double getMeanNodeDegree() {
 		double meanNodeDegree = 0.0;
 		for (int i = 0; i < this.atomIndexToConnectedAtomIndeces.size(); i++) {
@@ -61,7 +60,6 @@ public class Precursor { // implements IMolecularStructure {
 		return meanNodeDegree;
 	}
 
-	
 	public int getNumNodeDegreeOne() {
 		int numDegreeOne = 0;
 		for (int i = 0; i < this.atomIndexToConnectedAtomIndeces.size(); i++) {
@@ -70,7 +68,6 @@ public class Precursor { // implements IMolecularStructure {
 		return numDegreeOne;
 	}
 
-	
 	public int getNumberHydrogensConnectedToAtomIndex(int atomIndex) {
 		return this.numberHydrogensConnectedToAtom[atomIndex];
 	}
@@ -106,7 +103,6 @@ public class Precursor { // implements IMolecularStructure {
 		}
 	}
 
-	
 	public double getMassOfAtom(int index) {
 		return this.massesOfAtoms[index] + this.getNumberHydrogensConnectedToAtomIndex(index)
 				* Constants.MONOISOTOPIC_MASSES.get(Constants.H_INDEX);
@@ -235,36 +231,30 @@ public class Precursor { // implements IMolecularStructure {
 		return row * this.getNonHydrogenAtomCount() + col - ((row + 1) * (row + 2)) / 2;
 	}
 
-	
 	public Fragment toFragment() {
 		return new Fragment(this);
 	}
 
-	
 	public short getNumberHydrogens() {
 		return this.molecularFormula.getNumberHydrogens();
 	}
 
-	
 	public double getNeutralMonoisotopicMass() {
 		return this.neutralMonoisotopicMass;
 	}
 
-	
 	public int getNonHydrogenAtomCount() {
 		return this.precursorMolecule.getAtomCount();
 	}
 
-	
 	public int getNonHydrogenBondCount() {
 		return this.precursorMolecule.getBondCount();
 	}
 
-	
 	public IMolecularFormula getMolecularFormula() {
 		return this.molecularFormula;
 	}
-	
+
 	public IAtomContainer getStructureAsIAtomContainer() {
 		return this.precursorMolecule;
 	}

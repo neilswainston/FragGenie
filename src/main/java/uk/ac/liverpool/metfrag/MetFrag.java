@@ -89,7 +89,8 @@ public class MetFrag {
 		// final IAtomContainer molecule = parser.parseSmiles(smiles);
 
 		// Get settings:
-		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(Precursor.fromSmiles(smiles));
+		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(
+				Precursor.fromSmiles(smiles));
 		return scorer.getMasses();
 	}
 

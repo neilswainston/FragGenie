@@ -12,12 +12,12 @@ public class BitArrayNeutralLoss {
 	 * 
 	 */
 	private final FastBitArray[] neutralLossAtoms;
-	
+
 	/**
 	 * 
 	 */
 	private final byte neutralLossIndex;
-	
+
 	/**
 	 * 
 	 * @param numberNeutralLosses
@@ -27,7 +27,7 @@ public class BitArrayNeutralLoss {
 		this.neutralLossAtoms = new FastBitArray[numberNeutralLosses];
 		this.neutralLossIndex = neutralLossIndex;
 	}
-	
+
 	/**
 	 * 
 	 * @param index
@@ -36,7 +36,7 @@ public class BitArrayNeutralLoss {
 	public FastBitArray getNeutralLossAtomFastBitArray(final int index) {
 		return this.neutralLossAtoms[index];
 	}
-	
+
 	/**
 	 * 
 	 * @return int
@@ -44,7 +44,7 @@ public class BitArrayNeutralLoss {
 	public int getNumberNeutralLosses() {
 		return this.neutralLossAtoms.length;
 	}
-	
+
 	/**
 	 * 
 	 * @param index
@@ -53,7 +53,7 @@ public class BitArrayNeutralLoss {
 	public void setNeutralLoss(final int index, final FastBitArray neutralLossAtoms) {
 		this.neutralLossAtoms[index] = neutralLossAtoms;
 	}
-	
+
 	/**
 	 * 
 	 * @return byte

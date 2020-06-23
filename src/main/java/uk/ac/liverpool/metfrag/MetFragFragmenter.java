@@ -20,12 +20,12 @@ import org.apache.commons.csv.CSVRecord;
  * @author neilswainston
  */
 public class MetFragFragmenter {
-	
+
 	/**
 	 * 
 	 */
 	private final static String METFRAG_HEADER = "MetFrag m/z"; //$NON-NLS-1$
-	
+
 	/**
 	 * 
 	 * @param inFile
@@ -33,39 +33,40 @@ public class MetFragFragmenter {
 	 * @throws Exception
 	 */
 	private static void fragment(final File inFile, final File outFile, final String smilesHeader) throws Exception {
-		
-		try(final InputStreamReader input = new InputStreamReader(new FileInputStream(inFile));
+
+		try (final InputStreamReader input = new InputStreamReader(new FileInputStream(inFile));
 				final CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(input);
-				final CSVPrinter csvPrinter = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(outFile)), CSVFormat.DEFAULT)) {
-			
+				final CSVPrinter csvPrinter = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(outFile)),
+						CSVFormat.DEFAULT)) {
+
 			final List<String> headerNames = new ArrayList<>(csvParser.getHeaderNames());
 			headerNames.add(METFRAG_HEADER);
-			
-			csvPrinter.printRecord(headerNames);
-			
-			int count = 0;
-			
-			for(CSVRecord record : csvParser) {
-			    final String smiles = record.get(smilesHeader);
-			    final double[] fragments = MetFrag.getFragments(smiles, 2);
-			    final Map<String, String> recordMap = record.toMap();
-			    recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
 
-			    final List<String> values = new ArrayList<>();
-			    
-			    for(String headerName : headerNames) {
-			    	values.add(recordMap.get(headerName));
-			    }
-			    
-			    csvPrinter.printRecord(values);
-			    
-			    if(count++ == 10000) {
-			    	break;
-			    }
+			csvPrinter.printRecord(headerNames);
+
+			int count = 0;
+
+			for (CSVRecord record : csvParser) {
+				final String smiles = record.get(smilesHeader);
+				final double[] fragments = MetFrag.getFragments(smiles, 2);
+				final Map<String, String> recordMap = record.toMap();
+				recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
+
+				final List<String> values = new ArrayList<>();
+
+				for (String headerName : headerNames) {
+					values.add(recordMap.get(headerName));
+				}
+
+				csvPrinter.printRecord(values);
+
+				if (count++ == 10000) {
+					break;
+				}
 			}
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param args
