@@ -34,6 +34,9 @@ public class MetFragFragmenter {
 	 */
 	private static void fragment(final File inFile, final File outFile, final String smilesHeader, final int maxRecords) throws Exception {
 
+		outFile.getParentFile().mkdirs();
+		outFile.createNewFile();
+		
 		try (final InputStreamReader input = new InputStreamReader(new FileInputStream(inFile));
 				final CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(input);
 				final CSVPrinter csvPrinter = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(outFile)),
