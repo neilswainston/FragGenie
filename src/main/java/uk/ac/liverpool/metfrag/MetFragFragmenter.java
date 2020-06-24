@@ -51,17 +51,23 @@ public class MetFragFragmenter {
 
 			for (CSVRecord record : csvParser) {
 				final String smiles = record.get(smilesHeader);
-				final double[] fragments = MetFrag.getFragments(smiles, 2);
-				final Map<String, String> recordMap = record.toMap();
-				recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
-
-				final List<String> values = new ArrayList<>();
-
-				for (String headerName : headerNames) {
-					values.add(recordMap.get(headerName));
+				
+				try {
+					final double[] fragments = MetFrag.getFragments(smiles, 2);
+					final Map<String, String> recordMap = record.toMap();
+					recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
+	
+					final List<String> values = new ArrayList<>();
+	
+					for (String headerName : headerNames) {
+						values.add(recordMap.get(headerName));
+					}
+	
+					csvPrinter.printRecord(values);
 				}
-
-				csvPrinter.printRecord(values);
+				catch(Exception e) {
+					e.printStackTrace();
+				}
 				
 				if (count % 100 == 0) {
 					System.out.println("Records fragmented: " + Integer.toString(count)); //$NON-NLS-1$
