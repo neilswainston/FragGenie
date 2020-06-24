@@ -116,13 +116,13 @@ public abstract class MetFragUtils {
 
 	/**
 	 * 
-	 * @param array
+	 * @param result
 	 * @return JsonArray
 	 */
-	protected static JsonArray fromDoubleArray(final double[] array) {
+	protected static JsonArray fromFloatArray(final float[] result) {
 		final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
 
-		for (final double value : array) {
+		for (final float value : result) {
 			arrayBuilder.add(value);
 		}
 

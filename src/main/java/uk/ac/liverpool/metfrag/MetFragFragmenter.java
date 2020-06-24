@@ -53,7 +53,7 @@ public class MetFragFragmenter {
 				final String smiles = record.get(smilesHeader);
 				
 				try {
-					final double[] fragments = MetFrag.getFragments(smiles, 2);
+					final float[] fragments = MetFrag.getFragments(smiles, 2);
 					final Map<String, String> recordMap = record.toMap();
 					recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
 	

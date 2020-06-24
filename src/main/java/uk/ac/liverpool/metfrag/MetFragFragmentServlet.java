@@ -62,7 +62,7 @@ public class MetFragFragmentServlet extends HttpServlet {
 	 */
 	private static void run(final String[] smiles, final int maximumTreeDepth, final HttpServletResponse response)
 			throws Exception {
-		final List<double[]> fragments = new ArrayList<>();
+		final List<float[]> fragments = new ArrayList<>();
 
 		for (String s : smiles) {
 			fragments.add(MetFrag.getFragments(s, maximumTreeDepth));
@@ -74,14 +74,14 @@ public class MetFragFragmentServlet extends HttpServlet {
 
 	/**
 	 * 
-	 * @param results
+	 * @param fragments
 	 * @return JsonArray
 	 */
-	private static JsonArray toJson(final List<double[]> results) {
+	private static JsonArray toJson(final List<float[]> fragments) {
 		final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
 
-		for (final double[] result : results) {
-			arrayBuilder.add(MetFragUtils.fromDoubleArray(result));
+		for (final float[] result : fragments) {
+			arrayBuilder.add(MetFragUtils.fromFloatArray(result));
 		}
 
 		return arrayBuilder.build();

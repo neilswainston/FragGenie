@@ -6,6 +6,7 @@ package uk.ac.liverpool.metfrag;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,11 +49,12 @@ public class MetFragTest {
 				// 196.96778,
 				208.9678, 236.96245 };
 
-		final double[] fragments = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2); //$NON-NLS-1$
-		final double epsilon = 1e-3;
+		final float[] fragments = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2); //$NON-NLS-1$
+		final float epsilon = 1e-3f;
 
 		for (double mass : expected) {
-			Assert.assertTrue(DoubleStream.of(fragments).anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
+			final DoubleStream ds = IntStream.range(0, fragments.length).mapToDouble(i -> fragments[i]);
+			Assert.assertTrue(ds.anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
 		}
 	}
 }

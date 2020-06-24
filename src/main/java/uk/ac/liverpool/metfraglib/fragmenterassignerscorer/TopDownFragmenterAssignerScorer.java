@@ -43,8 +43,8 @@ public class TopDownFragmenterAssignerScorer {
 	 * @return
 	 * @throws Exception
 	 */
-	public double[] getMasses() throws Exception {
-		final Set<Double> masses = new TreeSet<>();
+	public float[] getMasses() throws Exception {
+		final Set<Float> masses = new TreeSet<>();
 
 		Queue<Fragment> fragments = new LinkedList<>();
 		fragments.add(new Fragment(this.prec));
@@ -67,11 +67,11 @@ public class TopDownFragmenterAssignerScorer {
 			fragments = newFragments;
 		}
 
-		final double[] massesArray = new double[masses.size()];
+		final float[] massesArray = new float[masses.size()];
 		int i = 0;
 
-		for (Double mass : masses) {
-			massesArray[i++] = mass.doubleValue();
+		for (Float mass : masses) {
+			massesArray[i++] = mass.floatValue();
 		}
 
 		return massesArray;

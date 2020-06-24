@@ -165,8 +165,14 @@ public class Fragment {
 		return this.brokenBondsFastBitArray.getSetIndeces();
 	}
 
-	public double getMonoisotopicMass(Precursor precursorMolecule) {
-		double mass = 0.0;
+	/**
+	 * 
+	 * @param precursorMolecule
+	 * @return float
+	 */
+	public float getMonoisotopicMass(Precursor precursorMolecule) {
+		float mass = 0.0f;
+		
 		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
 			if (this.atomsFastBitArray.get(i)) {
 				mass += precursorMolecule.getMassOfAtom(i);
@@ -180,18 +186,18 @@ public class Fragment {
 	 * @param precursorMolecule
 	 * @param precursorIonTypeIndex
 	 * @param isPositive
-	 * @return List<Double>
+	 * @return List<Float>
 	 */
-	public List<Double> getMasses(Precursor precursorMolecule, int precursorIonTypeIndex, boolean isPositive) {
-		final List<Double> masses = new ArrayList<>();
+	public List<Float> getMasses(Precursor precursorMolecule, int precursorIonTypeIndex, boolean isPositive) {
+		final List<Float> masses = new ArrayList<>();
 
-		final double[] ionisationTypeMassCorrection = new double[] {
-				Constants.getIonisationTypeMassCorrection(precursorIonTypeIndex, isPositive),
-				Constants.getIonisationTypeMassCorrection(0, isPositive) };
+		final float[] ionisationTypeMassCorrection = new float[] {
+				Constants.getIonisationTypeMassCorrection(precursorIonTypeIndex, isPositive).floatValue(),
+				Constants.getIonisationTypeMassCorrection(0, isPositive).floatValue() };
 
 		for (int i = 0; i < ionisationTypeMassCorrection.length; i++) {
-			final double mass = this.getMonoisotopicMass(precursorMolecule) + ionisationTypeMassCorrection[i];
-			masses.add(mass);
+			final float mass = this.getMonoisotopicMass(precursorMolecule) + ionisationTypeMassCorrection[i];
+			masses.add(Float.valueOf(mass));
 		}
 
 		return masses;

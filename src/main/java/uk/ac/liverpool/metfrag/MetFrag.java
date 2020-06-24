@@ -82,7 +82,7 @@ public class MetFrag {
 	 * @return double[]
 	 * @throws Exception
 	 */
-	public static double[] getFragments(final String smiles, final int maximumTreeDepth) throws Exception {
+	public static float[] getFragments(final String smiles, final int maximumTreeDepth) throws Exception {
 		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(Precursor.fromSmiles(smiles), maximumTreeDepth);
 		return scorer.getMasses();
 	}
