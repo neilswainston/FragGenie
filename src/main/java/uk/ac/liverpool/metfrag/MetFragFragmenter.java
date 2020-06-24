@@ -32,7 +32,7 @@ public class MetFragFragmenter {
 	 * @param outFile
 	 * @throws Exception
 	 */
-	private static void fragment(final File inFile, final File outFile, final String smilesHeader) throws Exception {
+	private static void fragment(final File inFile, final File outFile, final String smilesHeader, final int maxRecords) throws Exception {
 
 		try (final InputStreamReader input = new InputStreamReader(new FileInputStream(inFile));
 				final CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(input);
@@ -43,7 +43,7 @@ public class MetFragFragmenter {
 			headerNames.add(METFRAG_HEADER);
 
 			csvPrinter.printRecord(headerNames);
-
+			
 			int count = 0;
 
 			for (CSVRecord record : csvParser) {
@@ -59,8 +59,12 @@ public class MetFragFragmenter {
 				}
 
 				csvPrinter.printRecord(values);
-
-				if (count++ == 10000) {
+				
+				if (count % 100 == 0) {
+					System.out.println("Records fragmented: " + Integer.toString(count)); //$NON-NLS-1$
+				}
+				
+				if (count++ == maxRecords) {
 					break;
 				}
 			}
@@ -73,6 +77,7 @@ public class MetFragFragmenter {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		fragment(new File(args[0]), new File(args[1]), args[2]);
+		final int maxRecords = args.length > 3 ? Integer.parseInt(args[3]) : Integer.MAX_VALUE;
+		fragment(new File(args[0]), new File(args[1]), args[2], maxRecords);
 	}
 }
