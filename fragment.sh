@@ -3,5 +3,5 @@ java \
 	uk.ac.liverpool.metfrag.MetFragFragmenter \
 	$1 \
 	out/spectra.csv \
-	smiles \
-	$2
+	$2 \
+	$3
