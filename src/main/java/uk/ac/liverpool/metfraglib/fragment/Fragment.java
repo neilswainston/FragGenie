@@ -10,13 +10,17 @@ import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 public class Fragment {
 
+	/**
+	 * 
+	 */
+	private final Precursor prec;
+	
 	private int addedToQueueCounts;
-	private short lastSkippedBond;
+	private short lastSkippedBond = -1;
 	private FastBitArray atomsFastBitArray;
 	private FastBitArray bondsFastBitArray;
 	private FastBitArray brokenBondsFastBitArray;
-	private byte treeDepth;
-	private int numberHydrogens;
+	private byte treeDepth = 0;
 	
 	/**
 	 * constructor setting all bits of atomsFastBitArray and bondsFastBitArray to
@@ -26,12 +30,11 @@ public class Fragment {
 	 * @throws AtomTypeNotKnownFromInputListException
 	 */
 	public Fragment(final Precursor precursor) {
+		this.prec = precursor;
 		this.addedToQueueCounts = 0;
-		this.lastSkippedBond = -1;
 		this.atomsFastBitArray = new FastBitArray(precursor.getNonHydrogenAtomCount(), true);
 		this.bondsFastBitArray = new FastBitArray(precursor.getNonHydrogenBondCount(), true);
 		this.brokenBondsFastBitArray = new FastBitArray(precursor.getNonHydrogenBondCount());
-		this.treeDepth = 0;
 	}
 
 	/**
@@ -45,16 +48,14 @@ public class Fragment {
 	 * @param numberHydrogens
 	 * @throws Exception
 	 */
-	private Fragment(final FastBitArray atomsFastBitArray,
+	private Fragment(final Precursor precursor,
+			final FastBitArray atomsFastBitArray,
 			final FastBitArray bondsFastBitArray,
-			final FastBitArray brokenBondsFastBitArray,
-			final int numberHydrogens) throws Exception {
+			final FastBitArray brokenBondsFastBitArray) throws Exception {
+		this.prec = precursor;
 		this.atomsFastBitArray = atomsFastBitArray;
 		this.bondsFastBitArray = bondsFastBitArray;
 		this.brokenBondsFastBitArray = brokenBondsFastBitArray;
-		this.treeDepth = 0;
-		this.numberHydrogens = numberHydrogens;
-		this.lastSkippedBond = -1;
 	}
 
 	/**
@@ -87,8 +88,8 @@ public class Fragment {
 				indecesOfBondConnectedAtoms[1], bondIndexToRemove, atomArrayOfNewFragment_1, bondArrayOfNewFragment_1,
 				brokenBondArrayOfNewFragment_1, numberHydrogensOfNewFragment);
 
-		Fragment firstNewGeneratedFragment = new Fragment(atomArrayOfNewFragment_1, bondArrayOfNewFragment_1,
-				brokenBondArrayOfNewFragment_1, numberHydrogensOfNewFragment[0]);
+		Fragment firstNewGeneratedFragment = new Fragment(this.prec, atomArrayOfNewFragment_1, bondArrayOfNewFragment_1,
+				brokenBondArrayOfNewFragment_1);
 
 		/*
 		 * only one fragment is generated when a ring bond was broken
@@ -116,8 +117,8 @@ public class Fragment {
 				bondIndexToRemove, atomArrayOfNewFragment_2, bondArrayOfNewFragment_2, brokenBondArrayOfNewFragment_2,
 				numberHydrogensOfNewFragment);
 
-		Fragment secondNewGeneratedFragment = new Fragment(atomArrayOfNewFragment_2, bondArrayOfNewFragment_2,
-				brokenBondArrayOfNewFragment_2, numberHydrogensOfNewFragment[0]);
+		Fragment secondNewGeneratedFragment = new Fragment(this.prec, atomArrayOfNewFragment_2, bondArrayOfNewFragment_2,
+				brokenBondArrayOfNewFragment_2);
 
 		firstNewGeneratedFragment.treeDepth = (byte) (this.treeDepth + 1);
 
@@ -170,29 +171,16 @@ public class Fragment {
 	 * @param precursorMolecule
 	 * @return List<Float>
 	 */
-	public List<Float> getMasses(final Precursor precursorMolecule) {
+	public List<Float> getMasses() {
 		final List<Float> masses = new ArrayList<>();
 		final float[] ionMassCorrections = new float[] {1.00728f, -5.5E-4f};
 
 		for (float ionMassCorrection : ionMassCorrections) {
-			final float mass = this.getMonoisotopicMass(precursorMolecule) + ionMassCorrection;
+			final float mass = this.getMonoisotopicMass(this.prec) + ionMassCorrection;
 			masses.add(Float.valueOf(mass));
 		}
 
 		return masses;
-	}
-
-	@Override
-	public Object clone() {
-		try {
-			Fragment clone = new Fragment(this.atomsFastBitArray.clone(), this.bondsFastBitArray.clone(),
-					this.brokenBondsFastBitArray.clone(), this.numberHydrogens);
-			clone.treeDepth = this.treeDepth;
-			return clone;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 
 	/**
