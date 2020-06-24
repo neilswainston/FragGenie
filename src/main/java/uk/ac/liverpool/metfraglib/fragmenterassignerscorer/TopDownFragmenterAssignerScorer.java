@@ -56,7 +56,7 @@ public class TopDownFragmenterAssignerScorer {
 				final Fragment fragment = fragments.poll();
 
 				for(final Fragment childFragment : this.fragmenter.getFragmentsOfNextTreeDepth(fragment)) {
-					masses.addAll(childFragment.getMasses(this.prec, 2, true));
+					masses.addAll(childFragment.getMasses(this.prec));
 
 					if(this.maxTreeDepth > 0) {
 						newFragments.add(childFragment);
