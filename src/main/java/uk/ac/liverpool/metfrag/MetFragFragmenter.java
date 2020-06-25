@@ -87,6 +87,10 @@ public class MetFragFragmenter {
 	 */
 	public static void main(String[] args) throws Exception {
 		final int maxRecords = args.length > 3 ? Integer.parseInt(args[3]) : Integer.MAX_VALUE;
-		fragment(new File(args[0]), new File(args[1]), args[2], maxRecords);
+		
+		fragment(new File(new File(args[0]).getAbsolutePath()),
+				new File(new File(args[1]).getAbsolutePath()),
+				args[2],
+				maxRecords);
 	}
 }
