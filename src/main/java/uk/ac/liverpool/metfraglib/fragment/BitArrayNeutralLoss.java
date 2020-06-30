@@ -30,6 +30,14 @@ public class BitArrayNeutralLoss {
 
 	/**
 	 * 
+	 * @return byte
+	 */
+	public byte getHydrogenDifference() {
+		return new NeutralLosses().getHydrogenDifference(this.neutralLossIndex);
+	}
+
+	/**
+	 * 
 	 * @param index
 	 * @return
 	 */
@@ -52,13 +60,5 @@ public class BitArrayNeutralLoss {
 	 */
 	public void setNeutralLoss(final int index, final FastBitArray neutralLossAtoms) {
 		this.neutralLossAtoms[index] = neutralLossAtoms;
-	}
-
-	/**
-	 * 
-	 * @return byte
-	 */
-	public byte getHydrogenDifference() {
-		return new NeutralLosses().getHydrogenDifference(this.neutralLossIndex);
 	}
 }

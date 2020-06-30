@@ -37,91 +37,12 @@ class MockHttpServletResponse implements HttpServletResponse {
 	/**
 	 * 
 	 */
-	private StringWriter writerContent = new StringWriter();
+	private PrintWriter writer = new PrintWriter(this.writerContent);
 
 	/**
 	 * 
 	 */
-	private PrintWriter writer = new PrintWriter(this.writerContent);
-
-	@Override
-	public void setContentType(final String contType) {
-		this.contentType = contType;
-	}
-
-	@Override
-	public String getContentType() {
-		return this.contentType;
-	}
-
-	@Override
-	public PrintWriter getWriter() throws IOException {
-		return this.writer;
-	}
-
-	public StringWriter getWriterContent() {
-		return this.writerContent;
-	}
-
-	@Override
-	public void flushBuffer() throws IOException {
-		// Empty block
-	}
-
-	@Override
-	public int getBufferSize() {
-		return 0;
-	}
-
-	@Override
-	public String getCharacterEncoding() {
-		return this.encoding;
-	}
-
-	@Override
-	public Locale getLocale() {
-		return null;
-	}
-
-	@Override
-	public ServletOutputStream getOutputStream() throws IOException {
-		return null;
-	}
-
-	@Override
-	public boolean isCommitted() {
-		return false;
-	}
-
-	@Override
-	public void reset() {
-		// Empty block
-	}
-
-	@Override
-	public void resetBuffer() {
-		// Empty block
-	}
-
-	@Override
-	public void setBufferSize(final int size) {
-		// Empty block
-	}
-
-	@Override
-	public void setCharacterEncoding(final String enc) {
-		this.encoding = enc;
-	}
-
-	@Override
-	public void setContentLength(final int length) {
-		// Empty block
-	}
-
-	@Override
-	public void setLocale(final Locale locale) {
-		// Empty block
-	}
+	private StringWriter writerContent = new StringWriter();
 
 	@Override
 	public void addCookie(final Cookie cookie) {
@@ -148,11 +69,6 @@ class MockHttpServletResponse implements HttpServletResponse {
 		return false;
 	}
 
-	@Override
-	public String encodeRedirectURL(final String url) {
-		return null;
-	}
-
 	@SuppressWarnings("deprecation")
 	@Deprecated
 	@Override
@@ -161,7 +77,7 @@ class MockHttpServletResponse implements HttpServletResponse {
 	}
 
 	@Override
-	public String encodeURL(final String url) {
+	public String encodeRedirectURL(final String url) {
 		return null;
 	}
 
@@ -170,6 +86,85 @@ class MockHttpServletResponse implements HttpServletResponse {
 	@Override
 	public String encodeUrl(final String url) {
 		return null;
+	}
+
+	@Override
+	public String encodeURL(final String url) {
+		return null;
+	}
+
+	@Override
+	public void flushBuffer() throws IOException {
+		// Empty block
+	}
+
+	@Override
+	public int getBufferSize() {
+		return 0;
+	}
+
+	@Override
+	public String getCharacterEncoding() {
+		return this.encoding;
+	}
+
+	@Override
+	public String getContentType() {
+		return this.contentType;
+	}
+
+	@Override
+	public String getHeader(final String name) {
+		return null;
+	}
+
+	@Override
+	public Collection<String> getHeaderNames() {
+		return null;
+	}
+
+	@Override
+	public Collection<String> getHeaders(final String name) {
+		return null;
+	}
+
+	@Override
+	public Locale getLocale() {
+		return null;
+	}
+
+	@Override
+	public ServletOutputStream getOutputStream() throws IOException {
+		return null;
+	}
+
+	@Override
+	public int getStatus() {
+		return 0;
+	}
+
+	@Override
+	public PrintWriter getWriter() throws IOException {
+		return this.writer;
+	}
+
+	public StringWriter getWriterContent() {
+		return this.writerContent;
+	}
+
+	@Override
+	public boolean isCommitted() {
+		return false;
+	}
+
+	@Override
+	public void reset() {
+		// Empty block
+	}
+
+	@Override
+	public void resetBuffer() {
+		// Empty block
 	}
 
 	@Override
@@ -188,6 +183,32 @@ class MockHttpServletResponse implements HttpServletResponse {
 	}
 
 	@Override
+	public void setBufferSize(final int size) {
+		// Empty block
+	}
+
+	@Override
+	public void setCharacterEncoding(final String enc) {
+		this.encoding = enc;
+	}
+
+	@Override
+	public void setContentLength(final int length) {
+		// Empty block
+	}
+
+	// Servlet API 3.0 and 3.1 methods
+	@Override
+	public void setContentLengthLong(final long length) {
+		// Empty block
+	}
+
+	@Override
+	public void setContentType(final String contType) {
+		this.contentType = contType;
+	}
+
+	@Override
 	public void setDateHeader(final String name, final long date) {
 		// Empty block
 	}
@@ -203,6 +224,11 @@ class MockHttpServletResponse implements HttpServletResponse {
 	}
 
 	@Override
+	public void setLocale(final Locale locale) {
+		// Empty block
+	}
+
+	@Override
 	public void setStatus(final int statusCode) {
 		// Empty block
 	}
@@ -212,31 +238,5 @@ class MockHttpServletResponse implements HttpServletResponse {
 	@Override
 	public void setStatus(final int statusCode, final String message) {
 		// Empty block
-	}
-
-	// Servlet API 3.0 and 3.1 methods
-	@Override
-	public void setContentLengthLong(final long length) {
-		// Empty block
-	}
-
-	@Override
-	public int getStatus() {
-		return 0;
-	}
-
-	@Override
-	public String getHeader(final String name) {
-		return null;
-	}
-
-	@Override
-	public Collection<String> getHeaders(final String name) {
-		return null;
-	}
-
-	@Override
-	public Collection<String> getHeaderNames() {
-		return null;
 	}
 }

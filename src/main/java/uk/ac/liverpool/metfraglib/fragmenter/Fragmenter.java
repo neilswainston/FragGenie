@@ -14,16 +14,28 @@ import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 public class Fragmenter {
 
-	private byte maximumNumberOfAFragmentAddedToQueue = 2;
-	private boolean ringBondsInitialised = false;
-	private FastBitArray ringBondFastBitArray;
-	private Precursor precursor;
-	private BitArrayNeutralLoss[] detectedNeutralLosses;
+	/**
+	 * 
+	 * @param newGeneratedTopDownFragments
+	 */
+	private static void processGeneratedFragments(Fragment[] newGeneratedTopDownFragments) {
+		if (newGeneratedTopDownFragments.length == 2) {
+			newGeneratedTopDownFragments[0].setAddedToQueueCounts((byte) 1);
+			newGeneratedTopDownFragments[1].setAddedToQueueCounts((byte) 1);
+		}
+	}
+
 	private List<Short> brokenBondToNeutralLossIndex = new ArrayList<>();
+	private BitArrayNeutralLoss[] detectedNeutralLosses;
+	private byte maximumNumberOfAFragmentAddedToQueue = 2;
+	private final short[] minimumNumberImplicitHydrogens = { 1, 1, 2, 9, 9, 1, 0 };
 	private List<Integer> neutralLossIndex = new ArrayList<>();
+	private Precursor precursor;
+
+	private FastBitArray ringBondFastBitArray;
+	private boolean ringBondsInitialised = false;
 
 	private final String[] smartPatterns = { "O", "C(=O)O", "N", "C[Si](C)(C)O", "C[Si](C)C", "CO", "CN" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
-	private final short[] minimumNumberImplicitHydrogens = { 1, 1, 2, 9, 9, 1, 0 };
 
 	/**
 	 * 
@@ -73,7 +85,7 @@ public class Fragmenter {
 					return true;
 				} else if (newGeneratedTopDownFragments[1].getAtomsFastBitArray()
 						.equals(this.detectedNeutralLosses[i].getNeutralLossAtomFastBitArray(ii))) {
-					
+
 					/*
 					 * check for previous broken bonds caused by neutral loss
 					 */
@@ -95,6 +107,126 @@ public class Fragmenter {
 		if (neutralLossFragment == -1)
 			return false;
 		return true;
+	}
+
+	/**
+	 * 
+	 * @param newGeneratedTopDownFragments
+	 * @param precursorFragment
+	 * @param toProcess
+	 * @param ringBondFastBitArray
+	 * @param lastCuttedRingBond
+	 * @return
+	 * @throws Exception
+	 */
+	private ArrayList<Fragment> createRingBondCleavedFragments(ArrayList<Fragment> newGeneratedTopDownFragments,
+			Fragment precursorFragment, java.util.Queue<Fragment> toProcess, FastBitArray ringBondFastBitArray,
+			java.util.Queue<Short> lastCuttedRingBond) throws Exception {
+		/*
+		 * process all fragments that have been cutted in a ring without generating a
+		 * new one
+		 */
+		while (!toProcess.isEmpty() && lastCuttedRingBond.size() != 0) {
+			/*
+			 * 
+			 */
+			Fragment currentFragment = toProcess.poll();
+			short nextRingBondToCut = (short) (lastCuttedRingBond.poll() + 1);
+			/*
+			 * 
+			 */
+			for (short currentBond = nextRingBondToCut; currentBond < ringBondFastBitArray.getSize(); currentBond++) {
+				if (!ringBondFastBitArray.get(currentBond))
+					continue;
+				if (currentFragment.getBrokenBondsFastBitArray().get(currentBond))
+					continue;
+				Fragment[] newFragments = { currentFragment };
+				short[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesOfBondIndex(currentBond);
+				newFragments = currentFragment.traverseMolecule(this.precursor, currentBond, connectedAtomIndeces);
+
+				//
+				// pre-processing of the generated fragment/s
+				//
+				Fragmenter.processGeneratedFragments(newFragments);
+				//
+				// if two new fragments have been generated set them as valid
+				//
+				if (newFragments.length == 2) {
+					newFragments[0].setLastSkippedBond(currentFragment.getLastSkippedBond());
+					newFragments[1].setLastSkippedBond(currentFragment.getLastSkippedBond());
+				}
+				//
+				// set precursor fragment of generated fragment(s) and the child(ren) of
+				// precursor fragments
+				//
+				for (int k = 0; k < newFragments.length; k++) {
+					if (newFragments.length == 2) {
+						newGeneratedTopDownFragments.add(newFragments[k]);
+					}
+				}
+
+				if (newFragments.length == 1) {
+					if (newFragments[0].getAddedToQueueCounts() < this.maximumNumberOfAFragmentAddedToQueue) {
+						toProcess.add(newFragments[0]);
+						lastCuttedRingBond.add(currentBond);
+					} else {
+						newGeneratedTopDownFragments.add(newFragments[0]);
+					}
+				}
+			}
+		}
+
+		return newGeneratedTopDownFragments;
+	}
+
+	/**
+	 * @throws Exception
+	 * 
+	 */
+
+	/*
+	 * generate fragments by removing bonds that were skipped due to ring bond
+	 * cleavage
+	 */
+	private void generateFragmentsOfSkippedBonds(ArrayList<Fragment> newGeneratedTopDownFragments,
+			Fragment precursorFragment) throws Exception {
+		short lastSkippedBonds = precursorFragment.getLastSkippedBond();
+		short lastCuttedBond = (short) (precursorFragment.getMaximalIndexOfRemovedBond());
+		if (lastSkippedBonds == -1)
+			return;
+		for (short currentBond = lastSkippedBonds; currentBond < lastCuttedBond; currentBond++) {
+
+			if (this.ringBondFastBitArray.get(currentBond))
+				continue;
+			if (!precursorFragment.getBondsFastBitArray().get(currentBond))
+				continue;
+
+			short[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesOfBondIndex(currentBond);
+
+			Fragment[] newFragments = precursorFragment.traverseMolecule(this.precursor, currentBond,
+					connectedAtomIndeces);
+
+			Fragmenter.processGeneratedFragments(newFragments);
+			if (newFragments.length == 2) {
+				this.checkForNeutralLossesAdaptMolecularFormulas(newFragments, currentBond);
+			} else {
+				System.err.println("problem generating fragments"); //$NON-NLS-1$
+				System.exit(1);
+			}
+
+			for (int k = 0; k < newFragments.length; k++) {
+				// precursorFragment.addChild(newFragments[k]);
+				/*
+				 * if (precursorFragment.isValidFragment())
+				 * newFragments[k].setPrecursorFragment(precursorFragment); else
+				 * newFragments[k].setPrecursorFragment(precursorFragment.hasPrecursorFragment()
+				 * ? precursorFragment.getPrecursorFragment() : precursorFragment);
+				 */
+				if (newFragments.length == 2) {
+					newGeneratedTopDownFragments.add(newFragments[k]);
+				}
+			}
+		}
 	}
 
 	/**
@@ -171,137 +303,6 @@ public class Fragmenter {
 		this.ringBondsInitialised = true;
 
 		return fragmentsOfNextTreeDepth;
-	}
-
-	/**
-	 * @throws Exception
-	 * 
-	 */
-
-	/*
-	 * generate fragments by removing bonds that were skipped due to ring bond
-	 * cleavage
-	 */
-	private void generateFragmentsOfSkippedBonds(ArrayList<Fragment> newGeneratedTopDownFragments,
-			Fragment precursorFragment) throws Exception {
-		short lastSkippedBonds = precursorFragment.getLastSkippedBond();
-		short lastCuttedBond = (short) (precursorFragment.getMaximalIndexOfRemovedBond());
-		if (lastSkippedBonds == -1)
-			return;
-		for (short currentBond = lastSkippedBonds; currentBond < lastCuttedBond; currentBond++) {
-
-			if (this.ringBondFastBitArray.get(currentBond))
-				continue;
-			if (!precursorFragment.getBondsFastBitArray().get(currentBond))
-				continue;
-
-			short[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesOfBondIndex(currentBond);
-
-			Fragment[] newFragments = precursorFragment.traverseMolecule(this.precursor, currentBond,
-					connectedAtomIndeces);
-
-			Fragmenter.processGeneratedFragments(newFragments);
-			if (newFragments.length == 2) {
-				this.checkForNeutralLossesAdaptMolecularFormulas(newFragments, currentBond);
-			} else {
-				System.err.println("problem generating fragments"); //$NON-NLS-1$
-				System.exit(1);
-			}
-
-			for (int k = 0; k < newFragments.length; k++) {
-				// precursorFragment.addChild(newFragments[k]);
-				/*
-				 * if (precursorFragment.isValidFragment())
-				 * newFragments[k].setPrecursorFragment(precursorFragment); else
-				 * newFragments[k].setPrecursorFragment(precursorFragment.hasPrecursorFragment()
-				 * ? precursorFragment.getPrecursorFragment() : precursorFragment);
-				 */
-				if (newFragments.length == 2) {
-					newGeneratedTopDownFragments.add(newFragments[k]);
-				}
-			}
-		}
-	}
-
-	/**
-	 * 
-	 * @param newGeneratedTopDownFragments
-	 */
-	private static void processGeneratedFragments(Fragment[] newGeneratedTopDownFragments) {
-		if (newGeneratedTopDownFragments.length == 2) {
-			newGeneratedTopDownFragments[0].setAddedToQueueCounts((byte) 1);
-			newGeneratedTopDownFragments[1].setAddedToQueueCounts((byte) 1);
-		}
-	}
-
-	/**
-	 * 
-	 * @param newGeneratedTopDownFragments
-	 * @param precursorFragment
-	 * @param toProcess
-	 * @param ringBondFastBitArray
-	 * @param lastCuttedRingBond
-	 * @return
-	 * @throws Exception
-	 */
-	private ArrayList<Fragment> createRingBondCleavedFragments(ArrayList<Fragment> newGeneratedTopDownFragments,
-			Fragment precursorFragment, java.util.Queue<Fragment> toProcess, FastBitArray ringBondFastBitArray,
-			java.util.Queue<Short> lastCuttedRingBond) throws Exception {
-		/*
-		 * process all fragments that have been cutted in a ring without generating a
-		 * new one
-		 */
-		while (!toProcess.isEmpty() && lastCuttedRingBond.size() != 0) {
-			/*
-			 * 
-			 */
-			Fragment currentFragment = toProcess.poll();
-			short nextRingBondToCut = (short) (lastCuttedRingBond.poll() + 1);
-			/*
-			 * 
-			 */
-			for (short currentBond = nextRingBondToCut; currentBond < ringBondFastBitArray.getSize(); currentBond++) {
-				if (!ringBondFastBitArray.get(currentBond))
-					continue;
-				if (currentFragment.getBrokenBondsFastBitArray().get(currentBond))
-					continue;
-				Fragment[] newFragments = { currentFragment };
-				short[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesOfBondIndex(currentBond);
-				newFragments = currentFragment.traverseMolecule(this.precursor, currentBond, connectedAtomIndeces);
-
-				//
-				// pre-processing of the generated fragment/s
-				//
-				Fragmenter.processGeneratedFragments(newFragments);
-				//
-				// if two new fragments have been generated set them as valid
-				//
-				if (newFragments.length == 2) {
-					newFragments[0].setLastSkippedBond(currentFragment.getLastSkippedBond());
-					newFragments[1].setLastSkippedBond(currentFragment.getLastSkippedBond());
-				}
-				//
-				// set precursor fragment of generated fragment(s) and the child(ren) of
-				// precursor fragments
-				//
-				for (int k = 0; k < newFragments.length; k++) {
-					if (newFragments.length == 2) {
-						newGeneratedTopDownFragments.add(newFragments[k]);
-					}
-				}
-
-				if (newFragments.length == 1) {
-					if (newFragments[0].getAddedToQueueCounts() < this.maximumNumberOfAFragmentAddedToQueue) {
-						toProcess.add(newFragments[0]);
-						lastCuttedRingBond.add(currentBond);
-					} else {
-						newGeneratedTopDownFragments.add(newFragments[0]);
-					}
-				}
-			}
-		}
-
-		return newGeneratedTopDownFragments;
 	}
 
 	/**

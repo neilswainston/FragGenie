@@ -32,11 +32,12 @@ public class MetFragFragmenter {
 	 * @param outFile
 	 * @throws Exception
 	 */
-	private static void fragment(final File inFile, final File outFile, final String smilesHeader, final int maxRecords) throws Exception {
+	private static void fragment(final File inFile, final File outFile, final String smilesHeader, final int maxRecords)
+			throws Exception {
 
 		outFile.getParentFile().mkdirs();
 		outFile.createNewFile();
-		
+
 		try (final InputStreamReader input = new InputStreamReader(new FileInputStream(inFile));
 				final CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(input);
 				final CSVPrinter csvPrinter = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(outFile)),
@@ -46,33 +47,32 @@ public class MetFragFragmenter {
 			headerNames.add(METFRAG_HEADER);
 
 			csvPrinter.printRecord(headerNames);
-			
+
 			int count = 0;
 
 			for (CSVRecord record : csvParser) {
 				final String smiles = record.get(smilesHeader);
-				
+
 				try {
 					final float[] fragments = MetFrag.getFragments(smiles, 2);
 					final Map<String, String> recordMap = record.toMap();
 					recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
-	
+
 					final List<String> values = new ArrayList<>();
-	
+
 					for (String headerName : headerNames) {
 						values.add(recordMap.get(headerName));
 					}
-	
+
 					csvPrinter.printRecord(values);
-				}
-				catch(Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				
+
 				if (count % 100 == 0) {
 					System.out.println("Records fragmented: " + Integer.toString(count)); //$NON-NLS-1$
 				}
-				
+
 				if (count++ == maxRecords) {
 					break;
 				}
@@ -87,10 +87,8 @@ public class MetFragFragmenter {
 	 */
 	public static void main(String[] args) throws Exception {
 		final int maxRecords = args.length > 3 ? Integer.parseInt(args[3]) : Integer.MAX_VALUE;
-		
-		fragment(new File(new File(args[0]).getAbsolutePath()),
-				new File(new File(args[1]).getAbsolutePath()),
-				args[2],
+
+		fragment(new File(new File(args[0]).getAbsolutePath()), new File(new File(args[1]).getAbsolutePath()), args[2],
 				maxRecords);
 	}
 }

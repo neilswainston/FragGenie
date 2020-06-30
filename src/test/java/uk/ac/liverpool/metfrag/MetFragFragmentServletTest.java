@@ -21,6 +21,22 @@ public class MetFragFragmentServletTest {
 
 	/**
 	 * 
+	 * @param response
+	 */
+	private static void verify(final MockHttpServletResponse response) {
+		Assert.assertEquals("application/json", response.getContentType()); //$NON-NLS-1$
+		Assert.assertEquals("UTF-8", response.getCharacterEncoding()); //$NON-NLS-1$
+
+		final String resp = response.getWriterContent().toString();
+
+		try (final JsonReader jsonReader = Json.createReader(new StringReader(resp))) {
+			final JsonArray results = jsonReader.readArray();
+			Assert.assertEquals(5, results.size());
+		}
+	}
+
+	/**
+	 * 
 	 * @throws IOException
 	 */
 	@SuppressWarnings("static-method")
@@ -41,21 +57,5 @@ public class MetFragFragmentServletTest {
 		final MockHttpServletResponse response = new MockHttpServletResponse();
 		new MetFragFragmentServlet().doPost(new MockMetFragFragmentServletRequest(), response);
 		verify(response);
-	}
-
-	/**
-	 * 
-	 * @param response
-	 */
-	private static void verify(final MockHttpServletResponse response) {
-		Assert.assertEquals("application/json", response.getContentType()); //$NON-NLS-1$
-		Assert.assertEquals("UTF-8", response.getCharacterEncoding()); //$NON-NLS-1$
-
-		final String resp = response.getWriterContent().toString();
-
-		try (final JsonReader jsonReader = Json.createReader(new StringReader(resp))) {
-			final JsonArray results = jsonReader.readArray();
-			Assert.assertEquals(5, results.size());
-		}
 	}
 }

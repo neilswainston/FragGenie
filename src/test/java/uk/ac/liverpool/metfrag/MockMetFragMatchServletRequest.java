@@ -15,13 +15,6 @@ public class MockMetFragMatchServletRequest extends MockHttpServletRequest {
 
 	/**
 	 * 
-	 */
-	public MockMetFragMatchServletRequest() {
-		super(getQuery());
-	}
-
-	/**
-	 * 
 	 * @return String
 	 */
 	private static String getQuery() {
@@ -48,5 +41,12 @@ public class MockMetFragMatchServletRequest extends MockHttpServletRequest {
 		builder.add("inten", intenBuilder.build()); //$NON-NLS-1$
 
 		return builder.build().toString();
+	}
+
+	/**
+	 * 
+	 */
+	public MockMetFragMatchServletRequest() {
+		super(getQuery());
 	}
 }

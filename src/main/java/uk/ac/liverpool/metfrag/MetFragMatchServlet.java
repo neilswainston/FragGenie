@@ -30,32 +30,6 @@ public class MetFragMatchServlet extends HttpServlet {
 	 **/
 	private static final long serialVersionUID = 1L;
 
-	@Override
-	public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
-		try {
-			run(MetFragTestData.SMILES, MetFragTestData.MZ, MetFragTestData.INTEN, response);
-		} catch (Exception e) {
-			MetFragUtils.handleException(e);
-		}
-	}
-
-	@Override
-	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
-		try (final JsonReader jsonReader = MetFragUtils.getReader(request)) {
-			final JsonObject json = jsonReader.readObject();
-			final JsonArray smiles = (JsonArray) json.get("smiles"); //$NON-NLS-1$
-			final JsonArray mz = (JsonArray) json.get("mz"); //$NON-NLS-1$
-			final JsonArray inten = (JsonArray) json.get("inten"); //$NON-NLS-1$
-
-			try {
-				run(MetFragUtils.toStringArray(smiles), MetFragUtils.toDoubleArray(mz), MetFragUtils.toIntArray(inten),
-						response);
-			} catch (Exception e) {
-				MetFragUtils.handleException(e);
-			}
-		}
-	}
-
 	/**
 	 * 
 	 * @param smiles
@@ -100,5 +74,31 @@ public class MetFragMatchServlet extends HttpServlet {
 		}
 
 		return arrayBuilder.build();
+	}
+
+	@Override
+	public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+		try {
+			run(MetFragTestData.SMILES, MetFragTestData.MZ, MetFragTestData.INTEN, response);
+		} catch (Exception e) {
+			MetFragUtils.handleException(e);
+		}
+	}
+
+	@Override
+	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+		try (final JsonReader jsonReader = MetFragUtils.getReader(request)) {
+			final JsonObject json = jsonReader.readObject();
+			final JsonArray smiles = (JsonArray) json.get("smiles"); //$NON-NLS-1$
+			final JsonArray mz = (JsonArray) json.get("mz"); //$NON-NLS-1$
+			final JsonArray inten = (JsonArray) json.get("inten"); //$NON-NLS-1$
+
+			try {
+				run(MetFragUtils.toStringArray(smiles), MetFragUtils.toDoubleArray(mz), MetFragUtils.toIntArray(inten),
+						response);
+			} catch (Exception e) {
+				MetFragUtils.handleException(e);
+			}
+		}
 	}
 }

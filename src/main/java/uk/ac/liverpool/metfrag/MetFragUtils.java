@@ -25,15 +25,17 @@ public abstract class MetFragUtils {
 
 	/**
 	 * 
-	 * @param e
-	 * @throws IOException
+	 * @param result
+	 * @return JsonArray
 	 */
-	protected static void handleException(final Exception e) throws IOException {
-		e.printStackTrace();
+	protected static JsonArray fromFloatArray(final float[] result) {
+		final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
 
-		final Writer writer = new StringWriter();
-		e.printStackTrace(new PrintWriter(writer));
-		throw new IOException(writer.toString());
+		for (final float value : result) {
+			arrayBuilder.add(value);
+		}
+
+		return arrayBuilder.build();
 	}
 
 	/**
@@ -59,6 +61,19 @@ public abstract class MetFragUtils {
 
 	/**
 	 * 
+	 * @param e
+	 * @throws IOException
+	 */
+	protected static void handleException(final Exception e) throws IOException {
+		e.printStackTrace();
+
+		final Writer writer = new StringWriter();
+		e.printStackTrace(new PrintWriter(writer));
+		throw new IOException(writer.toString());
+	}
+
+	/**
+	 * 
 	 * @param json
 	 * @param response
 	 * @throws IOException
@@ -67,21 +82,6 @@ public abstract class MetFragUtils {
 		response.setContentType("application/json"); //$NON-NLS-1$
 		response.setCharacterEncoding("UTF-8"); //$NON-NLS-1$
 		response.getWriter().print(json.toString());
-	}
-
-	/**
-	 * 
-	 * @param jsonArray
-	 * @return String[]
-	 */
-	protected static String[] toStringArray(final JsonArray jsonArray) {
-		final String[] array = new String[jsonArray.size()];
-
-		for (int i = 0; i < jsonArray.size(); i++) {
-			array[i] = jsonArray.getString(i);
-		}
-
-		return array;
 	}
 
 	/**
@@ -116,16 +116,16 @@ public abstract class MetFragUtils {
 
 	/**
 	 * 
-	 * @param result
-	 * @return JsonArray
+	 * @param jsonArray
+	 * @return String[]
 	 */
-	protected static JsonArray fromFloatArray(final float[] result) {
-		final JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+	protected static String[] toStringArray(final JsonArray jsonArray) {
+		final String[] array = new String[jsonArray.size()];
 
-		for (final float value : result) {
-			arrayBuilder.add(value);
+		for (int i = 0; i < jsonArray.size(); i++) {
+			array[i] = jsonArray.getString(i);
 		}
 
-		return arrayBuilder.build();
+		return array;
 	}
 }

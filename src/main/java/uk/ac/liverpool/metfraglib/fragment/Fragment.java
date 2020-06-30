@@ -1,6 +1,5 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,18 +9,18 @@ import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
 public class Fragment {
 
+	private int addedToQueueCounts;
+
+	private FastBitArray atomsFastBitArray;
+	private FastBitArray bondsFastBitArray;
+	private FastBitArray brokenBondsFastBitArray;
+	private short lastSkippedBond = -1;
 	/**
 	 * 
 	 */
 	private final Precursor prec;
-	
-	private int addedToQueueCounts;
-	private short lastSkippedBond = -1;
-	private FastBitArray atomsFastBitArray;
-	private FastBitArray bondsFastBitArray;
-	private FastBitArray brokenBondsFastBitArray;
 	private byte treeDepth = 0;
-	
+
 	/**
 	 * constructor setting all bits of atomsFastBitArray and bondsFastBitArray to
 	 * true entire structure is represented
@@ -48,14 +47,81 @@ public class Fragment {
 	 * @param numberHydrogens
 	 * @throws Exception
 	 */
-	private Fragment(final Precursor precursor,
-			final FastBitArray atomsFastBitArray,
-			final FastBitArray bondsFastBitArray,
-			final FastBitArray brokenBondsFastBitArray) throws Exception {
+	private Fragment(final Precursor precursor, final FastBitArray atomsFastBitArray,
+			final FastBitArray bondsFastBitArray, final FastBitArray brokenBondsFastBitArray) throws Exception {
 		this.prec = precursor;
 		this.atomsFastBitArray = atomsFastBitArray;
 		this.bondsFastBitArray = bondsFastBitArray;
 		this.brokenBondsFastBitArray = brokenBondsFastBitArray;
+	}
+
+	public int getAddedToQueueCounts() {
+		return this.addedToQueueCounts;
+	}
+
+	public FastBitArray getAtomsFastBitArray() {
+		return this.atomsFastBitArray;
+	}
+
+	public FastBitArray getBondsFastBitArray() {
+		return this.bondsFastBitArray;
+	}
+
+	public int[] getBrokenBondIndeces() {
+		return this.brokenBondsFastBitArray.getSetIndeces();
+	}
+
+	public FastBitArray getBrokenBondsFastBitArray() {
+		return this.brokenBondsFastBitArray;
+	}
+
+	public short getLastSkippedBond() {
+		return this.lastSkippedBond;
+	}
+
+	/**
+	 * 
+	 * @param precursorMolecule
+	 * @return List<Float>
+	 */
+	public List<Float> getMasses() {
+		final List<Float> masses = new ArrayList<>();
+		final float[] ionMassCorrections = new float[] { 1.00728f, -5.5E-4f };
+
+		for (float ionMassCorrection : ionMassCorrections) {
+			final float mass = this.getMonoisotopicMass(this.prec) + ionMassCorrection;
+			masses.add(Float.valueOf(mass));
+		}
+
+		return masses;
+	}
+
+	public int getMaximalIndexOfRemovedBond() {
+		return this.brokenBondsFastBitArray.getLastSetBit();
+	}
+
+	/**
+	 * 
+	 * @param precursorMolecule
+	 * @return float
+	 */
+	private float getMonoisotopicMass(Precursor precursorMolecule) {
+		float mass = 0.0f;
+
+		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
+			if (this.atomsFastBitArray.get(i)) {
+				mass += precursorMolecule.getMassOfAtom(i);
+			}
+		}
+		return mass;
+	}
+
+	public void setAddedToQueueCounts(byte addedToQueueCounts) {
+		this.addedToQueueCounts = addedToQueueCounts;
+	}
+
+	public void setLastSkippedBond(short lastSkippedBond) {
+		this.lastSkippedBond = lastSkippedBond;
 	}
 
 	/**
@@ -74,10 +140,8 @@ public class Fragment {
 		/*
 		 * generate first fragment
 		 */
-		FastBitArray atomArrayOfNewFragment_1 = new FastBitArray(
-				precursorMolecule.getNonHydrogenAtomCount());
-		FastBitArray bondArrayOfNewFragment_1 = new FastBitArray(
-				precursorMolecule.getNonHydrogenBondCount());
+		FastBitArray atomArrayOfNewFragment_1 = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount());
+		FastBitArray bondArrayOfNewFragment_1 = new FastBitArray(precursorMolecule.getNonHydrogenBondCount());
 		FastBitArray brokenBondArrayOfNewFragment_1 = this.getBrokenBondsFastBitArray().clone();
 		int[] numberHydrogensOfNewFragment = new int[1];
 
@@ -103,10 +167,8 @@ public class Fragment {
 		/*
 		 * generate second fragment
 		 */
-		FastBitArray atomArrayOfNewFragment_2 = new FastBitArray(
-				precursorMolecule.getNonHydrogenAtomCount());
-		FastBitArray bondArrayOfNewFragment_2 = new FastBitArray(
-				precursorMolecule.getNonHydrogenBondCount());
+		FastBitArray atomArrayOfNewFragment_2 = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount());
+		FastBitArray bondArrayOfNewFragment_2 = new FastBitArray(precursorMolecule.getNonHydrogenBondCount());
 		FastBitArray brokenBondArrayOfNewFragment_2 = this.getBrokenBondsFastBitArray().clone();
 		numberHydrogensOfNewFragment[0] = 0;
 
@@ -117,8 +179,8 @@ public class Fragment {
 				bondIndexToRemove, atomArrayOfNewFragment_2, bondArrayOfNewFragment_2, brokenBondArrayOfNewFragment_2,
 				numberHydrogensOfNewFragment);
 
-		Fragment secondNewGeneratedFragment = new Fragment(this.prec, atomArrayOfNewFragment_2, bondArrayOfNewFragment_2,
-				brokenBondArrayOfNewFragment_2);
+		Fragment secondNewGeneratedFragment = new Fragment(this.prec, atomArrayOfNewFragment_2,
+				bondArrayOfNewFragment_2, brokenBondArrayOfNewFragment_2);
 
 		firstNewGeneratedFragment.treeDepth = (byte) (this.treeDepth + 1);
 
@@ -128,59 +190,6 @@ public class Fragment {
 
 		return newFrags;
 
-	}
-
-	public int getAddedToQueueCounts() {
-		return this.addedToQueueCounts;
-	}
-
-	public void setAddedToQueueCounts(byte addedToQueueCounts) {
-		this.addedToQueueCounts = addedToQueueCounts;
-	}
-
-	public FastBitArray getAtomsFastBitArray() {
-		return this.atomsFastBitArray;
-	}
-
-	public FastBitArray getBondsFastBitArray() {
-		return this.bondsFastBitArray;
-	}
-
-	public FastBitArray getBrokenBondsFastBitArray() {
-		return this.brokenBondsFastBitArray;
-	}
-
-	public int getMaximalIndexOfRemovedBond() {
-		return this.brokenBondsFastBitArray.getLastSetBit();
-	}
-
-	public short getLastSkippedBond() {
-		return this.lastSkippedBond;
-	}
-
-	public void setLastSkippedBond(short lastSkippedBond) {
-		this.lastSkippedBond = lastSkippedBond;
-	}
-
-	public int[] getBrokenBondIndeces() {
-		return this.brokenBondsFastBitArray.getSetIndeces();
-	}
-	
-	/**
-	 * 
-	 * @param precursorMolecule
-	 * @return List<Float>
-	 */
-	public List<Float> getMasses() {
-		final List<Float> masses = new ArrayList<>();
-		final float[] ionMassCorrections = new float[] {1.00728f, -5.5E-4f};
-
-		for (float ionMassCorrection : ionMassCorrections) {
-			final float mass = this.getMonoisotopicMass(this.prec) + ionMassCorrection;
-			masses.add(Float.valueOf(mass));
-		}
-
-		return masses;
 	}
 
 	/**
@@ -197,8 +206,7 @@ public class Fragment {
 	 * @return
 	 */
 	private boolean traverseSingleDirection(Precursor precursorMolecule, short startAtomIndex, int endAtomIndex,
-			int bondIndexToRemove, FastBitArray atomArrayOfNewFragment,
-			FastBitArray bondArrayOfNewFragment,
+			int bondIndexToRemove, FastBitArray atomArrayOfNewFragment, FastBitArray bondArrayOfNewFragment,
 			FastBitArray brokenBondArrayOfNewFragment, int[] numberHydrogensOfNewFragment) {
 		FastBitArray bondFastBitArrayOfCurrentFragment = this.getBondsFastBitArray();
 		/*
@@ -206,8 +214,7 @@ public class Fragment {
 		 * a node (atom) need to be done for checking of ringed structures if traversed
 		 * an already visited atom, then no new fragment was generated
 		 */
-		FastBitArray visited = new FastBitArray(
-				precursorMolecule.getNonHydrogenAtomCount());
+		FastBitArray visited = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount());
 		numberHydrogensOfNewFragment[0] = 0;
 
 		/*
@@ -271,21 +278,5 @@ public class Fragment {
 		bondArrayOfNewFragment.set(bondIndexToRemove, false);
 
 		return stillOneFragment;
-	}
-	
-	/**
-	 * 
-	 * @param precursorMolecule
-	 * @return float
-	 */
-	private float getMonoisotopicMass(Precursor precursorMolecule) {
-		float mass = 0.0f;
-		
-		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
-			if (this.atomsFastBitArray.get(i)) {
-				mass += precursorMolecule.getMassOfAtom(i);
-			}
-		}
-		return mass;
 	}
 }

@@ -28,6 +28,38 @@ public class MetFrag {
 	/**
 	 * 
 	 * @param smiles
+	 * @param maximumTreeDepth
+	 * @return double[]
+	 * @throws Exception
+	 */
+	public static float[] getFragments(final String smiles, final int maximumTreeDepth) throws Exception {
+		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(Precursor.fromSmiles(smiles),
+				maximumTreeDepth);
+		return scorer.getMasses();
+	}
+
+	/**
+	 * 
+	 * @return MetFragGlobalSettings
+	 */
+	private static MetFragGlobalSettings getSettings() {
+		final MetFragGlobalSettings settings = new MetFragGlobalSettings();
+
+		// Set logging:
+		settings.set(VariableNames.LOG_LEVEL_NAME, Level.ALL);
+
+		// Use SMILES:
+		settings.set(VariableNames.USE_SMILES_NAME, Boolean.TRUE);
+
+		// Remove pre-filter:
+		settings.set(VariableNames.METFRAG_PRE_PROCESSING_CANDIDATE_FILTER_NAME, new String[0]);
+
+		return settings;
+	}
+
+	/**
+	 * 
+	 * @param smiles
 	 * @param mz
 	 * @param inten
 	 * @return Collection<Map<String, Object>>
@@ -78,18 +110,6 @@ public class MetFrag {
 	/**
 	 * 
 	 * @param smiles
-	 * @param maximumTreeDepth
-	 * @return double[]
-	 * @throws Exception
-	 */
-	public static float[] getFragments(final String smiles, final int maximumTreeDepth) throws Exception {
-		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(Precursor.fromSmiles(smiles), maximumTreeDepth);
-		return scorer.getMasses();
-	}
-
-	/**
-	 * 
-	 * @param smiles
 	 * @return String
 	 * @throws IOException
 	 */
@@ -129,24 +149,5 @@ public class MetFrag {
 
 			return writer.toString();
 		}
-	}
-
-	/**
-	 * 
-	 * @return MetFragGlobalSettings
-	 */
-	private static MetFragGlobalSettings getSettings() {
-		final MetFragGlobalSettings settings = new MetFragGlobalSettings();
-
-		// Set logging:
-		settings.set(VariableNames.LOG_LEVEL_NAME, Level.ALL);
-
-		// Use SMILES:
-		settings.set(VariableNames.USE_SMILES_NAME, Boolean.TRUE);
-
-		// Remove pre-filter:
-		settings.set(VariableNames.METFRAG_PRE_PROCESSING_CANDIDATE_FILTER_NAME, new String[0]);
-
-		return settings;
 	}
 }

@@ -15,13 +15,6 @@ public class MockMetFragFragmentServletRequest extends MockHttpServletRequest {
 
 	/**
 	 * 
-	 */
-	public MockMetFragFragmentServletRequest() {
-		super(getQuery());
-	}
-
-	/**
-	 * 
 	 * @return String
 	 */
 	private static String getQuery() {
@@ -37,5 +30,12 @@ public class MockMetFragFragmentServletRequest extends MockHttpServletRequest {
 		builder.add("maximumTreeDepth", 2); //$NON-NLS-1$
 
 		return builder.build().toString();
+	}
+
+	/**
+	 * 
+	 */
+	public MockMetFragFragmentServletRequest() {
+		super(getQuery());
 	}
 }

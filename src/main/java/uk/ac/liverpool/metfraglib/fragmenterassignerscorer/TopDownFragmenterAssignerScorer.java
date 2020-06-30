@@ -14,17 +14,17 @@ public class TopDownFragmenterAssignerScorer {
 	/**
 	 * 
 	 */
+	private final Fragmenter fragmenter;
+
+	/**
+	 * 
+	 */
 	private final int maxTreeDepth;
 
 	/**
 	 * 
 	 */
 	private final Precursor prec;
-
-	/**
-	 * 
-	 */
-	private final Fragmenter fragmenter;
 
 	/**
 	 * 
@@ -52,18 +52,18 @@ public class TopDownFragmenterAssignerScorer {
 		for (int k = 1; k <= this.maxTreeDepth; k++) {
 			Queue<Fragment> newFragments = new LinkedList<>();
 
-			while(!fragments.isEmpty()) {
+			while (!fragments.isEmpty()) {
 				final Fragment fragment = fragments.poll();
 
-				for(final Fragment childFragment : this.fragmenter.getFragmentsOfNextTreeDepth(fragment)) {
+				for (final Fragment childFragment : this.fragmenter.getFragmentsOfNextTreeDepth(fragment)) {
 					masses.addAll(childFragment.getMasses());
 
-					if(this.maxTreeDepth > 0) {
+					if (this.maxTreeDepth > 0) {
 						newFragments.add(childFragment);
-					}	
+					}
 				}
 			}
-			
+
 			fragments = newFragments;
 		}
 
