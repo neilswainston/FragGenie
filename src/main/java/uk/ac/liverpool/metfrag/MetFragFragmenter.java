@@ -53,7 +53,7 @@ public class MetFragFragmenter {
 			for (CSVRecord record : csvParser) {
 				if(count > 158900) {
 					final String smiles = record.get(smilesHeader);
-					System.out.println(smiles);
+					System.out.println(Integer.toString(smiles.length()) + "\t" + smiles); //$NON-NLS-1$
 	
 					try {
 						final float[] fragments = MetFrag.getFragments(smiles, 2);
