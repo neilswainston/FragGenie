@@ -33,16 +33,17 @@ class MockHttpServletResponse implements HttpServletResponse {
 	 * 
 	 */
 	private String encoding;
+	
+	/**
+	 * 
+	 */
+	private StringWriter writerContent = new StringWriter();
 
 	/**
 	 * 
 	 */
 	private PrintWriter writer = new PrintWriter(this.writerContent);
 
-	/**
-	 * 
-	 */
-	private StringWriter writerContent = new StringWriter();
 
 	@Override
 	public void addCookie(final Cookie cookie) {
