@@ -51,22 +51,25 @@ public class MetFragFragmenter {
 			int count = 0;
 
 			for (CSVRecord record : csvParser) {
-				final String smiles = record.get(smilesHeader);
-
-				try {
-					final float[] fragments = MetFrag.getFragments(smiles, 2);
-					final Map<String, String> recordMap = record.toMap();
-					recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
-
-					final List<String> values = new ArrayList<>();
-
-					for (String headerName : headerNames) {
-						values.add(recordMap.get(headerName));
+				if(count > 158900) {
+					final String smiles = record.get(smilesHeader);
+					System.out.println(smiles);
+	
+					try {
+						final float[] fragments = MetFrag.getFragments(smiles, 2);
+						final Map<String, String> recordMap = record.toMap();
+						recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
+	
+						final List<String> values = new ArrayList<>();
+	
+						for (String headerName : headerNames) {
+							values.add(recordMap.get(headerName));
+						}
+	
+						csvPrinter.printRecord(values);
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-
-					csvPrinter.printRecord(values);
-				} catch (Exception e) {
-					e.printStackTrace();
 				}
 
 				if (count % 100 == 0) {
