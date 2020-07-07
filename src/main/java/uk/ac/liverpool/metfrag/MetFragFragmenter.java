@@ -32,7 +32,7 @@ public class MetFragFragmenter {
 	 * @param outFile
 	 * @throws Exception
 	 */
-	private static void fragment(final File inFile, final File outFile, final String smilesHeader, final int maxRecords)
+	private static void fragment(final File inFile, final File outFile, final String smilesHeader, final int maxLenSmiles, final int maxRecords)
 			throws Exception {
 
 		outFile.getParentFile().mkdirs();
@@ -51,10 +51,9 @@ public class MetFragFragmenter {
 			int count = 0;
 
 			for (CSVRecord record : csvParser) {
-				if(count > 158900) {
-					final String smiles = record.get(smilesHeader);
-					System.out.println(Integer.toString(smiles.length()) + "\t" + smiles); //$NON-NLS-1$
-	
+				final String smiles = record.get(smilesHeader);
+				
+				if(smiles.length() < maxLenSmiles) {
 					try {
 						final float[] fragments = MetFrag.getFragments(smiles, 2);
 						final Map<String, String> recordMap = record.toMap();
@@ -89,9 +88,10 @@ public class MetFragFragmenter {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		final int maxRecords = args.length > 3 ? Integer.parseInt(args[3]) : Integer.MAX_VALUE;
+		final int maxLenSmiles = args.length > 3 ? Integer.parseInt(args[3]) : Integer.MAX_VALUE;
+		final int maxRecords = args.length > 4 ? Integer.parseInt(args[4]) : Integer.MAX_VALUE;
 
 		fragment(new File(new File(args[0]).getAbsolutePath()), new File(new File(args[1]).getAbsolutePath()), args[2],
-				maxRecords);
+				maxLenSmiles, maxRecords);
 	}
 }
