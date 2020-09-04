@@ -86,7 +86,7 @@ public class Fragment {
 	 */
 	public List<Float> getMasses() {
 		final List<Float> masses = new ArrayList<>();
-		final float[] ionMassCorrections = new float[] { 1.00728f, -5.5E-4f };
+		final float[] ionMassCorrections = new float[] { 1.00728f };
 
 		for (float ionMassCorrection : ionMassCorrections) {
 			final float mass = this.getMonoisotopicMass(this.prec) + ionMassCorrection;

@@ -26,14 +26,20 @@ public class MetFragTest {
 	public void testGetFragments() throws Exception {
 		final double[] expected = { 90.97453, 106.94498,
 				// 115.98977,
-				117.98543, 133.95588, 143.9885, 144.99633,
+				// 117.98543,
+				// 133.95588,
+				// 143.9885,
+				144.99633,
 				// 146.00416,
 				151.94645, 160.96678, 163.0069,
 				// 172.99124,
-				178.95735, 178.97735,
+				// 178.95735,
+				178.97735,
 				// 180.97301,
 				// 196.96792,
-				208.96792, 236.96283 };
+				// 208.96792,
+				// 236.96283
+				};
 
 		final float[] fragments = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2); //$NON-NLS-1$
 		final float epsilon = 1e-5f;
@@ -52,16 +58,12 @@ public class MetFragTest {
 	@Test
 	public void testGetFragmentsPrecursor() throws Exception {
 		final double[] expected = {
-				14.01511,
 				15.02294,
-				15.022941,
 				16.03077,
-				17.002192,
 				18.010021,
-				29.0386,
 				30.04643,
-				31.01785,
-				32.02568
+				32.02568,
+				47.049168
 			};
 
 		final float[] fragments = MetFrag.getFragments("CCO", 2); //$NON-NLS-1$

@@ -47,8 +47,10 @@ public class TopDownFragmenterAssignerScorer {
 		final Set<Float> masses = new TreeSet<>();
 
 		Queue<Fragment> fragments = new LinkedList<>();
-		fragments.add(new Fragment(this.prec));
-
+		final Fragment precursorFragment = new Fragment(this.prec);
+		fragments.add(precursorFragment);
+		masses.addAll(precursorFragment.getMasses());
+		
 		for (int k = 1; k <= this.maxTreeDepth; k++) {
 			Queue<Fragment> newFragments = new LinkedList<>();
 
