@@ -158,7 +158,6 @@ public class Precursor {
 	/**
 	 * initialise 1D atom adjacency list
 	 */
-
 	private void initialiseAtomAdjacencyList() {
 		for (int i = 0; i < this.getNonHydrogenBondCount(); i++) {
 			java.util.Iterator<IAtom> atoms = this.precursorMolecule.getBond(i).atoms().iterator();

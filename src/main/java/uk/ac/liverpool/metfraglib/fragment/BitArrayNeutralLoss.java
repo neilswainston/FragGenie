@@ -1,7 +1,6 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
 import de.ipbhalle.metfraglib.FastBitArray;
-import de.ipbhalle.metfraglib.additionals.NeutralLosses;
 
 /**
  * 
@@ -15,25 +14,10 @@ public class BitArrayNeutralLoss {
 
 	/**
 	 * 
-	 */
-	private final byte neutralLossIndex;
-
-	/**
-	 * 
 	 * @param numberNeutralLosses
-	 * @param neutralLossIndex
 	 */
-	public BitArrayNeutralLoss(final int numberNeutralLosses, final byte neutralLossIndex) {
+	public BitArrayNeutralLoss(final int numberNeutralLosses) {
 		this.neutralLossAtoms = new FastBitArray[numberNeutralLosses];
-		this.neutralLossIndex = neutralLossIndex;
-	}
-
-	/**
-	 * 
-	 * @return byte
-	 */
-	public byte getHydrogenDifference() {
-		return new NeutralLosses().getHydrogenDifference(this.neutralLossIndex);
 	}
 
 	/**

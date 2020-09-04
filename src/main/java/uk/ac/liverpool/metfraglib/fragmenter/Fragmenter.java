@@ -363,8 +363,7 @@ public class Fragmenter {
 					 * create BitArrayNeutralLosses of valid neutral loss part detections
 					 */
 					if (numberOfValidNeutralLosses != 0) {
-						BitArrayNeutralLoss newDetectedNeutralLoss = new BitArrayNeutralLoss(numberOfValidNeutralLosses,
-								i);
+						BitArrayNeutralLoss newDetectedNeutralLoss = new BitArrayNeutralLoss(numberOfValidNeutralLosses);
 						int neutralLossIndexOfBitArrayNeutralLoss = 0;
 						for (int k = 0; k < validMatches.length; k++) {
 							if (validMatches[k]) {
