@@ -39,7 +39,35 @@ public class MetFragTest {
 		final float epsilon = 1e-5f;
 
 		for (double mass : expected) {
-			System.out.println(mass);
+			final DoubleStream ds = IntStream.range(0, fragments.length).mapToDouble(i -> fragments[i]);
+			Assert.assertTrue(ds.anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
+		}
+	}
+	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@SuppressWarnings("static-method")
+	@Test
+	public void testGetFragmentsPrecursor() throws Exception {
+		final double[] expected = {
+				14.01511,
+				15.02294,
+				15.022941,
+				16.03077,
+				17.002192,
+				18.010021,
+				29.0386,
+				30.04643,
+				31.01785,
+				32.02568
+			};
+
+		final float[] fragments = MetFrag.getFragments("CCO", 2); //$NON-NLS-1$
+		final float epsilon = 1e-5f;
+
+		for (double mass : expected) {
 			final DoubleStream ds = IntStream.range(0, fragments.length).mapToDouble(i -> fragments[i]);
 			Assert.assertTrue(ds.anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
 		}
