@@ -223,7 +223,7 @@ public class Fragment {
 		java.util.Stack<short[]> toProcessConnectedAtoms = new java.util.Stack<>();
 		java.util.Stack<Short> toProcessAtom = new java.util.Stack<>();
 		toProcessConnectedAtoms.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(startAtomIndex));
-		toProcessAtom.push(startAtomIndex);
+		toProcessAtom.push(Short.valueOf(startAtomIndex));
 		visited.set(startAtomIndex);
 		boolean stillOneFragment = false;
 		/*
@@ -234,7 +234,7 @@ public class Fragment {
 		numberHydrogensOfNewFragment[0] += precursorMolecule.getNumberHydrogensConnectedToAtomIndex(startAtomIndex);
 		while (!toProcessConnectedAtoms.isEmpty()) {
 			short[] nextAtoms = toProcessConnectedAtoms.pop();
-			short midAtom = toProcessAtom.pop();
+			short midAtom = toProcessAtom.pop().shortValue();
 			for (int i = 0; i < nextAtoms.length; i++) {
 				/*
 				 * did we visit the current atom already?
@@ -270,7 +270,7 @@ public class Fragment {
 				bondArrayOfNewFragment
 						.set(precursorMolecule.getBondIndexFromAtomAdjacencyList(midAtom, nextAtoms[i]) - 1);
 				toProcessConnectedAtoms.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(nextAtoms[i]));
-				toProcessAtom.push(nextAtoms[i]);
+				toProcessAtom.push(Short.valueOf(nextAtoms[i]));
 			}
 		}
 

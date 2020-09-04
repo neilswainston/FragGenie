@@ -73,11 +73,11 @@ public class Fragmenter {
 					 */
 					int[] brokenBondIndeces = newGeneratedTopDownFragments[1].getBrokenBondIndeces();
 					for (int s = 0; s < brokenBondIndeces.length; s++) {
-						int index = this.brokenBondToNeutralLossIndex.indexOf((short) brokenBondIndeces[s]);
+						int index = this.brokenBondToNeutralLossIndex.indexOf(Short.valueOf((short)brokenBondIndeces[s]));
 						if ((short) brokenBondIndeces[s] == removedBondIndex) {
 							if (index == -1) {
-								this.brokenBondToNeutralLossIndex.add(removedBondIndex);
-								this.neutralLossIndex.add(i);
+								this.brokenBondToNeutralLossIndex.add(Short.valueOf(removedBondIndex));
+								this.neutralLossIndex.add(Integer.valueOf(i));
 							}
 							continue;
 						}
@@ -91,11 +91,11 @@ public class Fragmenter {
 					 */
 					int[] brokenBondIndeces = newGeneratedTopDownFragments[0].getBrokenBondIndeces();
 					for (int s = 0; s < brokenBondIndeces.length; s++) {
-						int index = this.brokenBondToNeutralLossIndex.indexOf((short) brokenBondIndeces[s]);
+						int index = this.brokenBondToNeutralLossIndex.indexOf(Short.valueOf((short)brokenBondIndeces[s]));
 						if ((short) brokenBondIndeces[s] == removedBondIndex) {
 							if (index == -1) {
-								this.brokenBondToNeutralLossIndex.add(removedBondIndex);
-								this.neutralLossIndex.add(i);
+								this.brokenBondToNeutralLossIndex.add(Short.valueOf(removedBondIndex));
+								this.neutralLossIndex.add(Integer.valueOf(i));
 							}
 							continue;
 						}
@@ -131,7 +131,7 @@ public class Fragmenter {
 			 * 
 			 */
 			Fragment currentFragment = toProcess.poll();
-			short nextRingBondToCut = (short) (lastCuttedRingBond.poll() + 1);
+			short nextRingBondToCut = (short) (lastCuttedRingBond.poll().intValue() + 1);
 			/*
 			 * 
 			 */
@@ -168,7 +168,7 @@ public class Fragmenter {
 				if (newFragments.length == 1) {
 					if (newFragments[0].getAddedToQueueCounts() < this.maximumNumberOfAFragmentAddedToQueue) {
 						toProcess.add(newFragments[0]);
-						lastCuttedRingBond.add(currentBond);
+						lastCuttedRingBond.add(Short.valueOf(currentBond));
 					} else {
 						newGeneratedTopDownFragments.add(newFragments[0]);
 					}
@@ -272,7 +272,7 @@ public class Fragmenter {
 				ringBonds.set(i, true);
 				newGeneratedTopDownFragments[0].setLastSkippedBond((short) (i + 1));
 				ringBondCuttedFragments.add(newGeneratedTopDownFragments[0]);
-				lastCuttedBondOfRing.add(i);
+				lastCuttedBondOfRing.add(Short.valueOf(i));
 				if (!this.ringBondsInitialised)
 					this.ringBondFastBitArray.set(i);
 			}
@@ -343,12 +343,12 @@ public class Fragmenter {
 						 * check all atoms
 						 */
 						for (int iii = 0; iii < part.size(); iii++) {
-							allMatches[ii].set(part.get(iii));
+							allMatches[ii].set(part.get(iii).intValue());
 							/*
 							 * count number of implicit hydrogens of this neutral loss
 							 */
 							numberImplicitHydrogens += precursorMolecule
-									.getNumberHydrogensConnectedToAtomIndex(part.get(iii));
+									.getNumberHydrogensConnectedToAtomIndex(part.get(iii).intValue());
 						}
 						/*
 						 * valid neutral loss match if number implicit hydrogens are at least the number

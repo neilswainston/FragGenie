@@ -136,7 +136,7 @@ public class Precursor {
 
 	public double getMassOfAtom(int index) {
 		return this.massesOfAtoms[index] + this.getNumberHydrogensConnectedToAtomIndex(index)
-				* Constants.MONOISOTOPIC_MASSES.get(Constants.H_INDEX);
+				* Constants.MONOISOTOPIC_MASSES.get(Constants.H_INDEX).doubleValue();
 	}
 
 	public int getNonHydrogenAtomCount() {
@@ -148,7 +148,7 @@ public class Precursor {
 	}
 
 	public int getNumberHydrogensConnectedToAtomIndex(int atomIndex) {
-		return this.numberHydrogensConnectedToAtom[atomIndex];
+		return this.numberHydrogensConnectedToAtom[atomIndex].intValue();
 	}
 
 	public IAtomContainer getStructureAsIAtomContainer() {
@@ -171,7 +171,7 @@ public class Precursor {
 
 		for (int i = 0; i < this.getNonHydrogenAtomCount(); i++) {
 			this.massesOfAtoms[i] = Constants.MONOISOTOPIC_MASSES
-					.get(Constants.ELEMENTS.indexOf(this.precursorMolecule.getAtom(i).getSymbol()));
+					.get(Constants.ELEMENTS.indexOf(this.precursorMolecule.getAtom(i).getSymbol())).doubleValue();
 		}
 	}
 
@@ -193,8 +193,8 @@ public class Precursor {
 
 		if (ringSet.getAtomContainerCount() != 0) {
 			final Aromaticity arom = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
-			java.util.Set<IBond> aromaticBonds = arom.findBonds(this.precursorMolecule);
-			java.util.Iterator<IBond> it = aromaticBonds.iterator();
+			java.util.Set<IBond> aromBonds = arom.findBonds(this.precursorMolecule);
+			java.util.Iterator<IBond> it = aromBonds.iterator();
 			while (it.hasNext()) {
 				IBond currentBond = it.next();
 				this.aromaticBonds.set(this.precursorMolecule.indexOf(currentBond), true);
