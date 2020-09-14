@@ -55,7 +55,7 @@ public class MetFragFragmenter {
 				
 				if(smiles.length() < maxLenSmiles) {
 					try {
-						final float[] fragments = MetFrag.getFragments(smiles, 2);
+						final float[] fragments = MetFrag.getFragmentMasses(smiles, 2);
 						final Map<String, String> recordMap = record.toMap();
 						recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
 	

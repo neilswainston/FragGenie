@@ -1,14 +1,18 @@
 package uk.ac.liverpool.metfraglib.fragmenterassignerscorer;
 
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
 
+import java.util.TreeMap;
 import uk.ac.liverpool.metfraglib.fragment.Fragment;
 import uk.ac.liverpool.metfraglib.fragmenter.Fragmenter;
 import uk.ac.liverpool.metfraglib.precursor.Precursor;
 
+/**
+ * 
+ * @author neilswainston
+ */
 public class TopDownFragmenterAssignerScorer {
 
 	/**
@@ -40,16 +44,18 @@ public class TopDownFragmenterAssignerScorer {
 
 	/**
 	 * 
-	 * @return
+	 * @return Map<String, Float>
 	 * @throws Exception
 	 */
-	public float[] getMasses() throws Exception {
-		final Set<Float> masses = new TreeSet<>();
+	public Map<String, Float> getFormulaToMasses() throws Exception {
+		final Map<String, Float> formulaToMasses = new TreeMap<>();
 
 		Queue<Fragment> fragments = new LinkedList<>();
+		
 		final Fragment precursorFragment = new Fragment(this.prec);
 		fragments.add(precursorFragment);
-		masses.addAll(precursorFragment.getMasses());
+		
+		formulaToMasses.put(precursorFragment.getFormula(), Float.valueOf(precursorFragment.getMonoisotopicMass()));
 		
 		for (int k = 1; k <= this.maxTreeDepth; k++) {
 			Queue<Fragment> newFragments = new LinkedList<>();
@@ -58,7 +64,7 @@ public class TopDownFragmenterAssignerScorer {
 				final Fragment fragment = fragments.poll();
 
 				for (final Fragment childFragment : this.fragmenter.getFragmentsOfNextTreeDepth(fragment)) {
-					masses.addAll(childFragment.getMasses());
+					formulaToMasses.put(childFragment.getFormula(), Float.valueOf(childFragment.getMonoisotopicMass()));
 
 					if (this.maxTreeDepth > 0) {
 						newFragments.add(childFragment);
@@ -68,7 +74,10 @@ public class TopDownFragmenterAssignerScorer {
 
 			fragments = newFragments;
 		}
+		
+		return formulaToMasses;
 
+		/*
 		final float[] massesArray = new float[masses.size()];
 		int i = 0;
 
@@ -77,5 +86,6 @@ public class TopDownFragmenterAssignerScorer {
 		}
 
 		return massesArray;
+		*/
 	}
 }

@@ -50,6 +50,7 @@ public class Precursor {
 	 * 
 	 */
 	private final short[][] bondIndexToConnectedAtomIndeces;
+	
 	/**
 	 * 
 	 */
@@ -97,7 +98,7 @@ public class Precursor {
 	 * 
 	 * @param x
 	 * @param y
-	 * @return
+	 * @return short
 	 */
 	public short getBondIndexFromAtomAdjacencyList(short x, short y) {
 		return this.atomAdjacencyList[this.getIndex(x, y)];
@@ -107,36 +108,38 @@ public class Precursor {
 	 * returns atom indeces that are connected by bond with bondIndex
 	 * 
 	 * @param bondIndex
-	 * @return
+	 * @return short[]
 	 */
 	public short[] getConnectedAtomIndecesOfAtomIndex(short atomIndex) {
 		return this.atomIndexToConnectedAtomIndeces.get(atomIndex);
 	}
 
+	/**
+	 * 
+	 * @param bondIndex
+	 * @return short[]
+	 */
 	public short[] getConnectedAtomIndecesOfBondIndex(short bondIndex) {
 		return this.bondIndexToConnectedAtomIndeces[bondIndex];
 	}
 
 	/**
-	 * convert 2D matrix coordinates to 1D adjacency list coordinate
 	 * 
-	 * @param a
-	 * @param b
-	 * @return
+	 * @param index
+	 * @return double
 	 */
-	private int getIndex(int a, int b) {
-		int row = a;
-		int col = b;
-		if (a > b) {
-			row = b;
-			col = a;
-		}
-		return row * this.getNonHydrogenAtomCount() + col - ((row + 1) * (row + 2)) / 2;
-	}
-
-	public double getMassOfAtom(int index) {
+	public double getMassOfAtom(final int index) {
 		return this.massesOfAtoms[index] + this.getNumberHydrogensConnectedToAtomIndex(index)
 				* Constants.MONOISOTOPIC_MASSES.get(Constants.H_INDEX).doubleValue();
+	}
+	
+	/**
+	 * 
+	 * @param index
+	 * @return String
+	 */
+	public String getAtom(final int index) {
+		return this.precursorMolecule.getAtom(index).getSymbol();
 	}
 
 	public int getNonHydrogenAtomCount() {
@@ -153,6 +156,24 @@ public class Precursor {
 
 	public IAtomContainer getStructureAsIAtomContainer() {
 		return this.precursorMolecule;
+	}
+	
+
+	/**
+	 * convert 2D matrix coordinates to 1D adjacency list coordinate
+	 * 
+	 * @param a
+	 * @param b
+	 * @return int
+	 */
+	private int getIndex(int a, int b) {
+		int row = a;
+		int col = b;
+		if (a > b) {
+			row = b;
+			col = a;
+		}
+		return row * this.getNonHydrogenAtomCount() + col - ((row + 1) * (row + 2)) / 2;
 	}
 
 	/**

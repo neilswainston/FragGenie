@@ -42,7 +42,7 @@ public class MetFragFragmentServlet extends HttpServlet {
 		final List<float[]> fragments = new ArrayList<>();
 
 		for (String s : smiles) {
-			fragments.add(MetFrag.getFragments(s, maximumTreeDepth));
+			fragments.add(MetFrag.getFragmentMasses(s, maximumTreeDepth));
 		}
 
 		final JsonArray json = toJson(fragments);

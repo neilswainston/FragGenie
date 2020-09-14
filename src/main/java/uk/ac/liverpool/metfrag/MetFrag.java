@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Level;
 
@@ -32,10 +33,20 @@ public class MetFrag {
 	 * @return double[]
 	 * @throws Exception
 	 */
-	public static float[] getFragments(final String smiles, final int maximumTreeDepth) throws Exception {
-		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(Precursor.fromSmiles(smiles),
-				maximumTreeDepth);
-		return scorer.getMasses();
+	public static float[] getFragmentMasses(final String smiles, final int maximumTreeDepth) throws Exception {
+		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(Precursor.fromSmiles(smiles), maximumTreeDepth);
+		final Map<String, Float> formulaToMasses = scorer.getFormulaToMasses();
+		final float[] ionMassCorrections = new float[] { 1.00728f };
+		final float[] correctedMasses = new float[formulaToMasses.size() * ionMassCorrections.length];
+		int i = 0;
+		
+		for(final Entry<String, Float> entry : formulaToMasses.entrySet()) {
+			for (float ionMassCorrection : ionMassCorrections) {
+				correctedMasses[i++] = entry.getValue().floatValue() + ionMassCorrection;
+			}
+		}
+		
+		return correctedMasses;
 	}
 
 	/**

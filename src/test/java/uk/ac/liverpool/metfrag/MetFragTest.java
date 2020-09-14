@@ -41,7 +41,7 @@ public class MetFragTest {
 				// 236.96283
 				};
 
-		final float[] fragments = MetFrag.getFragments("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2); //$NON-NLS-1$
+		final float[] fragments = MetFrag.getFragmentMasses("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2); //$NON-NLS-1$
 		final float epsilon = 1e-5f;
 
 		for (double mass : expected) {
@@ -66,7 +66,7 @@ public class MetFragTest {
 				47.049168
 			};
 
-		final float[] fragments = MetFrag.getFragments("CCO", 2); //$NON-NLS-1$
+		final float[] fragments = MetFrag.getFragmentMasses("CCO", 2); //$NON-NLS-1$
 		final float epsilon = 1e-5f;
 
 		for (double mass : expected) {

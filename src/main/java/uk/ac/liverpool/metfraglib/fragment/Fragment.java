@@ -1,7 +1,8 @@
 package uk.ac.liverpool.metfraglib.fragment;
 
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
@@ -55,72 +56,133 @@ public class Fragment {
 		this.brokenBondsFastBitArray = brokenBondsFastBitArray;
 	}
 
+	/**
+	 * 
+	 * @return int
+	 */
 	public int getAddedToQueueCounts() {
 		return this.addedToQueueCounts;
 	}
 
+	/**
+	 * 
+	 * @return FastBitArray
+	 */
 	public FastBitArray getAtomsFastBitArray() {
 		return this.atomsFastBitArray;
 	}
 
+	/**
+	 * 
+	 * @return FastBitArray
+	 */
 	public FastBitArray getBondsFastBitArray() {
 		return this.bondsFastBitArray;
 	}
 
+	/**
+	 * 
+	 * @return int[]
+	 */
 	public int[] getBrokenBondIndeces() {
 		return this.brokenBondsFastBitArray.getSetIndeces();
 	}
 
+	/**
+	 * 
+	 * @return FastBitArray
+	 */
 	public FastBitArray getBrokenBondsFastBitArray() {
 		return this.brokenBondsFastBitArray;
 	}
 
+	/**
+	 * 
+	 * @return short
+	 */
 	public short getLastSkippedBond() {
 		return this.lastSkippedBond;
 	}
 
 	/**
 	 * 
-	 * @param precursorMolecule
-	 * @return List<Float>
+	 * @return float
 	 */
-	public List<Float> getMasses() {
-		final List<Float> masses = new ArrayList<>();
-		final float[] ionMassCorrections = new float[] { 1.00728f };
+	public float getMonoisotopicMass() {
+		float mass = 0.0f;
 
-		for (float ionMassCorrection : ionMassCorrections) {
-			final float mass = this.getMonoisotopicMass(this.prec) + ionMassCorrection;
-			masses.add(Float.valueOf(mass));
+		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
+			if (this.atomsFastBitArray.get(i)) {
+				mass += this.prec.getMassOfAtom(i);
+			}
 		}
+		return mass;
+	}
+	
+	/**
+	 * 
+	 * @return String
+	 */
+	public String getFormula() {
+		final Map<String,Integer> elementCount = new TreeMap<>();
 
-		return masses;
+		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
+			if (this.atomsFastBitArray.get(i)) {
+				final String element = this.prec.getAtom(i);
+				
+				if(elementCount.get(element) == null) {
+					elementCount.put(element, Integer.valueOf(1));
+				}
+				else {
+					elementCount.put(element, Integer.valueOf(elementCount.get(element).intValue() + 1));
+				}
+				
+				final int hCount = this.prec.getNumberHydrogensConnectedToAtomIndex(i);
+				
+				if(elementCount.get("H") == null) { //$NON-NLS-1$
+					elementCount.put("H", Integer.valueOf(hCount)); //$NON-NLS-1$
+				}
+				else {
+					elementCount.put("H", Integer.valueOf(elementCount.get("H").intValue() + hCount)); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+			}
+		}
+		
+		final StringBuilder builder = new StringBuilder();
+		
+		for(Map.Entry<String,Integer> entry : elementCount.entrySet()) {
+			builder.append(entry.getKey());
+			final int count = entry.getValue().intValue();
+			
+			if(count > 1) {
+				builder.append(count);
+			}
+		}
+		
+		return builder.toString();
 	}
 
+	/**
+	 * 
+	 * @return int
+	 */
 	public int getMaximalIndexOfRemovedBond() {
 		return this.brokenBondsFastBitArray.getLastSetBit();
 	}
 
 	/**
 	 * 
-	 * @param precursorMolecule
-	 * @return float
+	 * @param addedToQueueCounts
 	 */
-	private float getMonoisotopicMass(Precursor precursorMolecule) {
-		float mass = 0.0f;
-
-		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
-			if (this.atomsFastBitArray.get(i)) {
-				mass += precursorMolecule.getMassOfAtom(i);
-			}
-		}
-		return mass;
-	}
-
-	public void setAddedToQueueCounts(byte addedToQueueCounts) {
+	public void setAddedToQueueCounts(final byte addedToQueueCounts) {
 		this.addedToQueueCounts = addedToQueueCounts;
 	}
 
-	public void setLastSkippedBond(short lastSkippedBond) {
+	/**
+	 * 
+	 * @param lastSkippedBond
+	 */
+	public void setLastSkippedBond(final short lastSkippedBond) {
 		this.lastSkippedBond = lastSkippedBond;
 	}
 
