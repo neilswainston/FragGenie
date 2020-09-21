@@ -17,7 +17,7 @@ import org.openscience.cdk.ringsearch.AllRingsFinder;
 
 import uk.ac.liverpool.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
-import de.ipbhalle.metfraglib.parameter.Constants;
+import uk.ac.liverpool.metfraglib.Constants;
 
 /**
  * 
