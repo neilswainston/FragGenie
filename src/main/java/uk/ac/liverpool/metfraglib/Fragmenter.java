@@ -382,7 +382,7 @@ public class Fragmenter {
 					 * count number of implicit hydrogens of this neutral loss
 					 */
 					int numberImplicitHydrogens = 0;
-					allMatches[ii] = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount());
+					allMatches[ii] = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
 					/*
 					 * check all atoms
 					 */

@@ -17,31 +17,20 @@ class FastBitArray {
 	 * 
 	 */
 	private final int size;
-	
+
 	/**
 	 * Initialises BitArray with specified number of bits.
 	 * 
 	 * @param size
+	 * @param set
 	 */
-	FastBitArray(final int size) {
+	FastBitArray(final int size, final boolean set) {
 		this.bitArray = new FastBitSet();
 		this.size = size;
-	}
-
-	/**
-	 * Initialises BitArray with specified number of bits and value at all positions.
-	 * 
-	 * @param size
-	 * @param value
-	 */
-	FastBitArray(final int size, final boolean value) {
-		this.bitArray = new FastBitSet();
 		
-		if(value) {
+		if(set) {
 			this.bitArray.flip(0, size);
 		}
-		
-		this.size = (short)size;
 	}
 	
 	/**
@@ -132,16 +121,13 @@ class FastBitArray {
 	 */
 	void setBits(int[] bitIndexes) {
 		for(int i = 0; i < bitIndexes.length; i++) {
-			if(bitIndexes[i] < this.getSize() && bitIndexes[i] >= 0)
-				this.bitArray.set(bitIndexes[i]);
-			else
-				System.err.println("Warning: Could not set bit at position " + bitIndexes[i] + " to true. Out of range!"); //$NON-NLS-1$ //$NON-NLS-2$
+			this.bitArray.set(bitIndexes[i]);
 		}
 	}
 	
 	@Override
 	public FastBitArray clone() {
-		FastBitArray clone = new FastBitArray(this.getSize());
+		FastBitArray clone = new FastBitArray(this.getSize(), false);
 		for(int i = 0; i < this.getSize(); i++)
 			if(this.bitArray.get(i)) clone.set(i);
 		return clone;

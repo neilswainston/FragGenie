@@ -33,7 +33,7 @@ public class Fragment {
 		this.addedToQueueCounts = 0;
 		this.atomsFastBitArray = new FastBitArray(precursor.getNonHydrogenAtomCount(), true);
 		this.bondsFastBitArray = new FastBitArray(precursor.getNonHydrogenBondCount(), true);
-		this.brokenBondsFastBitArray = new FastBitArray(precursor.getNonHydrogenBondCount());
+		this.brokenBondsFastBitArray = new FastBitArray(precursor.getNonHydrogenBondCount(), false);
 	}
 
 	/**
@@ -201,8 +201,8 @@ public class Fragment {
 		/*
 		 * generate first fragment
 		 */
-		FastBitArray atomArrayOfNewFragment_1 = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount());
-		FastBitArray bondArrayOfNewFragment_1 = new FastBitArray(precursorMolecule.getNonHydrogenBondCount());
+		FastBitArray atomArrayOfNewFragment_1 = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
+		FastBitArray bondArrayOfNewFragment_1 = new FastBitArray(precursorMolecule.getNonHydrogenBondCount(), false);
 		FastBitArray brokenBondArrayOfNewFragment_1 = this.getBrokenBondsFastBitArray().clone();
 		int[] numberHydrogensOfNewFragment = new int[1];
 
@@ -228,8 +228,8 @@ public class Fragment {
 		/*
 		 * generate second fragment
 		 */
-		FastBitArray atomArrayOfNewFragment_2 = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount());
-		FastBitArray bondArrayOfNewFragment_2 = new FastBitArray(precursorMolecule.getNonHydrogenBondCount());
+		FastBitArray atomArrayOfNewFragment_2 = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
+		FastBitArray bondArrayOfNewFragment_2 = new FastBitArray(precursorMolecule.getNonHydrogenBondCount(), false);
 		FastBitArray brokenBondArrayOfNewFragment_2 = this.getBrokenBondsFastBitArray().clone();
 		numberHydrogensOfNewFragment[0] = 0;
 
@@ -275,7 +275,7 @@ public class Fragment {
 		 * a node (atom) need to be done for checking of ringed structures if traversed
 		 * an already visited atom, then no new fragment was generated
 		 */
-		FastBitArray visited = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount());
+		FastBitArray visited = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
 		numberHydrogensOfNewFragment[0] = 0;
 
 		/*
