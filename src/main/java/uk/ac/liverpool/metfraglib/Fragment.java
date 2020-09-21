@@ -1,12 +1,11 @@
-package uk.ac.liverpool.metfraglib.fragment;
+package uk.ac.liverpool.metfraglib;
 
 
 import java.util.Map;
 import java.util.TreeMap;
 
 import de.ipbhalle.metfraglib.FastBitArray;
-import de.ipbhalle.metfraglib.exceptions.AtomTypeNotKnownFromInputListException;
-import uk.ac.liverpool.metfraglib.precursor.Precursor;
+import uk.ac.liverpool.metfraglib.Precursor;
 
 public class Fragment {
 

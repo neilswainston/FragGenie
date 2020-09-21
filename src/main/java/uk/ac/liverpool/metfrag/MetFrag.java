@@ -7,7 +7,10 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Level;
@@ -17,8 +20,9 @@ import de.ipbhalle.metfraglib.list.CandidateList;
 import de.ipbhalle.metfraglib.parameter.VariableNames;
 import de.ipbhalle.metfraglib.process.CombinedMetFragProcess;
 import de.ipbhalle.metfraglib.settings.MetFragGlobalSettings;
-import uk.ac.liverpool.metfraglib.fragmenterassignerscorer.TopDownFragmenterAssignerScorer;
-import uk.ac.liverpool.metfraglib.precursor.Precursor;
+import uk.ac.liverpool.metfraglib.Fragment;
+import uk.ac.liverpool.metfraglib.Fragmenter;
+import uk.ac.liverpool.metfraglib.Precursor;
 
 /**
  * 
@@ -34,8 +38,7 @@ public class MetFrag {
 	 * @throws Exception
 	 */
 	public static float[] getFragmentMasses(final String smiles, final int maximumTreeDepth) throws Exception {
-		final TopDownFragmenterAssignerScorer scorer = new TopDownFragmenterAssignerScorer(Precursor.fromSmiles(smiles), maximumTreeDepth);
-		final Map<String, Float> formulaToMasses = scorer.getFormulaToMasses();
+		final Map<String, Float> formulaToMasses = getFormulaToMasses(Precursor.fromSmiles(smiles), maximumTreeDepth);
 		final float[] ionMassCorrections = new float[] { 1.00728f };
 		final float[] correctedMasses = new float[formulaToMasses.size() * ionMassCorrections.length];
 		int i = 0;
@@ -47,6 +50,42 @@ public class MetFrag {
 		}
 		
 		return correctedMasses;
+	}
+	
+	/**
+	 * 
+	 * @return Map<String, Float>
+	 * @throws Exception
+	 */
+	private static Map<String, Float> getFormulaToMasses(final Precursor precursor, final int maxTreeDepth) throws Exception {
+		final Map<String, Float> formulaToMasses = new TreeMap<>();
+		final Fragmenter fragmenter = new Fragmenter(precursor);
+		Queue<Fragment> fragments = new LinkedList<>();
+		
+		final Fragment precursorFragment = new Fragment(precursor);
+		fragments.add(precursorFragment);
+		
+		formulaToMasses.put(precursorFragment.getFormula(), Float.valueOf(precursorFragment.getMonoisotopicMass()));
+		
+		for (int k = 1; k <= maxTreeDepth; k++) {
+			Queue<Fragment> newFragments = new LinkedList<>();
+
+			while (!fragments.isEmpty()) {
+				final Fragment fragment = fragments.poll();
+
+				for (final Fragment childFragment : fragmenter.getFragmentsOfNextTreeDepth(fragment)) {
+					formulaToMasses.put(childFragment.getFormula(), Float.valueOf(childFragment.getMonoisotopicMass()));
+
+					if (maxTreeDepth > 0) {
+						newFragments.add(childFragment);
+					}
+				}
+			}
+
+			fragments = newFragments;
+		}
+		
+		return formulaToMasses;
 	}
 
 	/**

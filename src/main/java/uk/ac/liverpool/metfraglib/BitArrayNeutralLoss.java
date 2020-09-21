@@ -1,4 +1,4 @@
-package uk.ac.liverpool.metfraglib.fragment;
+package uk.ac.liverpool.metfraglib;
 
 import de.ipbhalle.metfraglib.FastBitArray;
 

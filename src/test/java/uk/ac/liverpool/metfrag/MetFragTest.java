@@ -74,6 +74,26 @@ public class MetFragTest {
 			Assert.assertTrue(ds.anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
 		}
 	}
+	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@SuppressWarnings("static-method")
+	@Test
+	public void testGetFragmentsAromatic() throws Exception {
+		final double[] expected = {
+				27.02294, 40.03077, 53.0386, 66.04643, 79.05426, 14.01511
+			};
+
+		final float[] fragments = MetFrag.getFragmentMasses("C1=CC=CC=C1", 1); //$NON-NLS-1$
+		final float epsilon = 1e-5f;
+
+		for (double mass : expected) {
+			final DoubleStream ds = IntStream.range(0, fragments.length).mapToDouble(i -> fragments[i]);
+			Assert.assertTrue(ds.anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
+		}
+	}
 
 	/**
 	 * 

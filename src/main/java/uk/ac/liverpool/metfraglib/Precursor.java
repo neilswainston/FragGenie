@@ -1,7 +1,10 @@
-package uk.ac.liverpool.metfraglib.precursor;
+package uk.ac.liverpool.metfraglib;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.aromaticity.ElectronDonation;
@@ -16,6 +19,10 @@ import de.ipbhalle.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
 import de.ipbhalle.metfraglib.parameter.Constants;
 
+/**
+ * 
+ * @author neilswainston
+ */
 public class Precursor {
 
 	/**
@@ -73,11 +80,11 @@ public class Precursor {
 
 	/**
 	 * 
-	 * @param precursorMolecule
+	 * @param precMolecule
 	 * @throws Exception
 	 */
-	private Precursor(final IAtomContainer precursorMolecule) throws Exception {
-		this.precursorMolecule = precursorMolecule;
+	private Precursor(final IAtomContainer precMolecule) throws Exception {
+		this.precursorMolecule = precMolecule;
 		this.bondIndexToConnectedAtomIndeces = new short[this.getNonHydrogenBondCount()][2];
 		this.ringBondToBelongingRingBondIndeces = new FastBitArray[this.precursorMolecule.getBondCount() + 1];
 		this.aromaticBonds = new FastBitArray(this.getNonHydrogenBondCount());
@@ -85,6 +92,7 @@ public class Precursor {
 				this.getNonHydrogenAtomCount() - 1) + 1];
 		this.numberHydrogensConnectedToAtom = new Integer[this.getNonHydrogenAtomCount()];
 		this.massesOfAtoms = new double[this.getNonHydrogenAtomCount()];
+		
 		this.initiliseAtomIndexToConnectedAtomIndeces();
 		this.initialiseNumberHydrogens();
 		this.initiliseBondIndexToConnectedAtomIndeces();
@@ -94,23 +102,23 @@ public class Precursor {
 	}
 
 	/**
-	 * returns bond index + 1
+	 * Returns bond index + 1
 	 * 
 	 * @param x
 	 * @param y
 	 * @return short
 	 */
-	public short getBondIndexFromAtomAdjacencyList(short x, short y) {
+	public short getBondIndexFromAtomAdjacencyList(final short x, final short y) {
 		return this.atomAdjacencyList[this.getIndex(x, y)];
 	}
 
 	/**
 	 * returns atom indeces that are connected by bond with bondIndex
 	 * 
-	 * @param bondIndex
+	 * @param atomIndex
 	 * @return short[]
 	 */
-	public short[] getConnectedAtomIndecesOfAtomIndex(short atomIndex) {
+	public short[] getConnectedAtomIndecesOfAtomIndex(final short atomIndex) {
 		return this.atomIndexToConnectedAtomIndeces.get(atomIndex);
 	}
 
@@ -119,7 +127,7 @@ public class Precursor {
 	 * @param bondIndex
 	 * @return short[]
 	 */
-	public short[] getConnectedAtomIndecesOfBondIndex(short bondIndex) {
+	public short[] getConnectedAtomIndecesOfBondIndex(final short bondIndex) {
 		return this.bondIndexToConnectedAtomIndeces[bondIndex];
 	}
 
@@ -142,68 +150,112 @@ public class Precursor {
 		return this.precursorMolecule.getAtom(index).getSymbol();
 	}
 
+	/**
+	 * 
+	 * @return int
+	 */
 	public int getNonHydrogenAtomCount() {
 		return this.precursorMolecule.getAtomCount();
 	}
 
+	/**
+	 * 
+	 * @return int
+	 */
 	public int getNonHydrogenBondCount() {
 		return this.precursorMolecule.getBondCount();
 	}
 
-	public int getNumberHydrogensConnectedToAtomIndex(int atomIndex) {
+	/**
+	 * 
+	 * @param atomIndex
+	 * @return
+	 */
+	public int getNumberHydrogensConnectedToAtomIndex(final int atomIndex) {
 		return this.numberHydrogensConnectedToAtom[atomIndex].intValue();
 	}
 
+	/**
+	 * 
+	 * @return IAtomContainer
+	 */
 	public IAtomContainer getStructureAsIAtomContainer() {
 		return this.precursorMolecule;
 	}
 	
+	/**
+	 * 
+	 * @param idx
+	 * @return List<Object>
+	 */
+	public List<Object> getBond(final short idx) {
+		final List<Object> bondDefinition = new ArrayList<>();
+		final List<String> atoms = new ArrayList<>();
+		final IBond bond = this.precursorMolecule.getBond(idx);
+		
+		for(IAtom atom : bond.atoms()) {
+			atoms.add(atom.getSymbol());
+		}
+		
+		Collections.sort(atoms);
+		
+		bondDefinition.add(atoms);
+		bondDefinition.add(bond.getOrder());
+		bondDefinition.add(Boolean.valueOf(bond.isAromatic()));
+		return bondDefinition;
+	}
 
 	/**
-	 * convert 2D matrix coordinates to 1D adjacency list coordinate
+	 * Convert 2D matrix coordinates to 1D adjacency list coordinate.
 	 * 
 	 * @param a
 	 * @param b
 	 * @return int
 	 */
-	private int getIndex(int a, int b) {
+	private int getIndex(final int a, final int b) {
 		int row = a;
 		int col = b;
-		if (a > b) {
+		
+		if(a > b) {
 			row = b;
 			col = a;
 		}
+		
 		return row * this.getNonHydrogenAtomCount() + col - ((row + 1) * (row + 2)) / 2;
 	}
 
 	/**
-	 * initialise 1D atom adjacency list
+	 * Initialise 1D atom adjacency list.
 	 */
 	private void initialiseAtomAdjacencyList() {
-		for (int i = 0; i < this.getNonHydrogenBondCount(); i++) {
-			java.util.Iterator<IAtom> atoms = this.precursorMolecule.getBond(i).atoms().iterator();
+		for(int i = 0; i < this.getNonHydrogenBondCount(); i++) {
+			final Iterator<IAtom> atoms = this.precursorMolecule.getBond(i).atoms().iterator();
 			this.atomAdjacencyList[getIndex(this.precursorMolecule.indexOf(atoms.next()),
 					this.precursorMolecule.indexOf(atoms.next()))] = (short) (i + 1);
 		}
 	}
 
+	/**
+	 * 
+	 */
 	private void initialiseAtomMasses() {
-
-		for (int i = 0; i < this.getNonHydrogenAtomCount(); i++) {
+		for(int i = 0; i < this.getNonHydrogenAtomCount(); i++) {
 			this.massesOfAtoms[i] = Constants.MONOISOTOPIC_MASSES
 					.get(Constants.ELEMENTS.indexOf(this.precursorMolecule.getAtom(i).getSymbol())).doubleValue();
 		}
 	}
 
+	/**
+	 * 
+	 */
 	private void initialiseNumberHydrogens() {
-
-		for (int i = 0; i < this.getNonHydrogenAtomCount(); i++) {
+		for(int i = 0; i < this.getNonHydrogenAtomCount(); i++) {
 			this.numberHydrogensConnectedToAtom[i] = this.precursorMolecule.getAtom(i).getImplicitHydrogenCount();
 		}
 	}
 
 	/**
-	 * initialise indeces belonging to a ring in the precursor molecule
+	 * Initialise indeces belonging to a ring in the precursor molecule.
 	 */
 	private void initialiseRingBondsFastBitArray() throws Exception {
 		final AllRingsFinder allRingsFinder = new AllRingsFinder();
@@ -211,36 +263,39 @@ public class Precursor {
 
 		this.initialiseRingBondToBelongingRingBondIndecesFastBitArrays(ringSet);
 
-		if (ringSet.getAtomContainerCount() != 0) {
+		if(ringSet.getAtomContainerCount() != 0) {
 			final Aromaticity arom = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
-			java.util.Set<IBond> aromBonds = arom.findBonds(this.precursorMolecule);
-			java.util.Iterator<IBond> it = aromBonds.iterator();
-			while (it.hasNext()) {
-				IBond currentBond = it.next();
-				this.aromaticBonds.set(this.precursorMolecule.indexOf(currentBond), true);
+			final Set<IBond> aromBonds = arom.findBonds(this.precursorMolecule);
+			final Iterator<IBond> it = aromBonds.iterator();
+			
+			while(it.hasNext()) {
+				this.aromaticBonds.set(this.precursorMolecule.indexOf(it.next()), true);
 			}
 		}
 	}
 
 	/**
 	 * initialises ringBondToBelongingRingBondIndeces FastBitArray array fast and
-	 * easy way to retrieve all bond indeces belonging to a ring including the bond
-	 * at specified index of that array
+	 * easy way to retrieve all bond indices belonging to a ring including the bond
+	 * at specified index of that array.
 	 * 
 	 * @param ringSet
 	 */
-	private void initialiseRingBondToBelongingRingBondIndecesFastBitArrays(IRingSet ringSet) {
-
-		for (int i = 0; i < this.ringBondToBelongingRingBondIndeces.length; i++)
+	private void initialiseRingBondToBelongingRingBondIndecesFastBitArrays(final IRingSet ringSet) {
+		for(int i = 0; i < this.ringBondToBelongingRingBondIndeces.length; i++) {
 			this.ringBondToBelongingRingBondIndeces[i] = new FastBitArray(this.precursorMolecule.getBondCount() + 1);
-
-		for (int i = 0; i < ringSet.getAtomContainerCount(); i++) {
-			int[] indexes = new int[ringSet.getAtomContainer(i).getBondCount()];
-			for (int j = 0; j < ringSet.getAtomContainer(i).getBondCount(); j++) {
+		}
+			
+		for(int i = 0; i < ringSet.getAtomContainerCount(); i++) {
+			final int[] indexes = new int[ringSet.getAtomContainer(i).getBondCount()];
+			
+			for(int j = 0; j < ringSet.getAtomContainer(i).getBondCount(); j++) {
 				indexes[j] = this.precursorMolecule.indexOf(ringSet.getAtomContainer(i).getBond(j));
 			}
-			for (int j = 0; j < indexes.length; j++)
+			
+			for(int j = 0; j < indexes.length; j++) {
 				this.ringBondToBelongingRingBondIndeces[indexes[j]].setBits(indexes);
+			}
 		}
 	}
 
@@ -248,13 +303,15 @@ public class Precursor {
 	 * 
 	 */
 	private void initiliseAtomIndexToConnectedAtomIndeces() {
-
 		for (int i = 0; i < this.getNonHydrogenAtomCount(); i++) {
-			List<IAtom> connectedAtoms = this.precursorMolecule
+			final List<IAtom> connectedAtoms = this.precursorMolecule
 					.getConnectedAtomsList(this.precursorMolecule.getAtom(i));
-			short[] connectedAtomIndeces = new short[connectedAtoms.size()];
-			for (int k = 0; k < connectedAtoms.size(); k++)
+			final short[] connectedAtomIndeces = new short[connectedAtoms.size()];
+			
+			for(int k = 0; k < connectedAtoms.size(); k++) {
 				connectedAtomIndeces[k] = (short) this.precursorMolecule.indexOf(connectedAtoms.get(k));
+			}
+				
 			this.atomIndexToConnectedAtomIndeces.add(i, connectedAtomIndeces);
 		}
 	}

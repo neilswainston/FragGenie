@@ -1,4 +1,4 @@
-package uk.ac.liverpool.metfraglib.fragmenter;
+package uk.ac.liverpool.metfraglib;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +8,9 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 
 import de.ipbhalle.metfraglib.FastBitArray;
-import uk.ac.liverpool.metfraglib.fragment.BitArrayNeutralLoss;
-import uk.ac.liverpool.metfraglib.fragment.Fragment;
-import uk.ac.liverpool.metfraglib.precursor.Precursor;
+import uk.ac.liverpool.metfraglib.BitArrayNeutralLoss;
+import uk.ac.liverpool.metfraglib.Fragment;
+import uk.ac.liverpool.metfraglib.Precursor;
 
 public class Fragmenter {
 
@@ -256,10 +256,13 @@ public class Fragmenter {
 		for (short i = nextBrokenIndexBondIndexToRemove; i < precursorFragment.getBondsFastBitArray().getSize(); i++) {
 			if (!precursorFragment.getBondsFastBitArray().get(i))
 				continue;
-			short[] indecesOfBondConnectedAtoms = this.precursor.getConnectedAtomIndecesOfBondIndex(i);
-			/*
-			 * try to generate at most two fragments by the removal of the given bond
-			 */
+			final short[] indecesOfBondConnectedAtoms = this.precursor.getConnectedAtomIndecesOfBondIndex(i);
+
+			// Check bond strength:
+			final List<Object> bond = this.precursor.getBond(i);
+			System.out.println(bond);
+			
+			// try to generate at most two fragments by the removal of the given bond
 			Fragment[] newGeneratedTopDownFragments = precursorFragment.traverseMolecule(this.precursor, i,
 					indecesOfBondConnectedAtoms);
 			/*
