@@ -16,7 +16,7 @@ import org.openscience.cdk.interfaces.IRingSet;
 import org.openscience.cdk.ringsearch.AllRingsFinder;
 
 import uk.ac.liverpool.metfraglib.FastBitArray;
-import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
+import uk.ac.liverpool.metfraglib.MoleculeFunctions;
 import uk.ac.liverpool.metfraglib.Constants;
 
 /**
@@ -32,9 +32,7 @@ public class Precursor {
 	 * @throws Exception
 	 */
 	public static Precursor fromSmiles(final String smiles) throws Exception {
-		final IAtomContainer molecule = MoleculeFunctions.getAtomContainerFromSMILES(smiles);
-		MoleculeFunctions.prepareAtomContainer(molecule, true);
-		MoleculeFunctions.convertExplicitToImplicitHydrogens(molecule);
+		final IAtomContainer molecule = MoleculeFunctions.getAtomContainer(smiles);
 		return new Precursor(molecule);
 	}
 

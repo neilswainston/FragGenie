@@ -27,7 +27,7 @@ public class MetFrag {
 	 * @throws Exception
 	 */
 	public static float[] getFragmentMasses(final String smiles, final int maximumTreeDepth) throws Exception {
-		final Map<String, Float> formulaToMasses = getFormulaToMasses(Precursor.fromSmiles(smiles), maximumTreeDepth);
+		final Map<String, Float> formulaToMasses = getFormulaToMasses(smiles, maximumTreeDepth);
 		final float[] ionMassCorrections = new float[] { 1.00728f };
 		final float[] correctedMasses = new float[formulaToMasses.size() * ionMassCorrections.length];
 		int i = 0;
@@ -46,8 +46,9 @@ public class MetFrag {
 	 * @return Map<String, Float>
 	 * @throws Exception
 	 */
-	private static Map<String, Float> getFormulaToMasses(final Precursor precursor, final int maxTreeDepth) throws Exception {
+	private static Map<String, Float> getFormulaToMasses(final String smiles, final int maxTreeDepth) throws Exception {
 		final Map<String, Float> formulaToMasses = new TreeMap<>();
+		final Precursor precursor = Precursor.fromSmiles(smiles);
 		final Fragmenter fragmenter = new Fragmenter(precursor);
 		Queue<Fragment> fragments = new LinkedList<>();
 		

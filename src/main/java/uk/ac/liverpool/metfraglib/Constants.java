@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("boxing")
-public class Constants {
+class Constants {
 
-	public static final Map<String, Double> MONOISOTOPIC_MASSES = new HashMap<>();
+	static final Map<String, Double> MONOISOTOPIC_MASSES = new HashMap<>();
 	
 	/*
 	 * important: isotopical labelled compounds must be located before there

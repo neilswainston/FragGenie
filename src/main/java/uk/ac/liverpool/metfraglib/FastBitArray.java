@@ -6,7 +6,7 @@ import javolution.util.FastBitSet;
  * 
  * @author neilswainston
  */
-public class FastBitArray {
+class FastBitArray {
 
 	/**
 	 * array to store bits
@@ -23,7 +23,7 @@ public class FastBitArray {
 	 * 
 	 * @param size
 	 */
-	public FastBitArray(final int size) {
+	FastBitArray(final int size) {
 		this.bitArray = new FastBitSet();
 		this.size = (short)size;
 	}
@@ -34,7 +34,7 @@ public class FastBitArray {
 	 * @param size
 	 * @param value
 	 */
-	public FastBitArray(final int size, final boolean value) {
+	FastBitArray(final int size, final boolean value) {
 		this.bitArray = new FastBitSet();
 		if(value) this.bitArray.flip(0, size);
 		this.size = (short)size;
@@ -47,7 +47,7 @@ public class FastBitArray {
 	 * 
 	 * @param idx
 	 */
-	public void set(final int idx) {
+	void set(final int idx) {
 		this.bitArray.set(idx);
 	}
 
@@ -57,7 +57,7 @@ public class FastBitArray {
 	 * 
 	 * @param index
 	 */
-	public void set(int n, boolean val) {
+	void set(int n, boolean val) {
 		this.bitArray.set(n, val);
 	}
 	
@@ -68,7 +68,7 @@ public class FastBitArray {
 	 * @param n
 	 * @return
 	 */
-	public boolean get(int n) {
+	boolean get(int n) {
 		return this.bitArray.get(n);
 	}
 	
@@ -77,7 +77,7 @@ public class FastBitArray {
 	 * 
 	 * @return
 	 */
-	public short getSize() {
+	short getSize() {
 		return this.size;
 	}
 	
@@ -86,7 +86,7 @@ public class FastBitArray {
 	 * 
 	 * @return int[]
 	 */
-	public int[] getSetIndices() {
+	int[] getSetIndices() {
 		int[] setIndeces = new int[this.bitArray.cardinality()];
 		int index = 0;
 		for(int i = 0; i < this.getSize(); i++) {
@@ -115,7 +115,7 @@ public class FastBitArray {
 	 * returns -1 if there is no bit set to true
 	 * 
 	 */
-	public int getLastSetBit() {
+	int getLastSetBit() {
 		for(int i = this.getSize() - 1; i >= 0; i--)
 			if(this.bitArray.get(i)) return i;
 		return -1;
@@ -126,7 +126,7 @@ public class FastBitArray {
 	 * 
 	 * @param bitIndexes
 	 */
-	public void setBits(int[] bitIndexes) {
+	void setBits(int[] bitIndexes) {
 		for(int i = 0; i < bitIndexes.length; i++) {
 			if(bitIndexes[i] < this.getSize() && bitIndexes[i] >= 0)
 				this.bitArray.set(bitIndexes[i]);
@@ -135,9 +135,6 @@ public class FastBitArray {
 		}
 	}
 	
-	/**
-	 * 
-	 */
 	@Override
 	public FastBitArray clone() {
 		FastBitArray clone = new FastBitArray(this.getSize());

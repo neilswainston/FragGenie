@@ -6,7 +6,7 @@ import uk.ac.liverpool.metfraglib.FastBitArray;
  * 
  * @author neilswainston
  */
-public class BitArrayNeutralLoss {
+class BitArrayNeutralLoss {
 	/**
 	 * 
 	 */
@@ -16,7 +16,7 @@ public class BitArrayNeutralLoss {
 	 * 
 	 * @param numberNeutralLosses
 	 */
-	public BitArrayNeutralLoss(final int numberNeutralLosses) {
+	BitArrayNeutralLoss(final int numberNeutralLosses) {
 		this.neutralLossAtoms = new FastBitArray[numberNeutralLosses];
 	}
 
@@ -25,7 +25,7 @@ public class BitArrayNeutralLoss {
 	 * @param index
 	 * @return
 	 */
-	public FastBitArray getNeutralLossAtomFastBitArray(final int index) {
+	FastBitArray getNeutralLossAtomFastBitArray(final int index) {
 		return this.neutralLossAtoms[index];
 	}
 
@@ -33,7 +33,7 @@ public class BitArrayNeutralLoss {
 	 * 
 	 * @return int
 	 */
-	public int getNumberNeutralLosses() {
+	int getNumberNeutralLosses() {
 		return this.neutralLossAtoms.length;
 	}
 
@@ -42,7 +42,7 @@ public class BitArrayNeutralLoss {
 	 * @param index
 	 * @param neutralLossAtoms
 	 */
-	public void setNeutralLoss(final int index, final FastBitArray neutralLossAtoms) {
+	void setNeutralLoss(final int index, final FastBitArray neutralLossAtoms) {
 		this.neutralLossAtoms[index] = neutralLossAtoms;
 	}
 }
