@@ -49,16 +49,6 @@ public class Precursor {
 	/**
 	 * 
 	 */
-	private final List<int[]> atomIndexToConnectedAtomIndeces = new ArrayList<>();
-
-	/**
-	 * 
-	 */
-	private final int[][] bondIndexToConnectedAtomIndeces;
-
-	/**
-	 * 
-	 */
 	private final IAtomContainer atomContainer;
 
 	/**
@@ -73,13 +63,10 @@ public class Precursor {
 	 */
 	Precursor(final String smiles) throws Exception {
 		this.atomContainer = getAtomContainer(smiles);
-		this.bondIndexToConnectedAtomIndeces = new int[this.getNonHydrogenBondCount()][2];
 		this.ringBondToBelongingRingBondIndeces = new FastBitArray[this.atomContainer.getBondCount() + 1];
 		this.aromaticBonds = new FastBitArray(this.getNonHydrogenBondCount(), false);
 		this.atomAdjacencyList = new int[getIndex(this.getNonHydrogenAtomCount() - 2, this.getNonHydrogenAtomCount() - 1) + 1];
 		
-		this.initiliseAtomIndexToConnectedAtomIndeces();
-		this.initiliseBondIndexToConnectedAtomIndeces();
 		this.initialiseRingBondsFastBitArray();
 		this.initialiseAtomAdjacencyList();
 	}
@@ -101,17 +88,25 @@ public class Precursor {
 	 * @param atomIndex
 	 * @return int[]
 	 */
-	int[] getConnectedAtomIndecesOfAtomIndex(final int atomIndex) {
-		return this.atomIndexToConnectedAtomIndeces.get(atomIndex);
+	int[] getConnectedAtomIndecesOfAtomIndex(final int idx) {
+		final List<IAtom> connectedAtoms = this.atomContainer.getConnectedAtomsList(this.atomContainer.getAtom(idx));
+		final int[] connectedAtomIndeces = new int[connectedAtoms.size()];
+		
+		for(int k = 0; k < connectedAtoms.size(); k++) {
+			connectedAtomIndeces[k] = this.atomContainer.indexOf(connectedAtoms.get(k));
+		}
+			
+		return connectedAtomIndeces;
 	}
 
 	/**
 	 * 
-	 * @param bondIndex
+	 * @param idx
 	 * @return int[]
 	 */
-	int[] getConnectedAtomIndecesOfBondIndex(final int bondIndex) {
-		return this.bondIndexToConnectedAtomIndeces[bondIndex];
+	int[] getConnectedAtomIndecesOfBondIndex(final int idx) {
+		final IBond bond = this.atomContainer.getBond(idx);
+		return new int[] {this.atomContainer.indexOf(bond.getAtom(0)), this.atomContainer.indexOf(bond.getAtom(1))};
 	}
 
 	/**
@@ -215,7 +210,7 @@ public class Precursor {
 		for(int i = 0; i < this.getNonHydrogenBondCount(); i++) {
 			final Iterator<IAtom> atoms = this.atomContainer.getBond(i).atoms().iterator();
 			this.atomAdjacencyList[getIndex(this.atomContainer.indexOf(atoms.next()),
-					this.atomContainer.indexOf(atoms.next()))] = (short) (i + 1);
+					this.atomContainer.indexOf(atoms.next()))] = i + 1;
 		}
 	}
 
@@ -261,34 +256,6 @@ public class Precursor {
 			for(int j = 0; j < indexes.length; j++) {
 				this.ringBondToBelongingRingBondIndeces[indexes[j]].setBits(indexes);
 			}
-		}
-	}
-
-	/**
-	 * 
-	 */
-	private void initiliseAtomIndexToConnectedAtomIndeces() {
-		for (int i = 0; i < this.getNonHydrogenAtomCount(); i++) {
-			final List<IAtom> connectedAtoms = this.atomContainer
-					.getConnectedAtomsList(this.atomContainer.getAtom(i));
-			final int[] connectedAtomIndeces = new int[connectedAtoms.size()];
-			
-			for(int k = 0; k < connectedAtoms.size(); k++) {
-				connectedAtomIndeces[k] = this.atomContainer.indexOf(connectedAtoms.get(k));
-			}
-				
-			this.atomIndexToConnectedAtomIndeces.add(i, connectedAtomIndeces);
-		}
-	}
-
-	/**
-	 * 
-	 */
-	private void initiliseBondIndexToConnectedAtomIndeces() {
-		for (int i = 0; i < this.getNonHydrogenBondCount(); i++) {
-			final IBond bond = this.atomContainer.getBond(i);
-			this.bondIndexToConnectedAtomIndeces[i][0] = this.atomContainer.indexOf(bond.getAtom(0));
-			this.bondIndexToConnectedAtomIndeces[i][1] = this.atomContainer.indexOf(bond.getAtom(1));
 		}
 	}
 	
