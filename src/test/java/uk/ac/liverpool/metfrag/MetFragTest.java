@@ -3,8 +3,6 @@
  */
 package uk.ac.liverpool.metfrag;
 
-import java.util.List;
-import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
@@ -93,19 +91,5 @@ public class MetFragTest {
 			final DoubleStream ds = IntStream.range(0, fragments.length).mapToDouble(i -> fragments[i]);
 			Assert.assertTrue(ds.anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
 		}
-	}
-
-	/**
-	 * 
-	 * @throws Exception
-	 */
-	@SuppressWarnings("static-method")
-	@Test
-	public void testMatch() throws Exception {
-		final List<Map<String, Object>> results = (List<Map<String, Object>>) MetFrag.match(MetFragTestData.SMILES,
-				MetFragTestData.MZ, MetFragTestData.INTEN);
-		Assert.assertEquals(5, results.size());
-		Assert.assertEquals("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", results.get(0).get("SMILES")); //$NON-NLS-1$ //$NON-NLS-2$
-		Assert.assertEquals(1188.6403357016206, ((Double) results.get(0).get("FragmenterScore")).doubleValue(), 1e-6); //$NON-NLS-1$
 	}
 }

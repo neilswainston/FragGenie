@@ -1,6 +1,6 @@
 package uk.ac.liverpool.metfraglib;
 
-import de.ipbhalle.metfraglib.FastBitArray;
+import uk.ac.liverpool.metfraglib.FastBitArray;
 
 /**
  * 

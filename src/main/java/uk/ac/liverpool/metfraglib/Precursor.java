@@ -15,7 +15,7 @@ import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IRingSet;
 import org.openscience.cdk.ringsearch.AllRingsFinder;
 
-import de.ipbhalle.metfraglib.FastBitArray;
+import uk.ac.liverpool.metfraglib.FastBitArray;
 import de.ipbhalle.metfraglib.additionals.MoleculeFunctions;
 import de.ipbhalle.metfraglib.parameter.Constants;
 
@@ -269,7 +269,7 @@ public class Precursor {
 			final Iterator<IBond> it = aromBonds.iterator();
 			
 			while(it.hasNext()) {
-				this.aromaticBonds.set(this.precursorMolecule.indexOf(it.next()), true);
+				this.aromaticBonds.set(this.precursorMolecule.indexOf(it.next()));
 			}
 		}
 	}

@@ -4,7 +4,7 @@ package uk.ac.liverpool.metfraglib;
 import java.util.Map;
 import java.util.TreeMap;
 
-import de.ipbhalle.metfraglib.FastBitArray;
+import uk.ac.liverpool.metfraglib.FastBitArray;
 import uk.ac.liverpool.metfraglib.Precursor;
 
 public class Fragment {
@@ -84,7 +84,7 @@ public class Fragment {
 	 * @return int[]
 	 */
 	public int[] getBrokenBondIndeces() {
-		return this.brokenBondsFastBitArray.getSetIndeces();
+		return this.brokenBondsFastBitArray.getSetIndices();
 	}
 
 	/**

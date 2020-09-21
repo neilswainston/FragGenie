@@ -7,7 +7,7 @@ import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 
-import de.ipbhalle.metfraglib.FastBitArray;
+import uk.ac.liverpool.metfraglib.FastBitArray;
 import uk.ac.liverpool.metfraglib.BitArrayNeutralLoss;
 import uk.ac.liverpool.metfraglib.Fragment;
 import uk.ac.liverpool.metfraglib.Precursor;
@@ -272,7 +272,7 @@ public class Fragmenter {
 			 * reached 3. no further bond can be removed
 			 */
 			if (newGeneratedTopDownFragments.length == 1) {
-				ringBonds.set(i, true);
+				ringBonds.set(i);
 				newGeneratedTopDownFragments[0].setLastSkippedBond((short) (i + 1));
 				ringBondCuttedFragments.add(newGeneratedTopDownFragments[0]);
 				lastCuttedBondOfRing.add(Short.valueOf(i));
