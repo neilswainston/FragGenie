@@ -47,7 +47,7 @@ public class Fragmenter {
 	 * @throws Exception
 	 */
 	public Fragmenter(final String smiles) throws Exception {
-		this.precursor = Precursor.fromSmiles(smiles);
+		this.precursor = new Precursor(smiles);
 		this.ringBondFastBitArray = new FastBitArray(this.precursor.getNonHydrogenBondCount(), false);
 		this.detectedNeutralLosses = getMatchingAtoms(this.precursor);
 	}

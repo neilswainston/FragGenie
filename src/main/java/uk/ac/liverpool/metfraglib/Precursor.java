@@ -30,65 +30,6 @@ import uk.ac.liverpool.metfraglib.FastBitArray;
  */
 @SuppressWarnings("boxing")
 public class Precursor {
-
-	/**
-	 * 
-	 * @param smiles
-	 * @return Precursor
-	 * @throws Exception
-	 */
-	public static Precursor fromSmiles(final String smiles) throws Exception {
-		final IAtomContainer molecule = getAtomContainer(smiles);
-		return new Precursor(molecule);
-	}
-	
-	private static IAtomContainer getAtomContainer(final String smiles) throws Exception {
-		final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
-		final IAtomContainer molecule = parser.parseSmiles(smiles);
-		final Aromaticity aromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
-		
-		AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(molecule);
-		aromaticity.apply(molecule);
-		
-		final CDKHydrogenAdder hAdder = CDKHydrogenAdder.getInstance(molecule.getBuilder());
-        
-        for(int i = 0; i < molecule.getAtomCount(); i++) {
-        	hAdder.addImplicitHydrogens(molecule, molecule.getAtom(i));
-        }
-        
-        AtomContainerManipulator.convertImplicitToExplicitHydrogens(molecule);
-        
-		removeHydrogens(molecule);
-		return molecule;
-	}
-	
-	/**
-	 * 
-	 * @param molecule
-	 */
-	private static void removeHydrogens(final IAtomContainer molecule) {
-		final Collection<IAtom> hydrogenAtoms = new ArrayList<>();
-		
-		for(IAtom atom : molecule.atoms()) {
-			if(atom.getSymbol().equals("H")) { //$NON-NLS-1$
-				hydrogenAtoms.add(atom);
-			}
-			
-			int numberHydrogens = 0;
-			
-			for(IAtom neighbour : molecule.getConnectedAtomsList(atom)) {
-				if(neighbour.getSymbol().equals("H")) { //$NON-NLS-1$
-					numberHydrogens++; 
-				}
-			}
-			
-			atom.setImplicitHydrogenCount(Integer.valueOf(numberHydrogens));
-		}
-		
-		for(IAtom atom : hydrogenAtoms) {
-			molecule.removeAtom(atom);
-		}
-	}
 	
 	private static final Map<String, Double> MONOISOTOPIC_MASSES = new HashMap<>();
 
@@ -137,8 +78,8 @@ public class Precursor {
 	 * @param precMolecule
 	 * @throws Exception
 	 */
-	private Precursor(final IAtomContainer precMolecule) throws Exception {
-		this.precursorMolecule = precMolecule;
+	Precursor(final String smiles) throws Exception {
+		this.precursorMolecule = getAtomContainer(smiles);
 		this.bondIndexToConnectedAtomIndeces = new short[this.getNonHydrogenBondCount()][2];
 		this.ringBondToBelongingRingBondIndeces = new FastBitArray[this.precursorMolecule.getBondCount() + 1];
 		this.aromaticBonds = new FastBitArray(this.getNonHydrogenBondCount(), false);
@@ -162,7 +103,7 @@ public class Precursor {
 	 * @param y
 	 * @return short
 	 */
-	public short getBondIndexFromAtomAdjacencyList(final short x, final short y) {
+	short getBondIndexFromAtomAdjacencyList(final short x, final short y) {
 		return this.atomAdjacencyList[this.getIndex(x, y)];
 	}
 
@@ -172,7 +113,7 @@ public class Precursor {
 	 * @param atomIndex
 	 * @return short[]
 	 */
-	public short[] getConnectedAtomIndecesOfAtomIndex(final short atomIndex) {
+	short[] getConnectedAtomIndecesOfAtomIndex(final short atomIndex) {
 		return this.atomIndexToConnectedAtomIndeces.get(atomIndex);
 	}
 
@@ -181,7 +122,7 @@ public class Precursor {
 	 * @param bondIndex
 	 * @return short[]
 	 */
-	public short[] getConnectedAtomIndecesOfBondIndex(final short bondIndex) {
+	short[] getConnectedAtomIndecesOfBondIndex(final short bondIndex) {
 		return this.bondIndexToConnectedAtomIndeces[bondIndex];
 	}
 
@@ -190,7 +131,7 @@ public class Precursor {
 	 * @param index
 	 * @return double
 	 */
-	public double getMassOfAtom(final int index) {
+	double getMassOfAtom(final int index) {
 		return this.massesOfAtoms[index] + this.getNumberHydrogensConnectedToAtomIndex(index)
 				* MONOISOTOPIC_MASSES.get("H").doubleValue(); //$NON-NLS-1$
 	}
@@ -200,7 +141,7 @@ public class Precursor {
 	 * @param index
 	 * @return String
 	 */
-	public String getAtom(final int index) {
+	String getAtom(final int index) {
 		return this.precursorMolecule.getAtom(index).getSymbol();
 	}
 
@@ -208,7 +149,7 @@ public class Precursor {
 	 * 
 	 * @return int
 	 */
-	public int getNonHydrogenAtomCount() {
+	int getNonHydrogenAtomCount() {
 		return this.precursorMolecule.getAtomCount();
 	}
 
@@ -216,7 +157,7 @@ public class Precursor {
 	 * 
 	 * @return int
 	 */
-	public int getNonHydrogenBondCount() {
+	int getNonHydrogenBondCount() {
 		return this.precursorMolecule.getBondCount();
 	}
 
@@ -225,7 +166,7 @@ public class Precursor {
 	 * @param atomIndex
 	 * @return
 	 */
-	public int getNumberHydrogensConnectedToAtomIndex(final int atomIndex) {
+	int getNumberHydrogensConnectedToAtomIndex(final int atomIndex) {
 		return this.numberHydrogensConnectedToAtom[atomIndex].intValue();
 	}
 
@@ -233,7 +174,7 @@ public class Precursor {
 	 * 
 	 * @return IAtomContainer
 	 */
-	public IAtomContainer getStructureAsIAtomContainer() {
+	IAtomContainer getStructureAsIAtomContainer() {
 		return this.precursorMolecule;
 	}
 	
@@ -242,7 +183,7 @@ public class Precursor {
 	 * @param idx
 	 * @return List<Object>
 	 */
-	public List<Object> getBond(final short idx) {
+	List<Object> getBond(final short idx) {
 		final List<Object> bondDefinition = new ArrayList<>();
 		final List<String> atoms = new ArrayList<>();
 		final IBond bond = this.precursorMolecule.getBond(idx);
@@ -379,6 +320,60 @@ public class Precursor {
 					.indexOf(this.precursorMolecule.getBond(i).getAtom(0));
 			this.bondIndexToConnectedAtomIndeces[i][1] = (short) this.precursorMolecule
 					.indexOf(this.precursorMolecule.getBond(i).getAtom(1));
+		}
+	}
+	
+	/**
+	 * 
+	 * @param smiles
+	 * @return IAtomContainer
+	 * @throws Exception
+	 */
+	private static IAtomContainer getAtomContainer(final String smiles) throws Exception {
+		final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
+		final IAtomContainer molecule = parser.parseSmiles(smiles);
+		final Aromaticity aromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
+		
+		AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(molecule);
+		aromaticity.apply(molecule);
+		
+		final CDKHydrogenAdder hAdder = CDKHydrogenAdder.getInstance(molecule.getBuilder());
+        
+        for(int i = 0; i < molecule.getAtomCount(); i++) {
+        	hAdder.addImplicitHydrogens(molecule, molecule.getAtom(i));
+        }
+        
+        AtomContainerManipulator.convertImplicitToExplicitHydrogens(molecule);
+        
+		removeHydrogens(molecule);
+		return molecule;
+	}
+	
+	/**
+	 * 
+	 * @param molecule
+	 */
+	private static void removeHydrogens(final IAtomContainer molecule) {
+		final Collection<IAtom> hydrogenAtoms = new ArrayList<>();
+		
+		for(IAtom atom : molecule.atoms()) {
+			if(atom.getSymbol().equals("H")) { //$NON-NLS-1$
+				hydrogenAtoms.add(atom);
+			}
+			
+			int numberHydrogens = 0;
+			
+			for(IAtom neighbour : molecule.getConnectedAtomsList(atom)) {
+				if(neighbour.getSymbol().equals("H")) { //$NON-NLS-1$
+					numberHydrogens++; 
+				}
+			}
+			
+			atom.setImplicitHydrogenCount(Integer.valueOf(numberHydrogens));
+		}
+		
+		for(IAtom atom : hydrogenAtoms) {
+			molecule.removeAtom(atom);
 		}
 	}
 	

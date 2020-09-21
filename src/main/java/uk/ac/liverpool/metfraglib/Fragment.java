@@ -28,7 +28,7 @@ public class Fragment {
 	 * @param precursor
 	 * @throws AtomTypeNotKnownFromInputListException
 	 */
-	public Fragment(final Precursor precursor) {
+	Fragment(final Precursor precursor) {
 		this.prec = precursor;
 		this.addedToQueueCounts = 0;
 		this.atomsFastBitArray = new FastBitArray(precursor.getNonHydrogenAtomCount(), true);
@@ -59,7 +59,7 @@ public class Fragment {
 	 * 
 	 * @return int
 	 */
-	public int getAddedToQueueCounts() {
+	int getAddedToQueueCounts() {
 		return this.addedToQueueCounts;
 	}
 
@@ -67,7 +67,7 @@ public class Fragment {
 	 * 
 	 * @return FastBitArray
 	 */
-	public FastBitArray getAtomsFastBitArray() {
+	FastBitArray getAtomsFastBitArray() {
 		return this.atomsFastBitArray;
 	}
 
@@ -75,7 +75,7 @@ public class Fragment {
 	 * 
 	 * @return FastBitArray
 	 */
-	public FastBitArray getBondsFastBitArray() {
+	FastBitArray getBondsFastBitArray() {
 		return this.bondsFastBitArray;
 	}
 
@@ -83,7 +83,7 @@ public class Fragment {
 	 * 
 	 * @return int[]
 	 */
-	public int[] getBrokenBondIndeces() {
+	int[] getBrokenBondIndeces() {
 		return this.brokenBondsFastBitArray.getSetIndices();
 	}
 
@@ -91,7 +91,7 @@ public class Fragment {
 	 * 
 	 * @return FastBitArray
 	 */
-	public FastBitArray getBrokenBondsFastBitArray() {
+	FastBitArray getBrokenBondsFastBitArray() {
 		return this.brokenBondsFastBitArray;
 	}
 
@@ -99,7 +99,7 @@ public class Fragment {
 	 * 
 	 * @return short
 	 */
-	public short getLastSkippedBond() {
+	short getLastSkippedBond() {
 		return this.lastSkippedBond;
 	}
 
@@ -107,7 +107,7 @@ public class Fragment {
 	 * 
 	 * @return float
 	 */
-	public float getMonoisotopicMass() {
+	float getMonoisotopicMass() {
 		float mass = 0.0f;
 
 		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
@@ -122,7 +122,7 @@ public class Fragment {
 	 * 
 	 * @return String
 	 */
-	public String getFormula() {
+	String getFormula() {
 		final Map<String,Integer> elementCount = new TreeMap<>();
 
 		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
@@ -165,7 +165,7 @@ public class Fragment {
 	 * 
 	 * @return int
 	 */
-	public int getMaximalIndexOfRemovedBond() {
+	int getMaximalIndexOfRemovedBond() {
 		return this.brokenBondsFastBitArray.getLastSetBit();
 	}
 
@@ -173,7 +173,7 @@ public class Fragment {
 	 * 
 	 * @param addedToQueueCounts
 	 */
-	public void setAddedToQueueCounts(final byte addedToQueueCounts) {
+	void setAddedToQueueCounts(final byte addedToQueueCounts) {
 		this.addedToQueueCounts = addedToQueueCounts;
 	}
 
@@ -181,7 +181,7 @@ public class Fragment {
 	 * 
 	 * @param lastSkippedBond
 	 */
-	public void setLastSkippedBond(final short lastSkippedBond) {
+	void setLastSkippedBond(final short lastSkippedBond) {
 		this.lastSkippedBond = lastSkippedBond;
 	}
 
@@ -195,7 +195,7 @@ public class Fragment {
 	 * @return Fragment[]
 	 * @throws Exception
 	 */
-	public Fragment[] traverseMolecule(final Precursor precursorMolecule, final short bondIndexToRemove,
+	Fragment[] traverseMolecule(final Precursor precursorMolecule, final short bondIndexToRemove,
 			final short[] indecesOfBondConnectedAtoms) throws Exception {
 
 		/*
