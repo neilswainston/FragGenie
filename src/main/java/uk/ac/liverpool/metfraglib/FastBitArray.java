@@ -16,7 +16,7 @@ class FastBitArray {
 	/**
 	 * 
 	 */
-	private final short size;
+	private final int size;
 	
 	/**
 	 * Initialises BitArray with specified number of bits.
@@ -25,7 +25,7 @@ class FastBitArray {
 	 */
 	FastBitArray(final int size) {
 		this.bitArray = new FastBitSet();
-		this.size = (short)size;
+		this.size = size;
 	}
 
 	/**
@@ -36,7 +36,11 @@ class FastBitArray {
 	 */
 	FastBitArray(final int size, final boolean value) {
 		this.bitArray = new FastBitSet();
-		if(value) this.bitArray.flip(0, size);
+		
+		if(value) {
+			this.bitArray.flip(0, size);
+		}
+		
 		this.size = (short)size;
 	}
 	
@@ -75,9 +79,9 @@ class FastBitArray {
 	/**
 	 * returns BitArray number of bits
 	 * 
-	 * @return
+	 * @return int
 	 */
-	short getSize() {
+	int getSize() {
 		return this.size;
 	}
 	

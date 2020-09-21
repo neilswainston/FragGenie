@@ -9,11 +9,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+
+import uk.ac.liverpool.metfraglib.Fragmenter;
 
 /**
  * 
@@ -25,6 +28,29 @@ public class MetFragFragmenter {
 	 * 
 	 */
 	private final static String METFRAG_HEADER = "MetFrag m/z"; //$NON-NLS-1$
+	
+	/**
+	 * 
+	 * @param smiles
+	 * @param maximumTreeDepth
+	 * @return double[]
+	 * @throws Exception
+	 */
+	public static float[] getFragmentMasses(final String smiles, final int maximumTreeDepth) throws Exception {
+		final Fragmenter fragmenter = new Fragmenter(smiles);
+		final Map<String, Float> formulaToMasses = fragmenter.getFormulaToMasses(maximumTreeDepth);
+		final float[] ionMassCorrections = new float[] { 1.00728f };
+		final float[] correctedMasses = new float[formulaToMasses.size() * ionMassCorrections.length];
+		int i = 0;
+		
+		for(final Entry<String, Float> entry : formulaToMasses.entrySet()) {
+			for (float ionMassCorrection : ionMassCorrections) {
+				correctedMasses[i++] = entry.getValue().floatValue() + ionMassCorrection;
+			}
+		}
+		
+		return correctedMasses;
+	}
 
 	/**
 	 * 
@@ -55,7 +81,7 @@ public class MetFragFragmenter {
 				
 				if(smiles.length() < maxLenSmiles) {
 					try {
-						final float[] fragments = MetFrag.getFragmentMasses(smiles, 2);
+						final float[] fragments = getFragmentMasses(smiles, 2);
 						final Map<String, String> recordMap = record.toMap();
 						recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
 	

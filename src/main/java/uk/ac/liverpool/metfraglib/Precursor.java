@@ -1,6 +1,7 @@
 package uk.ac.liverpool.metfraglib;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -14,9 +15,12 @@ import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IRingSet;
 import org.openscience.cdk.ringsearch.AllRingsFinder;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
+import org.openscience.cdk.smiles.SmilesParser;
+import org.openscience.cdk.tools.CDKHydrogenAdder;
+import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import uk.ac.liverpool.metfraglib.FastBitArray;
-import uk.ac.liverpool.metfraglib.MoleculeFunctions;
 import uk.ac.liverpool.metfraglib.Constants;
 
 /**
@@ -32,8 +36,56 @@ public class Precursor {
 	 * @throws Exception
 	 */
 	public static Precursor fromSmiles(final String smiles) throws Exception {
-		final IAtomContainer molecule = MoleculeFunctions.getAtomContainer(smiles);
+		final IAtomContainer molecule = getAtomContainer(smiles);
 		return new Precursor(molecule);
+	}
+	
+	private static IAtomContainer getAtomContainer(final String smiles) throws Exception {
+		final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
+		final IAtomContainer molecule = parser.parseSmiles(smiles);
+		final Aromaticity aromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
+		
+		AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(molecule);
+		aromaticity.apply(molecule);
+		
+		final CDKHydrogenAdder hAdder = CDKHydrogenAdder.getInstance(molecule.getBuilder());
+        
+        for(int i = 0; i < molecule.getAtomCount(); i++) {
+        	hAdder.addImplicitHydrogens(molecule, molecule.getAtom(i));
+        }
+        
+        AtomContainerManipulator.convertImplicitToExplicitHydrogens(molecule);
+        
+		removeHydrogens(molecule);
+		return molecule;
+	}
+	
+	/**
+	 * 
+	 * @param molecule
+	 */
+	private static void removeHydrogens(final IAtomContainer molecule) {
+		final Collection<IAtom> hydrogenAtoms = new ArrayList<>();
+		
+		for(IAtom atom : molecule.atoms()) {
+			if(atom.getSymbol().equals("H")) { //$NON-NLS-1$
+				hydrogenAtoms.add(atom);
+			}
+			
+			int numberHydrogens = 0;
+			
+			for(IAtom neighbour : molecule.getConnectedAtomsList(atom)) {
+				if(neighbour.getSymbol().equals("H")) { //$NON-NLS-1$
+					numberHydrogens++; 
+				}
+			}
+			
+			atom.setImplicitHydrogenCount(Integer.valueOf(numberHydrogens));
+		}
+		
+		for(IAtom atom : hydrogenAtoms) {
+			molecule.removeAtom(atom);
+		}
 	}
 
 	/**

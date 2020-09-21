@@ -13,7 +13,7 @@ import org.junit.Test;
  * 
  * @author neilswainston
  */
-public class MetFragTest {
+public class MetFragFragmenterTest {
 
 	/**
 	 * 
@@ -39,7 +39,7 @@ public class MetFragTest {
 				// 236.96283
 				};
 
-		final float[] fragments = MetFrag.getFragmentMasses("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2); //$NON-NLS-1$
+		final float[] fragments = MetFragFragmenter.getFragmentMasses("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2); //$NON-NLS-1$
 		final float epsilon = 1e-5f;
 
 		for (double mass : expected) {
@@ -64,7 +64,7 @@ public class MetFragTest {
 				47.049168
 			};
 
-		final float[] fragments = MetFrag.getFragmentMasses("CCO", 2); //$NON-NLS-1$
+		final float[] fragments = MetFragFragmenter.getFragmentMasses("CCO", 2); //$NON-NLS-1$
 		final float epsilon = 1e-5f;
 
 		for (double mass : expected) {
@@ -84,7 +84,7 @@ public class MetFragTest {
 				27.02294, 40.03077, 53.0386, 66.04643, 79.05426, 14.01511
 			};
 
-		final float[] fragments = MetFrag.getFragmentMasses("C1=CC=CC=C1", 1); //$NON-NLS-1$
+		final float[] fragments = MetFragFragmenter.getFragmentMasses("C1=CC=CC=C1", 1); //$NON-NLS-1$
 		final float epsilon = 1e-5f;
 
 		for (double mass : expected) {

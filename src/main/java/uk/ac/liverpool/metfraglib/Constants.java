@@ -8,10 +8,6 @@ class Constants {
 
 	static final Map<String, Double> MONOISOTOPIC_MASSES = new HashMap<>();
 	
-	/*
-	 * important: isotopical labelled compounds must be located before there
-	 * monoisotopic element e.g. [13C] must be located before C
-	 */
 	static {
 		MONOISOTOPIC_MASSES.put("[13C]", 13.00335); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("C", 12.00000); //$NON-NLS-1$
