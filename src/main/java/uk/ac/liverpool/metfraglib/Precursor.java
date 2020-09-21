@@ -138,7 +138,7 @@ public class Precursor {
 	 */
 	public double getMassOfAtom(final int index) {
 		return this.massesOfAtoms[index] + this.getNumberHydrogensConnectedToAtomIndex(index)
-				* Constants.MONOISOTOPIC_MASSES.get(Constants.H_INDEX).doubleValue();
+				* Constants.MONOISOTOPIC_MASSES.get("H").doubleValue(); //$NON-NLS-1$
 	}
 	
 	/**
@@ -241,7 +241,7 @@ public class Precursor {
 	private void initialiseAtomMasses() {
 		for(int i = 0; i < this.getNonHydrogenAtomCount(); i++) {
 			this.massesOfAtoms[i] = Constants.MONOISOTOPIC_MASSES
-					.get(Constants.ELEMENTS.indexOf(this.precursorMolecule.getAtom(i).getSymbol())).doubleValue();
+					.get(this.precursorMolecule.getAtom(i).getSymbol()).doubleValue();
 		}
 	}
 
