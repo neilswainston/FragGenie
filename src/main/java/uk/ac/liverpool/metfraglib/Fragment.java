@@ -195,8 +195,8 @@ public class Fragment {
 	 * @return Fragment[]
 	 * @throws Exception
 	 */
-	Fragment[] traverseMolecule(final Precursor precursorMolecule, final short bondIndexToRemove,
-			final short[] indecesOfBondConnectedAtoms) throws Exception {
+	Fragment[] traverseMolecule(final Precursor precursorMolecule, final int bondIndexToRemove,
+			final int[] indecesOfBondConnectedAtoms) throws Exception {
 
 		/*
 		 * generate first fragment
@@ -266,7 +266,7 @@ public class Fragment {
 	 * @param numberHydrogensOfNewFragment
 	 * @return
 	 */
-	private boolean traverseSingleDirection(Precursor precursorMolecule, short startAtomIndex, int endAtomIndex,
+	private boolean traverseSingleDirection(Precursor precursorMolecule, int startAtomIndex, int endAtomIndex,
 			int bondIndexToRemove, FastBitArray atomArrayOfNewFragment, FastBitArray bondArrayOfNewFragment,
 			FastBitArray brokenBondArrayOfNewFragment, int[] numberHydrogensOfNewFragment) {
 		FastBitArray bondFastBitArrayOfCurrentFragment = this.getBondsFastBitArray();
@@ -281,10 +281,10 @@ public class Fragment {
 		/*
 		 * traverse molecule in the first direction
 		 */
-		java.util.Stack<short[]> toProcessConnectedAtoms = new java.util.Stack<>();
-		java.util.Stack<Short> toProcessAtom = new java.util.Stack<>();
+		java.util.Stack<int[]> toProcessConnectedAtoms = new java.util.Stack<>();
+		java.util.Stack<Integer> toProcessAtom = new java.util.Stack<>();
 		toProcessConnectedAtoms.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(startAtomIndex));
-		toProcessAtom.push(Short.valueOf(startAtomIndex));
+		toProcessAtom.push(Integer.valueOf(startAtomIndex));
 		visited.set(startAtomIndex);
 		boolean stillOneFragment = false;
 		/*
@@ -294,8 +294,8 @@ public class Fragment {
 		atomArrayOfNewFragment.set(startAtomIndex);
 		numberHydrogensOfNewFragment[0] += precursorMolecule.getNumberHydrogensConnectedToAtomIndex(startAtomIndex);
 		while (!toProcessConnectedAtoms.isEmpty()) {
-			short[] nextAtoms = toProcessConnectedAtoms.pop();
-			short midAtom = toProcessAtom.pop().shortValue();
+			int[] nextAtoms = toProcessConnectedAtoms.pop();
+			int midAtom = toProcessAtom.pop().shortValue();
 			for (int i = 0; i < nextAtoms.length; i++) {
 				/*
 				 * did we visit the current atom already?
@@ -331,7 +331,7 @@ public class Fragment {
 				bondArrayOfNewFragment
 						.set(precursorMolecule.getBondIndexFromAtomAdjacencyList(midAtom, nextAtoms[i]) - 1);
 				toProcessConnectedAtoms.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(nextAtoms[i]));
-				toProcessAtom.push(Short.valueOf(nextAtoms[i]));
+				toProcessAtom.push(Integer.valueOf(nextAtoms[i]));
 			}
 		}
 
