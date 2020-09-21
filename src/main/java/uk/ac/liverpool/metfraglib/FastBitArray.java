@@ -98,37 +98,6 @@ public class FastBitArray {
 		return setIndeces;
 	}
 	
-	@Override
-	public boolean equals(Object object) {
-		FastBitArray bitArray = (FastBitArray)object;
-		if(this.getSize() != bitArray.getSize()) return false;
-		for(int i = 0; i < this.getSize(); i++) 
-			if(this.bitArray.get(i) != bitArray.get(i)) return false;
-		return true;
-	}
-	
-	@Override
-	public int hashCode() {
-		java.util.BitSet bitset = new java.util.BitSet(this.size);
-		for(int i = 0; i < this.getSize(); i++) 
-			if(this.bitArray.get(i)) bitset.set(i);
-		return bitset.hashCode();
-	}
-	
-	/**
-	 * returns true if the current and the given BitArray are of same length and have exactly the same
-	 * bits set to true 
-	 * 
-	 * @param bitArray
-	 * @return
-	 */
-	public boolean equals(String bitString) {
-		if(this.getSize() != bitString.length()) return false;
-		for(int i = 0; i < this.getSize(); i++) 
-			if((this.bitArray.get(i) && bitString.charAt(i) == '0') || (!this.bitArray.get(i) && bitString.charAt(i) == '1')) return false;
-		return true;
-	}
-	
 	/**
 	 * returns string with with true positions '1' and false positions '0' 
 	 */
