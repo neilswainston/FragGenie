@@ -28,7 +28,7 @@ public class MetFragFragmenter {
 	 * 
 	 */
 	private final static String METFRAG_HEADER = "MetFrag m/z"; //$NON-NLS-1$
-	
+
 	/**
 	 * 
 	 * @param smiles
@@ -42,13 +42,13 @@ public class MetFragFragmenter {
 		final float[] ionMassCorrections = new float[] { 1.00728f };
 		final float[] correctedMasses = new float[formulaToMasses.size() * ionMassCorrections.length];
 		int i = 0;
-		
-		for(final Entry<String, Float> entry : formulaToMasses.entrySet()) {
+
+		for (final Entry<String, Float> entry : formulaToMasses.entrySet()) {
 			for (float ionMassCorrection : ionMassCorrections) {
 				correctedMasses[i++] = entry.getValue().floatValue() + ionMassCorrection;
 			}
 		}
-		
+
 		return correctedMasses;
 	}
 
@@ -58,8 +58,8 @@ public class MetFragFragmenter {
 	 * @param outFile
 	 * @throws Exception
 	 */
-	private static void fragment(final File inFile, final File outFile, final String smilesHeader, final int maxLenSmiles, final int maxRecords)
-			throws Exception {
+	private static void fragment(final File inFile, final File outFile, final String smilesHeader,
+			final int maxLenSmiles, final int maxRecords) throws Exception {
 
 		outFile.getParentFile().mkdirs();
 		outFile.createNewFile();
@@ -78,19 +78,19 @@ public class MetFragFragmenter {
 
 			for (CSVRecord record : csvParser) {
 				final String smiles = record.get(smilesHeader);
-				
-				if(smiles.length() < maxLenSmiles) {
+
+				if (smiles.length() < maxLenSmiles) {
 					try {
 						final float[] fragments = getFragmentMasses(smiles, 2);
 						final Map<String, String> recordMap = record.toMap();
 						recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
-	
+
 						final List<String> values = new ArrayList<>();
-	
+
 						for (String headerName : headerNames) {
 							values.add(recordMap.get(headerName));
 						}
-	
+
 						csvPrinter.printRecord(values);
 					} catch (Exception e) {
 						e.printStackTrace();

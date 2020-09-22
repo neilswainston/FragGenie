@@ -22,15 +22,13 @@ import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
-import uk.ac.liverpool.metfraglib.FastBitArray;
-
 /**
  * 
  * @author neilswainston
  */
 @SuppressWarnings("boxing")
 public class Precursor {
-	
+
 	/**
 	 * 
 	 */
@@ -65,8 +63,9 @@ public class Precursor {
 		this.atomContainer = getAtomContainer(smiles);
 		this.ringBondToBelongingRingBondIndeces = new FastBitArray[this.atomContainer.getBondCount() + 1];
 		this.aromaticBonds = new FastBitArray(this.getNonHydrogenBondCount(), false);
-		this.atomAdjacencyList = new int[getIndex(this.getNonHydrogenAtomCount() - 2, this.getNonHydrogenAtomCount() - 1) + 1];
-		
+		this.atomAdjacencyList = new int[getIndex(this.getNonHydrogenAtomCount() - 2,
+				this.getNonHydrogenAtomCount() - 1) + 1];
+
 		this.initialiseRingBondsFastBitArray();
 		this.initialiseAtomAdjacencyList();
 	}
@@ -91,11 +90,11 @@ public class Precursor {
 	int[] getConnectedAtomIndecesOfAtomIndex(final int idx) {
 		final List<IAtom> connectedAtoms = this.atomContainer.getConnectedAtomsList(this.atomContainer.getAtom(idx));
 		final int[] connectedAtomIndeces = new int[connectedAtoms.size()];
-		
-		for(int k = 0; k < connectedAtoms.size(); k++) {
+
+		for (int k = 0; k < connectedAtoms.size(); k++) {
 			connectedAtomIndeces[k] = this.atomContainer.indexOf(connectedAtoms.get(k));
 		}
-			
+
 		return connectedAtomIndeces;
 	}
 
@@ -106,7 +105,7 @@ public class Precursor {
 	 */
 	int[] getConnectedAtomIndecesOfBondIndex(final int idx) {
 		final IBond bond = this.atomContainer.getBond(idx);
-		return new int[] {this.atomContainer.indexOf(bond.getAtom(0)), this.atomContainer.indexOf(bond.getAtom(1))};
+		return new int[] { this.atomContainer.indexOf(bond.getAtom(0)), this.atomContainer.indexOf(bond.getAtom(1)) };
 	}
 
 	/**
@@ -116,10 +115,9 @@ public class Precursor {
 	 */
 	double getMassOfAtom(final int idx) {
 		return MONOISOTOPIC_MASSES.get(this.getAtom(idx)).doubleValue()
-				+ this.getNumberHydrogensConnectedToAtomIndex(idx)
-				* MONOISOTOPIC_MASSES.get("H").doubleValue(); //$NON-NLS-1$
+				+ this.getNumberHydrogensConnectedToAtomIndex(idx) * MONOISOTOPIC_MASSES.get("H").doubleValue(); //$NON-NLS-1$
 	}
-	
+
 	/**
 	 * 
 	 * @param index
@@ -161,7 +159,7 @@ public class Precursor {
 	IAtomContainer getStructureAsIAtomContainer() {
 		return this.atomContainer;
 	}
-	
+
 	/**
 	 * 
 	 * @param i
@@ -171,13 +169,13 @@ public class Precursor {
 		final List<Object> bondDefinition = new ArrayList<>();
 		final List<String> atoms = new ArrayList<>();
 		final IBond bond = this.atomContainer.getBond(i);
-		
-		for(IAtom atom : bond.atoms()) {
+
+		for (IAtom atom : bond.atoms()) {
 			atoms.add(atom.getSymbol());
 		}
-		
+
 		Collections.sort(atoms);
-		
+
 		bondDefinition.add(atoms);
 		bondDefinition.add(bond.getOrder());
 		bondDefinition.add(Boolean.valueOf(bond.isAromatic()));
@@ -194,12 +192,12 @@ public class Precursor {
 	private int getIndex(final int a, final int b) {
 		int row = a;
 		int col = b;
-		
-		if(a > b) {
+
+		if (a > b) {
 			row = b;
 			col = a;
 		}
-		
+
 		return row * this.getNonHydrogenAtomCount() + col - ((row + 1) * (row + 2)) / 2;
 	}
 
@@ -207,7 +205,7 @@ public class Precursor {
 	 * Initialise 1D atom adjacency list.
 	 */
 	private void initialiseAtomAdjacencyList() {
-		for(int i = 0; i < this.getNonHydrogenBondCount(); i++) {
+		for (int i = 0; i < this.getNonHydrogenBondCount(); i++) {
 			final Iterator<IAtom> atoms = this.atomContainer.getBond(i).atoms().iterator();
 			this.atomAdjacencyList[getIndex(this.atomContainer.indexOf(atoms.next()),
 					this.atomContainer.indexOf(atoms.next()))] = i + 1;
@@ -223,12 +221,12 @@ public class Precursor {
 
 		this.initialiseRingBondToBelongingRingBondIndecesFastBitArrays(ringSet);
 
-		if(ringSet.getAtomContainerCount() != 0) {
+		if (ringSet.getAtomContainerCount() != 0) {
 			final Aromaticity arom = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
 			final Set<IBond> aromBonds = arom.findBonds(this.atomContainer);
 			final Iterator<IBond> it = aromBonds.iterator();
-			
-			while(it.hasNext()) {
+
+			while (it.hasNext()) {
 				this.aromaticBonds.set(this.atomContainer.indexOf(it.next()));
 			}
 		}
@@ -242,23 +240,23 @@ public class Precursor {
 	 * @param ringSet
 	 */
 	private void initialiseRingBondToBelongingRingBondIndecesFastBitArrays(final IRingSet ringSet) {
-		for(int i = 0; i < this.ringBondToBelongingRingBondIndeces.length; i++) {
+		for (int i = 0; i < this.ringBondToBelongingRingBondIndeces.length; i++) {
 			this.ringBondToBelongingRingBondIndeces[i] = new FastBitArray(this.atomContainer.getBondCount() + 1, false);
 		}
-			
-		for(int i = 0; i < ringSet.getAtomContainerCount(); i++) {
+
+		for (int i = 0; i < ringSet.getAtomContainerCount(); i++) {
 			final int[] indexes = new int[ringSet.getAtomContainer(i).getBondCount()];
-			
-			for(int j = 0; j < ringSet.getAtomContainer(i).getBondCount(); j++) {
+
+			for (int j = 0; j < ringSet.getAtomContainer(i).getBondCount(); j++) {
 				indexes[j] = this.atomContainer.indexOf(ringSet.getAtomContainer(i).getBond(j));
 			}
-			
-			for(int j = 0; j < indexes.length; j++) {
+
+			for (int j = 0; j < indexes.length; j++) {
 				this.ringBondToBelongingRingBondIndeces[indexes[j]].setBits(indexes);
 			}
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param smiles
@@ -269,50 +267,50 @@ public class Precursor {
 		final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
 		final IAtomContainer molecule = parser.parseSmiles(smiles);
 		final Aromaticity aromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
-		
+
 		AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(molecule);
 		aromaticity.apply(molecule);
-		
+
 		final CDKHydrogenAdder hAdder = CDKHydrogenAdder.getInstance(molecule.getBuilder());
-        
-        for(int i = 0; i < molecule.getAtomCount(); i++) {
-        	hAdder.addImplicitHydrogens(molecule, molecule.getAtom(i));
-        }
-        
-        AtomContainerManipulator.convertImplicitToExplicitHydrogens(molecule);
-        
+
+		for (int i = 0; i < molecule.getAtomCount(); i++) {
+			hAdder.addImplicitHydrogens(molecule, molecule.getAtom(i));
+		}
+
+		AtomContainerManipulator.convertImplicitToExplicitHydrogens(molecule);
+
 		removeHydrogens(molecule);
 		return molecule;
 	}
-	
+
 	/**
 	 * 
 	 * @param molecule
 	 */
 	private static void removeHydrogens(final IAtomContainer molecule) {
 		final Collection<IAtom> hydrogenAtoms = new ArrayList<>();
-		
-		for(IAtom atom : molecule.atoms()) {
-			if(atom.getSymbol().equals("H")) { //$NON-NLS-1$
+
+		for (IAtom atom : molecule.atoms()) {
+			if (atom.getSymbol().equals("H")) { //$NON-NLS-1$
 				hydrogenAtoms.add(atom);
 			}
-			
+
 			int numberHydrogens = 0;
-			
-			for(IAtom neighbour : molecule.getConnectedAtomsList(atom)) {
-				if(neighbour.getSymbol().equals("H")) { //$NON-NLS-1$
-					numberHydrogens++; 
+
+			for (IAtom neighbour : molecule.getConnectedAtomsList(atom)) {
+				if (neighbour.getSymbol().equals("H")) { //$NON-NLS-1$
+					numberHydrogens++;
 				}
 			}
-			
+
 			atom.setImplicitHydrogenCount(Integer.valueOf(numberHydrogens));
 		}
-		
-		for(IAtom atom : hydrogenAtoms) {
+
+		for (IAtom atom : hydrogenAtoms) {
 			molecule.removeAtom(atom);
 		}
 	}
-	
+
 	static {
 		MONOISOTOPIC_MASSES.put("[13C]", 13.00335); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("C", 12.00000); //$NON-NLS-1$
@@ -331,7 +329,7 @@ public class Precursor {
 		MONOISOTOPIC_MASSES.put("Ce", 139.90540); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("Cl", 34.96885); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("Co", 58.93320); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Cr", 51.94051);  //$NON-NLS-1$
+		MONOISOTOPIC_MASSES.put("Cr", 51.94051); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("Cu", 62.92960); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("D", 2.01410); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("F", 18.99840); //$NON-NLS-1$
@@ -349,7 +347,7 @@ public class Precursor {
 		MONOISOTOPIC_MASSES.put("Mg", 23.98504); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("Mn", 54.93805); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("Mo", 97.90541); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("[15N]", 15.00011);  //$NON-NLS-1$
+		MONOISOTOPIC_MASSES.put("[15N]", 15.00011); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("N", 14.00307); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("Na", 22.98977); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("Ne", 19.99244); //$NON-NLS-1$
@@ -378,6 +376,6 @@ public class Precursor {
 		MONOISOTOPIC_MASSES.put("W", 183.95090); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("Y", 88.90585); //$NON-NLS-1$
 		MONOISOTOPIC_MASSES.put("Zn", 63.92915); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Zr", 89.90470);  //$NON-NLS-1$
+		MONOISOTOPIC_MASSES.put("Zr", 89.90470); //$NON-NLS-1$
 	}
 }

@@ -3,9 +3,6 @@ package uk.ac.liverpool.metfraglib;
 import java.util.Map;
 import java.util.TreeMap;
 
-import uk.ac.liverpool.metfraglib.FastBitArray;
-import uk.ac.liverpool.metfraglib.Precursor;
-
 /**
  * 
  * @author neilswainston
@@ -21,27 +18,27 @@ public class Fragment {
 	 * 
 	 */
 	private FastBitArray atomsArray;
-	
+
 	/**
 	 * 
 	 */
 	private FastBitArray bondsArray;
-	
+
 	/**
 	 * 
 	 */
 	private FastBitArray brokenBondsArray;
-	
+
 	/**
 	 * 
 	 */
 	private int addedToQueueCounts = 0;
-	
+
 	/**
 	 * 
 	 */
 	private short lastSkippedBond = -1;
-	
+
 	/**
 	 * 
 	 */
@@ -53,8 +50,7 @@ public class Fragment {
 	 * @param precursor
 	 */
 	Fragment(final Precursor precursor) {
-		this(precursor,
-				new FastBitArray(precursor.getNonHydrogenAtomCount(), true),
+		this(precursor, new FastBitArray(precursor.getNonHydrogenAtomCount(), true),
 				new FastBitArray(precursor.getNonHydrogenBondCount(), true),
 				new FastBitArray(precursor.getNonHydrogenBondCount(), false));
 	}
@@ -67,8 +63,8 @@ public class Fragment {
 	 * @param bondsArray
 	 * @param brokenBondsArray
 	 */
-	private Fragment(final Precursor precursor, final FastBitArray atomsArray,
-			final FastBitArray bondsArray, final FastBitArray brokenBondsArray) {
+	private Fragment(final Precursor precursor, final FastBitArray atomsArray, final FastBitArray bondsArray,
+			final FastBitArray brokenBondsArray) {
 		this.prec = precursor;
 		this.atomsArray = atomsArray;
 		this.bondsArray = bondsArray;
@@ -98,7 +94,7 @@ public class Fragment {
 	FastBitArray getBondsArray() {
 		return this.bondsArray;
 	}
-	
+
 	/**
 	 * 
 	 * @return FastBitArray
@@ -129,50 +125,48 @@ public class Fragment {
 		}
 		return mass;
 	}
-	
+
 	/**
 	 * 
 	 * @return String
 	 */
 	String getFormula() {
-		final Map<String,Integer> elementCount = new TreeMap<>();
+		final Map<String, Integer> elementCount = new TreeMap<>();
 
 		for (int i = 0; i < this.atomsArray.getSize(); i++) {
 			if (this.atomsArray.get(i)) {
 				final String element = this.prec.getAtom(i);
-				
-				if(elementCount.get(element) == null) {
+
+				if (elementCount.get(element) == null) {
 					elementCount.put(element, Integer.valueOf(1));
-				}
-				else {
+				} else {
 					elementCount.put(element, Integer.valueOf(elementCount.get(element).intValue() + 1));
 				}
-				
+
 				final int hCount = this.prec.getNumberHydrogensConnectedToAtomIndex(i);
-				
-				if(elementCount.get("H") == null) { //$NON-NLS-1$
+
+				if (elementCount.get("H") == null) { //$NON-NLS-1$
 					elementCount.put("H", Integer.valueOf(hCount)); //$NON-NLS-1$
-				}
-				else {
+				} else {
 					elementCount.put("H", Integer.valueOf(elementCount.get("H").intValue() + hCount)); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 			}
 		}
-		
+
 		final StringBuilder builder = new StringBuilder();
-		
-		for(Map.Entry<String,Integer> entry : elementCount.entrySet()) {
+
+		for (Map.Entry<String, Integer> entry : elementCount.entrySet()) {
 			builder.append(entry.getKey());
 			final int count = entry.getValue().intValue();
-			
-			if(count > 1) {
+
+			if (count > 1) {
 				builder.append(count);
 			}
 		}
-		
+
 		return builder.toString();
 	}
-	
+
 	/**
 	 * 
 	 * @param addedToQueueCounts
