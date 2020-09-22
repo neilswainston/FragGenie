@@ -219,7 +219,7 @@ public class Fragmenter {
 	 */
 	private void generateFragmentsOfSkippedBonds(ArrayList<Fragment> newGeneratedTopDownFragments,
 			Fragment precursorFragment) throws Exception {
-		short lastSkippedBonds = precursorFragment.getLastSkippedBond();
+		int lastSkippedBonds = precursorFragment.getLastSkippedBond();
 		short lastCuttedBond = (short) (precursorFragment.getBrokenBondsArray().getLastSetBit());
 		if (lastSkippedBonds == -1)
 			return;

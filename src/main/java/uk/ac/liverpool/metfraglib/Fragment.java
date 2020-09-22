@@ -1,6 +1,7 @@
 package uk.ac.liverpool.metfraglib;
 
 import java.util.Map;
+import java.util.Stack;
 import java.util.TreeMap;
 
 /**
@@ -37,12 +38,12 @@ public class Fragment {
 	/**
 	 * 
 	 */
-	private short lastSkippedBond = -1;
+	private int lastSkippedBond = -1;
 
 	/**
 	 * 
 	 */
-	private byte treeDepth = 0;
+	private int treeDepth = 0;
 
 	/**
 	 * Constructor.
@@ -105,9 +106,9 @@ public class Fragment {
 
 	/**
 	 * 
-	 * @return short
+	 * @return int
 	 */
-	short getLastSkippedBond() {
+	int getLastSkippedBond() {
 		return this.lastSkippedBond;
 	}
 
@@ -169,18 +170,18 @@ public class Fragment {
 
 	/**
 	 * 
-	 * @param addedToQueueCounts
+	 * @param i
 	 */
-	void setAddedToQueueCounts(final byte addedToQueueCounts) {
-		this.addedToQueueCounts = addedToQueueCounts;
+	void setAddedToQueueCounts(final int i) {
+		this.addedToQueueCounts = i;
 	}
 
 	/**
 	 * 
-	 * @param lastSkippedBond
+	 * @param i
 	 */
-	void setLastSkippedBond(final short lastSkippedBond) {
-		this.lastSkippedBond = lastSkippedBond;
+	void setLastSkippedBond(final int i) {
+		this.lastSkippedBond = i;
 	}
 
 	/**
@@ -193,61 +194,40 @@ public class Fragment {
 	 * @return Fragment[]
 	 * @throws Exception
 	 */
-	Fragment[] traverseMolecule(final Precursor precursorMolecule, final int bondIndexToRemove,
-			final int[] indecesOfBondConnectedAtoms) throws Exception {
+	Fragment[] traverseMolecule(final Precursor precursorMolecule, final int bondIndexToRemove, final int[] bondConnectedAtoms) throws Exception {
 
-		/*
-		 * generate first fragment
-		 */
-		FastBitArray atomArrayOfNewFragment_1 = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
-		FastBitArray bondArrayOfNewFragment_1 = new FastBitArray(precursorMolecule.getNonHydrogenBondCount(), false);
-		FastBitArray brokenBondArrayOfNewFragment_1 = this.brokenBondsArray.clone();
-		int[] numberHydrogensOfNewFragment = new int[1];
+		// Generate first fragment:
+		final int[] numberHydrogensOfNewFragment = new int[1];
 
 		/*
 		 * traverse to first direction from atomIndex connected by broken bond
 		 */
-		boolean stillOneFragment = this.traverseSingleDirection(precursorMolecule, indecesOfBondConnectedAtoms[0],
-				indecesOfBondConnectedAtoms[1], bondIndexToRemove, atomArrayOfNewFragment_1, bondArrayOfNewFragment_1,
-				brokenBondArrayOfNewFragment_1, numberHydrogensOfNewFragment);
+		final Object[] result1 = this.traverseSingleDirection(precursorMolecule, bondConnectedAtoms[0], bondConnectedAtoms[1],
+				bondIndexToRemove, this.brokenBondsArray.clone(), numberHydrogensOfNewFragment);
 
-		Fragment firstNewGeneratedFragment = new Fragment(this.prec, atomArrayOfNewFragment_1, bondArrayOfNewFragment_1,
-				brokenBondArrayOfNewFragment_1);
+		final Fragment fragment1 = (Fragment)result1[1];
 
-		/*
-		 * only one fragment is generated when a ring bond was broken
-		 */
-		if (stillOneFragment) {
-			firstNewGeneratedFragment.treeDepth = this.treeDepth;
-			firstNewGeneratedFragment.setAddedToQueueCounts((byte) (this.getAddedToQueueCounts() + 1));
-			Fragment[] newFrags = { firstNewGeneratedFragment };
-			return newFrags;
+		// Only one fragment is generated when a ring bond was broken:
+		if (((Boolean)result1[0]).booleanValue()) {
+			fragment1.treeDepth = this.treeDepth;
+			fragment1.addedToQueueCounts = this.getAddedToQueueCounts() + 1;
+			return new Fragment[] { fragment1 };
 		}
-		/*
-		 * generate second fragment
-		 */
-		FastBitArray atomArrayOfNewFragment_2 = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
-		FastBitArray bondArrayOfNewFragment_2 = new FastBitArray(precursorMolecule.getNonHydrogenBondCount(), false);
-		FastBitArray brokenBondArrayOfNewFragment_2 = this.brokenBondsArray.clone();
+		
+		fragment1.treeDepth = this.treeDepth + 1;
+		
+		// Generate second fragment:
 		numberHydrogensOfNewFragment[0] = 0;
 
-		/*
-		 * traverse the second direction from atomIndex connected by broken bond
-		 */
-		this.traverseSingleDirection(precursorMolecule, indecesOfBondConnectedAtoms[1], indecesOfBondConnectedAtoms[0],
-				bondIndexToRemove, atomArrayOfNewFragment_2, bondArrayOfNewFragment_2, brokenBondArrayOfNewFragment_2,
+		// Traverse the second direction from atomIndex connected by broken bond:
+		final Object[] result2 = this.traverseSingleDirection(precursorMolecule, bondConnectedAtoms[1], bondConnectedAtoms[0],
+				bondIndexToRemove, this.brokenBondsArray.clone(),
 				numberHydrogensOfNewFragment);
 
-		Fragment secondNewGeneratedFragment = new Fragment(this.prec, atomArrayOfNewFragment_2,
-				bondArrayOfNewFragment_2, brokenBondArrayOfNewFragment_2);
+		final Fragment fragment2 = (Fragment)result2[1];
+		fragment2.treeDepth = this.treeDepth + 1;
 
-		firstNewGeneratedFragment.treeDepth = (byte) (this.treeDepth + 1);
-
-		secondNewGeneratedFragment.treeDepth = (byte) (this.treeDepth + 1);
-
-		Fragment[] newFrags = { firstNewGeneratedFragment, secondNewGeneratedFragment };
-
-		return newFrags;
+		return new Fragment[] { fragment1, fragment2 };
 
 	}
 
@@ -264,9 +244,10 @@ public class Fragment {
 	 * @param numberHydrogensOfNewFragment
 	 * @return
 	 */
-	private boolean traverseSingleDirection(Precursor precursorMolecule, int startAtomIndex, int endAtomIndex,
-			int bondIndexToRemove, FastBitArray atomArrayOfNewFragment, FastBitArray bondArrayOfNewFragment,
-			FastBitArray brokenBondArrayOfNewFragment, int[] numberHydrogensOfNewFragment) {
+	private Object[] traverseSingleDirection(Precursor precursorMolecule, int startAtomIndex, int endAtomIndex,
+			int bondIndexToRemove, FastBitArray brokenBondArrayOfNewFragment, int[] numberHydrogens) {
+		final FastBitArray atomArrayOfNewFragment = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
+		final FastBitArray bondArrayOfNewFragment = new FastBitArray(precursorMolecule.getNonHydrogenBondCount(), false);
 		final FastBitArray bondFastBitArrayOfCurrentFragment = this.bondsArray;
 		/*
 		 * when traversing the fragment graph then we want to know if we already visited
@@ -274,13 +255,14 @@ public class Fragment {
 		 * an already visited atom, then no new fragment was generated
 		 */
 		FastBitArray visited = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
-		numberHydrogensOfNewFragment[0] = 0;
+		numberHydrogens[0] = 0;
 
 		/*
 		 * traverse molecule in the first direction
 		 */
-		java.util.Stack<int[]> toProcessConnectedAtoms = new java.util.Stack<>();
-		java.util.Stack<Integer> toProcessAtom = new java.util.Stack<>();
+		final Stack<int[]> toProcessConnectedAtoms = new Stack<>();
+		final Stack<Integer> toProcessAtom = new Stack<>();
+		
 		toProcessConnectedAtoms.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(startAtomIndex));
 		toProcessAtom.push(Integer.valueOf(startAtomIndex));
 		visited.set(startAtomIndex);
@@ -290,7 +272,7 @@ public class Fragment {
 		 * cutted bond
 		 */
 		atomArrayOfNewFragment.set(startAtomIndex);
-		numberHydrogensOfNewFragment[0] += precursorMolecule.getNumberHydrogensConnectedToAtomIndex(startAtomIndex);
+		numberHydrogens[0] += precursorMolecule.getNumberHydrogensConnectedToAtomIndex(startAtomIndex);
 		while (!toProcessConnectedAtoms.isEmpty()) {
 			int[] nextAtoms = toProcessConnectedAtoms.pop();
 			int midAtom = toProcessAtom.pop().shortValue();
@@ -324,7 +306,7 @@ public class Fragment {
 				/*
 				 * add number of hydrogens of current atom
 				 */
-				numberHydrogensOfNewFragment[0] += precursorMolecule
+				numberHydrogens[0] += precursorMolecule
 						.getNumberHydrogensConnectedToAtomIndex(nextAtoms[i]);
 				bondArrayOfNewFragment
 						.set(precursorMolecule.getBondIndexFromAtomAdjacencyList(midAtom, nextAtoms[i]) - 1);
@@ -335,7 +317,9 @@ public class Fragment {
 
 		brokenBondArrayOfNewFragment.set(bondIndexToRemove);
 		bondArrayOfNewFragment.set(bondIndexToRemove, false);
+		
+		final Fragment newFragment = new Fragment(precursorMolecule, atomArrayOfNewFragment, bondArrayOfNewFragment, brokenBondArrayOfNewFragment);
 
-		return stillOneFragment;
+		return new Object[] {Boolean.valueOf(stillOneFragment), newFragment};
 	}
 }
