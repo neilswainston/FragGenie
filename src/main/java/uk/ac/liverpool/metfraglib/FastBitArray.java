@@ -16,7 +16,7 @@ class FastBitArray extends FastBitSet {
 	/**
 	 * 
 	 */
-	private final int size;
+	private final int arraySize;
 
 	/**
 	 * Initialises BitArray with specified number of bits.
@@ -25,7 +25,7 @@ class FastBitArray extends FastBitSet {
 	 * @param set
 	 */
 	FastBitArray(final int size, final boolean set) {
-		this.size = size;
+		this.arraySize = size;
 		
 		if(set) {
 			this.flip(0, size);
@@ -38,7 +38,7 @@ class FastBitArray extends FastBitSet {
 	 * @return int
 	 */
 	int getSize() {
-		return this.size;
+		return this.arraySize;
 	}
 	
 	/**
@@ -51,7 +51,7 @@ class FastBitArray extends FastBitSet {
 		
 		int index = 0;
 		
-		for(int i = 0; i < this.size; i++) {
+		for(int i = 0; i < this.getSize(); i++) {
 			if(this.get(i)) {
 				setIndices[index++] = i;
 			}
@@ -60,8 +60,9 @@ class FastBitArray extends FastBitSet {
 	}
 	
 	/**
-	 * returns last position of BitArray set to true
-	 * returns -1 if there is no bit set to true
+	 * Returns last position of BitArray set to true.
+	 * 
+	 * @return -1 if there is no bit set to true.
 	 */
 	int getLastSetBit() {
 		for(int i = this.getSize() - 1; i >= 0; i--) {
@@ -74,7 +75,7 @@ class FastBitArray extends FastBitSet {
 	}
 	
 	/**
-	 * sets indeces of BitArray in the given integer array to true 
+	 * Sets indices of BitArray in the given integer array to true.
 	 * 
 	 * @param bitIndexes
 	 */
@@ -86,9 +87,9 @@ class FastBitArray extends FastBitSet {
 	
 	@Override
 	public String toString() {
-		final char[] set = new char[this.size];
+		final char[] set = new char[this.getSize()];
 		
-		for(int i = 0; i < this.size; i++) {
+		for(int i = 0; i < this.getSize(); i++) {
 			set[i] = this.get(i) ? '1' : '0';
 		}
 		
@@ -97,7 +98,7 @@ class FastBitArray extends FastBitSet {
 	
 	@Override
 	public FastBitArray clone() {
-		final FastBitArray clone = new FastBitArray(this.size, false);
+		final FastBitArray clone = new FastBitArray(this.getSize(), false);
 		
 		for(int i = 0; i < this.getSize(); i++) {
 			if(this.get(i)) {

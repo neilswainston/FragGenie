@@ -1,58 +1,78 @@
 package uk.ac.liverpool.metfraglib;
 
-
 import java.util.Map;
 import java.util.TreeMap;
 
 import uk.ac.liverpool.metfraglib.FastBitArray;
 import uk.ac.liverpool.metfraglib.Precursor;
 
+/**
+ * 
+ * @author neilswainston
+ */
 public class Fragment {
 
-	private int addedToQueueCounts;
-
-	private FastBitArray atomsFastBitArray;
-	private FastBitArray bondsFastBitArray;
-	private FastBitArray brokenBondsFastBitArray;
-	private short lastSkippedBond = -1;
 	/**
 	 * 
 	 */
 	private final Precursor prec;
+
+	/**
+	 * 
+	 */
+	private FastBitArray atomsArray;
+	
+	/**
+	 * 
+	 */
+	private FastBitArray bondsArray;
+	
+	/**
+	 * 
+	 */
+	private FastBitArray brokenBondsArray;
+	
+	/**
+	 * 
+	 */
+	private int addedToQueueCounts = 0;
+	
+	/**
+	 * 
+	 */
+	private short lastSkippedBond = -1;
+	
+	/**
+	 * 
+	 */
 	private byte treeDepth = 0;
 
 	/**
-	 * constructor setting all bits of atomsFastBitArray and bondsFastBitArray to
-	 * true entire structure is represented
+	 * Constructor.
 	 * 
 	 * @param precursor
-	 * @throws AtomTypeNotKnownFromInputListException
 	 */
 	Fragment(final Precursor precursor) {
-		this.prec = precursor;
-		this.addedToQueueCounts = 0;
-		this.atomsFastBitArray = new FastBitArray(precursor.getNonHydrogenAtomCount(), true);
-		this.bondsFastBitArray = new FastBitArray(precursor.getNonHydrogenBondCount(), true);
-		this.brokenBondsFastBitArray = new FastBitArray(precursor.getNonHydrogenBondCount(), false);
+		this(precursor,
+				new FastBitArray(precursor.getNonHydrogenAtomCount(), true),
+				new FastBitArray(precursor.getNonHydrogenBondCount(), true),
+				new FastBitArray(precursor.getNonHydrogenBondCount(), false));
 	}
 
 	/**
-	 * constructor setting bits of atomsFastBitArray and bondsFastBitArray by given
-	 * ones
+	 * Constructor.
 	 * 
 	 * @param precursor
-	 * @param atomsFastBitArray
-	 * @param bondsFastBitArray
-	 * @param brokenBondsFastBitArray
-	 * @param numberHydrogens
-	 * @throws Exception
+	 * @param atomsArray
+	 * @param bondsArray
+	 * @param brokenBondsArray
 	 */
-	private Fragment(final Precursor precursor, final FastBitArray atomsFastBitArray,
-			final FastBitArray bondsFastBitArray, final FastBitArray brokenBondsFastBitArray) throws Exception {
+	private Fragment(final Precursor precursor, final FastBitArray atomsArray,
+			final FastBitArray bondsArray, final FastBitArray brokenBondsArray) {
 		this.prec = precursor;
-		this.atomsFastBitArray = atomsFastBitArray;
-		this.bondsFastBitArray = bondsFastBitArray;
-		this.brokenBondsFastBitArray = brokenBondsFastBitArray;
+		this.atomsArray = atomsArray;
+		this.bondsArray = bondsArray;
+		this.brokenBondsArray = brokenBondsArray;
 	}
 
 	/**
@@ -67,32 +87,24 @@ public class Fragment {
 	 * 
 	 * @return FastBitArray
 	 */
-	FastBitArray getAtomsFastBitArray() {
-		return this.atomsFastBitArray;
+	FastBitArray getAtomsArray() {
+		return this.atomsArray;
 	}
 
 	/**
 	 * 
 	 * @return FastBitArray
 	 */
-	FastBitArray getBondsFastBitArray() {
-		return this.bondsFastBitArray;
+	FastBitArray getBondsArray() {
+		return this.bondsArray;
 	}
-
-	/**
-	 * 
-	 * @return int[]
-	 */
-	int[] getBrokenBondIndeces() {
-		return this.brokenBondsFastBitArray.getSetIndices();
-	}
-
+	
 	/**
 	 * 
 	 * @return FastBitArray
 	 */
-	FastBitArray getBrokenBondsFastBitArray() {
-		return this.brokenBondsFastBitArray;
+	FastBitArray getBrokenBondsArray() {
+		return this.brokenBondsArray;
 	}
 
 	/**
@@ -110,8 +122,8 @@ public class Fragment {
 	float getMonoisotopicMass() {
 		float mass = 0.0f;
 
-		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
-			if (this.atomsFastBitArray.get(i)) {
+		for (int i = 0; i < this.atomsArray.getSize(); i++) {
+			if (this.atomsArray.get(i)) {
 				mass += this.prec.getMassOfAtom(i);
 			}
 		}
@@ -125,8 +137,8 @@ public class Fragment {
 	String getFormula() {
 		final Map<String,Integer> elementCount = new TreeMap<>();
 
-		for (int i = 0; i < this.atomsFastBitArray.getSize(); i++) {
-			if (this.atomsFastBitArray.get(i)) {
+		for (int i = 0; i < this.atomsArray.getSize(); i++) {
+			if (this.atomsArray.get(i)) {
 				final String element = this.prec.getAtom(i);
 				
 				if(elementCount.get(element) == null) {
@@ -160,15 +172,7 @@ public class Fragment {
 		
 		return builder.toString();
 	}
-
-	/**
-	 * 
-	 * @return int
-	 */
-	int getMaximalIndexOfRemovedBond() {
-		return this.brokenBondsFastBitArray.getLastSetBit();
-	}
-
+	
 	/**
 	 * 
 	 * @param addedToQueueCounts
@@ -203,7 +207,7 @@ public class Fragment {
 		 */
 		FastBitArray atomArrayOfNewFragment_1 = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
 		FastBitArray bondArrayOfNewFragment_1 = new FastBitArray(precursorMolecule.getNonHydrogenBondCount(), false);
-		FastBitArray brokenBondArrayOfNewFragment_1 = this.getBrokenBondsFastBitArray().clone();
+		FastBitArray brokenBondArrayOfNewFragment_1 = this.brokenBondsArray.clone();
 		int[] numberHydrogensOfNewFragment = new int[1];
 
 		/*
@@ -230,7 +234,7 @@ public class Fragment {
 		 */
 		FastBitArray atomArrayOfNewFragment_2 = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
 		FastBitArray bondArrayOfNewFragment_2 = new FastBitArray(precursorMolecule.getNonHydrogenBondCount(), false);
-		FastBitArray brokenBondArrayOfNewFragment_2 = this.getBrokenBondsFastBitArray().clone();
+		FastBitArray brokenBondArrayOfNewFragment_2 = this.brokenBondsArray.clone();
 		numberHydrogensOfNewFragment[0] = 0;
 
 		/*
@@ -269,7 +273,7 @@ public class Fragment {
 	private boolean traverseSingleDirection(Precursor precursorMolecule, int startAtomIndex, int endAtomIndex,
 			int bondIndexToRemove, FastBitArray atomArrayOfNewFragment, FastBitArray bondArrayOfNewFragment,
 			FastBitArray brokenBondArrayOfNewFragment, int[] numberHydrogensOfNewFragment) {
-		FastBitArray bondFastBitArrayOfCurrentFragment = this.getBondsFastBitArray();
+		final FastBitArray bondFastBitArrayOfCurrentFragment = this.bondsArray;
 		/*
 		 * when traversing the fragment graph then we want to know if we already visited
 		 * a node (atom) need to be done for checking of ringed structures if traversed
