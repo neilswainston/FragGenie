@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -144,14 +145,10 @@ public class MetFragFragmenter {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		final int maxLenSmiles = args.length > 3 ? Integer.parseInt(args[3]) : Integer.MAX_VALUE;
-		final int maxRecords = args.length > 4 ? Integer.parseInt(args[4]) : Integer.MAX_VALUE;
+		final int maxLenSmiles = Integer.parseInt(args[3]);
+		final int maxRecords = Integer.parseInt(args[4]);
 		
-		final List<String> headers = new ArrayList<>();
-		
-		for(final Headers header : Headers.values()) {
-			headers.add(header.name());
-		}
+		final List<String> headers = Arrays.asList(Arrays.copyOfRange(args, 5, args.length));
 		
 		fragment(new File(new File(args[0]).getAbsolutePath()),
 				new File(new File(args[1]).getAbsolutePath()),
