@@ -171,7 +171,7 @@ public class Precursor {
 		Collections.sort(atoms);
 
 		bondDefinition.add(atoms);
-		bondDefinition.add(bond.getOrder());
+		bondDefinition.add(bond.getOrder().name());
 		bondDefinition.add(Boolean.valueOf(bond.isAromatic()));
 		return bondDefinition;
 	}

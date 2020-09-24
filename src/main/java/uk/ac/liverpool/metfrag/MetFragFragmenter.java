@@ -43,7 +43,7 @@ public class MetFragFragmenter {
 	 * @return double[]
 	 * @throws Exception
 	 */
-	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final List<String> fields) throws Exception {
+	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final List<String> fields, final List<List<Object>> brokenBondsFilter) throws Exception {
 		final Fragmenter fragmenter = new Fragmenter(smiles);
 		final Collection<Fragment> fragments = fragmenter.getFragments(maximumTreeDepth);
 		final boolean getMasses = fields.indexOf(Headers.METFRAG_MZ.name()) != -1;
@@ -52,24 +52,27 @@ public class MetFragFragmenter {
 		
 		final List<Float> masses = getMasses ? new ArrayList<>() : null;
 		final List<String> formulae = getFormulae ? new ArrayList<>() : null;
-		
-		// @SuppressWarnings({ "unchecked", "rawtypes" })
 		final List<Collection<List<Object>>> brokenBonds = getBonds ? new ArrayList<>() : null;
 		
 		for (final Fragment fragment : fragments) {
-			for (float ionMassCorrection : ION_MASS_CORRECTIONS) {
-				if(masses != null) {
-					masses.add(Float.valueOf(fragment.getMonoisotopicMass() + ionMassCorrection));
+			final Collection<List<Object>> fragBrokenBonds = fragment.getBrokenBonds();
+			
+			if(filter(fragBrokenBonds, brokenBondsFilter)) {
+				for (float ionMassCorrection : ION_MASS_CORRECTIONS) {
+					if(masses != null) {
+						masses.add(Float.valueOf(fragment.getMonoisotopicMass() + ionMassCorrection));
+					}
+				}
+				
+				if(formulae != null) {
+					formulae.add(fragment.getFormula());
+				}
+				
+				if(brokenBonds != null) {
+					brokenBonds.add(fragBrokenBonds);
 				}
 			}
 			
-			if(formulae != null) {
-				formulae.add(fragment.getFormula());
-			}
-			
-			if(brokenBonds != null) {
-				brokenBonds.add(fragment.getBrokenBonds());
-			}
 		}
 		
 		final Object[] data = new Object[3];
@@ -85,8 +88,9 @@ public class MetFragFragmenter {
 	 * @param outFile
 	 * @throws Exception
 	 */
-	private static void fragment(final File inFile, final File outFile, final String smilesHeader,
-			final List<String> fields, final int maxLenSmiles, final int maxRecords) throws Exception {
+	public static void fragment(final File inFile, final File outFile, final String smilesHeader,
+			final List<String> fields, final List<List<Object>> brokenBondsFilter,
+			final int maxLenSmiles, final int maxRecords) throws Exception {
 
 		outFile.getParentFile().mkdirs();
 		outFile.createNewFile();
@@ -108,7 +112,7 @@ public class MetFragFragmenter {
 
 				if (smiles.length() < maxLenSmiles) {
 					try {
-						final Object[] fragmentData = getFragmentData(smiles, 2, fields);
+						final Object[] fragmentData = getFragmentData(smiles, 2, fields, brokenBondsFilter);
 						final Map<String, String> recordMap = record.toMap();
 						
 						for(final String field : fields) {
@@ -138,6 +142,26 @@ public class MetFragFragmenter {
 			}
 		}
 	}
+	
+	/**
+	 * 
+	 * @param fragBrokenBonds
+	 * @param brokenBondsFilter
+	 * @return boolean
+	 */
+	private static boolean filter(final Collection<List<Object>> fragBrokenBonds, final List<List<Object>> brokenBondsFilter) {
+		for(final List<Object> fragBrokenBond : fragBrokenBonds) {
+			for(int i = 0; i < fragBrokenBond.size(); i++) {
+				final Object value = fragBrokenBond.get(i);
+				final List<Object> filter = brokenBondsFilter.get(i);
+				
+				if(filter != null && !filter.contains(value)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * 
@@ -148,12 +172,18 @@ public class MetFragFragmenter {
 		final int maxLenSmiles = Integer.parseInt(args[3]);
 		final int maxRecords = Integer.parseInt(args[4]);
 		
-		final List<String> headers = Arrays.asList(Arrays.copyOfRange(args, 5, args.length));
+		final List<String> fields = Arrays.asList(Arrays.copyOfRange(args, 5, args.length));
+		
+		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
+		brokenBondsFilter.add(null);
+		brokenBondsFilter.add(Arrays.asList(new Object[] {"SINGLE"})); //$NON-NLS-1$
+		brokenBondsFilter.add(Arrays.asList(new Object[] {Boolean.FALSE}));
 		
 		fragment(new File(new File(args[0]).getAbsolutePath()),
 				new File(new File(args[1]).getAbsolutePath()),
 				args[2],
-				headers,
+				fields,
+				brokenBondsFilter,
 				maxLenSmiles,
 				maxRecords);
 	}
