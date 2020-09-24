@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -25,10 +24,16 @@ import uk.ac.liverpool.metfraglib.Fragmenter;
  */
 public class MetFragFragmenter {
 
+	enum Headers {
+		METFRAG_MZ,
+		METFRAG_FORMULAE,
+		METFRAG_BROKEN_BONDS
+	}
+	
 	/**
 	 * 
 	 */
-	private final static String METFRAG_HEADER = "MetFrag m/z"; //$NON-NLS-1$
+	private final static float[] ION_MASS_CORRECTIONS = new float[] { 1.00728f };
 
 	/**
 	 * 
@@ -37,20 +42,40 @@ public class MetFragFragmenter {
 	 * @return double[]
 	 * @throws Exception
 	 */
-	public static float[] getFragmentData(final String smiles, final int maximumTreeDepth) throws Exception {
+	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final List<String> fields) throws Exception {
 		final Fragmenter fragmenter = new Fragmenter(smiles);
 		final Collection<Fragment> fragments = fragmenter.getFragments(maximumTreeDepth);
-		final float[] ionMassCorrections = new float[] { 1.00728f };
-		final float[] correctedMasses = new float[fragments.size() * ionMassCorrections.length];
-		int i = 0;
-
+		final boolean getMasses = fields.indexOf(Headers.METFRAG_MZ.name()) != -1;
+		final boolean getFormulae = fields.indexOf(Headers.METFRAG_FORMULAE.name()) != -1;
+		final boolean getBonds = fields.indexOf(Headers.METFRAG_BROKEN_BONDS.name()) != -1;
+		
+		final List<Float> masses = getMasses ? new ArrayList<>() : null;
+		final List<String> formulae = getFormulae ? new ArrayList<>() : null;
+		
+		// @SuppressWarnings({ "unchecked", "rawtypes" })
+		final List<Collection<List<Object>>> brokenBonds = getBonds ? new ArrayList<>() : null;
+		
 		for (final Fragment fragment : fragments) {
-			for (float ionMassCorrection : ionMassCorrections) {
-				correctedMasses[i++] = fragment.getMonoisotopicMass() + ionMassCorrection;
+			for (float ionMassCorrection : ION_MASS_CORRECTIONS) {
+				if(masses != null) {
+					masses.add(Float.valueOf(fragment.getMonoisotopicMass() + ionMassCorrection));
+				}
+			}
+			
+			if(formulae != null) {
+				formulae.add(fragment.getFormula());
+			}
+			
+			if(brokenBonds != null) {
+				brokenBonds.add(fragment.getBrokenBonds());
 			}
 		}
-
-		return correctedMasses;
+		
+		final Object[] data = new Object[3];
+		data[Headers.METFRAG_MZ.ordinal()] = masses;
+		data[Headers.METFRAG_FORMULAE.ordinal()] = formulae;
+		data[Headers.METFRAG_BROKEN_BONDS.ordinal()] = brokenBonds;
+		return data;
 	}
 
 	/**
@@ -60,7 +85,7 @@ public class MetFragFragmenter {
 	 * @throws Exception
 	 */
 	private static void fragment(final File inFile, final File outFile, final String smilesHeader,
-			final int maxLenSmiles, final int maxRecords) throws Exception {
+			final List<String> fields, final int maxLenSmiles, final int maxRecords) throws Exception {
 
 		outFile.getParentFile().mkdirs();
 		outFile.createNewFile();
@@ -71,7 +96,7 @@ public class MetFragFragmenter {
 						CSVFormat.DEFAULT)) {
 
 			final List<String> headerNames = new ArrayList<>(csvParser.getHeaderNames());
-			headerNames.add(METFRAG_HEADER);
+			headerNames.addAll(fields);
 
 			csvPrinter.printRecord(headerNames);
 
@@ -82,10 +107,14 @@ public class MetFragFragmenter {
 
 				if (smiles.length() < maxLenSmiles) {
 					try {
-						final float[] fragments = getFragmentData(smiles, 2);
+						final Object[] fragmentData = getFragmentData(smiles, 2, fields);
 						final Map<String, String> recordMap = record.toMap();
-						recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
-
+						
+						for(final String field : fields) {
+							final int idx = Headers.valueOf(field).ordinal();
+							recordMap.put(field, fragmentData[idx].toString());
+						}
+						
 						final List<String> values = new ArrayList<>();
 
 						for (String headerName : headerNames) {
@@ -117,8 +146,18 @@ public class MetFragFragmenter {
 	public static void main(String[] args) throws Exception {
 		final int maxLenSmiles = args.length > 3 ? Integer.parseInt(args[3]) : Integer.MAX_VALUE;
 		final int maxRecords = args.length > 4 ? Integer.parseInt(args[4]) : Integer.MAX_VALUE;
-
-		fragment(new File(new File(args[0]).getAbsolutePath()), new File(new File(args[1]).getAbsolutePath()), args[2],
-				maxLenSmiles, maxRecords);
+		
+		final List<String> headers = new ArrayList<>();
+		
+		for(final Headers header : Headers.values()) {
+			headers.add(header.name());
+		}
+		
+		fragment(new File(new File(args[0]).getAbsolutePath()),
+				new File(new File(args[1]).getAbsolutePath()),
+				args[2],
+				headers,
+				maxLenSmiles,
+				maxRecords);
 	}
 }
