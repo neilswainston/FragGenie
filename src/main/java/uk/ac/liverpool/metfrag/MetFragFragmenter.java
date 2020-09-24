@@ -7,15 +7,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
+import uk.ac.liverpool.metfraglib.Fragment;
 import uk.ac.liverpool.metfraglib.Fragmenter;
 
 /**
@@ -38,14 +39,14 @@ public class MetFragFragmenter {
 	 */
 	public static float[] getFragmentMasses(final String smiles, final int maximumTreeDepth) throws Exception {
 		final Fragmenter fragmenter = new Fragmenter(smiles);
-		final Map<String, Float> formulaToMasses = fragmenter.getFormulaToMasses(maximumTreeDepth);
+		final Collection<Fragment> fragments = fragmenter.getFragments(maximumTreeDepth);
 		final float[] ionMassCorrections = new float[] { 1.00728f };
-		final float[] correctedMasses = new float[formulaToMasses.size() * ionMassCorrections.length];
+		final float[] correctedMasses = new float[fragments.size() * ionMassCorrections.length];
 		int i = 0;
 
-		for (final Entry<String, Float> entry : formulaToMasses.entrySet()) {
+		for (final Fragment fragment : fragments) {
 			for (float ionMassCorrection : ionMassCorrections) {
-				correctedMasses[i++] = entry.getValue().floatValue() + ionMassCorrection;
+				correctedMasses[i++] = fragment.getMonoisotopicMass() + ionMassCorrection;
 			}
 		}
 

@@ -1,11 +1,10 @@
 package uk.ac.liverpool.metfraglib;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
-import java.util.TreeMap;
 
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
@@ -50,37 +49,36 @@ public class Fragmenter {
 
 	/**
 	 * 
-	 * @return Map<String, Float>
+	 * @return Collection<List<Object>>
 	 * @throws Exception
 	 */
-	public Map<String, Float> getFormulaToMasses(final int maxTreeDepth) throws Exception {
-		final Map<String, Float> formulaToMasses = new TreeMap<>();
-		Queue<Fragment> fragments = new LinkedList<>();
+	public Collection<Fragment> getFragments(final int maxTreeDepth) throws Exception {
+		final Collection<Fragment> fragments = new ArrayList<>();
+		Queue<Fragment> fragmentsQueue = new LinkedList<>();
 
 		final Fragment precursorFragment = new Fragment(this.precursor);
+		fragmentsQueue.add(precursorFragment);
 		fragments.add(precursorFragment);
 
-		formulaToMasses.put(precursorFragment.getFormula(), Float.valueOf(precursorFragment.getMonoisotopicMass()));
-
 		for (int k = 1; k <= maxTreeDepth; k++) {
-			Queue<Fragment> newFragments = new LinkedList<>();
+			final Queue<Fragment> newFragmentsQueue = new LinkedList<>();
 
-			while (!fragments.isEmpty()) {
-				final Fragment fragment = fragments.poll();
+			while (!fragmentsQueue.isEmpty()) {
+				final Fragment fragment = fragmentsQueue.poll();
 
 				for (final Fragment childFragment : getFragmentsOfNextTreeDepth(fragment)) {
-					formulaToMasses.put(childFragment.getFormula(), Float.valueOf(childFragment.getMonoisotopicMass()));
+					fragments.add(precursorFragment);
 
 					if (maxTreeDepth > 0) {
-						newFragments.add(childFragment);
+						newFragmentsQueue.add(childFragment);
 					}
 				}
 			}
 
-			fragments = newFragments;
+			fragmentsQueue = newFragmentsQueue;
 		}
 
-		return formulaToMasses;
+		return fragments;
 	}
 
 	/**
@@ -171,7 +169,7 @@ public class Fragmenter {
 					continue;
 				Fragment[] newFragments = { currentFragment };
 				int[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesOfBondIndex(currentBond);
-				newFragments = currentFragment.traverseMolecule(this.precursor, currentBond, connectedAtomIndeces);
+				newFragments = currentFragment.fragment(this.precursor, currentBond, connectedAtomIndeces);
 
 				//
 				// pre-processing of the generated fragment/s
@@ -232,7 +230,7 @@ public class Fragmenter {
 
 			int[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesOfBondIndex(currentBond);
 
-			Fragment[] newFragments = precursorFragment.traverseMolecule(this.precursor, currentBond,
+			final Fragment[] newFragments = precursorFragment.fragment(this.precursor, currentBond,
 					connectedAtomIndeces);
 
 			Fragmenter.processGeneratedFragments(newFragments);
@@ -280,12 +278,8 @@ public class Fragmenter {
 				continue;
 			final int[] indecesOfBondConnectedAtoms = this.precursor.getConnectedAtomIndecesOfBondIndex(i);
 
-			// Check bond strength:
-			final List<Object> bond = this.precursor.getBond(i);
-			System.out.println(bond);
-
 			// try to generate at most two fragments by the removal of the given bond
-			Fragment[] newGeneratedTopDownFragments = precursorFragment.traverseMolecule(this.precursor, i,
+			Fragment[] newGeneratedTopDownFragments = precursorFragment.fragment(this.precursor, i,
 					indecesOfBondConnectedAtoms);
 			/*
 			 * in case the precursor wasn't splitted try to cleave an additional bond until

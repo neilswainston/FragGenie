@@ -37,6 +37,11 @@ public class Precursor {
 	/**
 	 * 
 	 */
+	private final IAtomContainer atomContainer;
+	
+	/**
+	 * 
+	 */
 	private final FastBitArray aromaticBonds;
 
 	/**
@@ -46,22 +51,11 @@ public class Precursor {
 
 	/**
 	 * 
-	 */
-	private final IAtomContainer atomContainer;
-
-	/**
-	 * 
-	 */
-	private final FastBitArray[] ringBondToBelongingRingBondIndeces;
-
-	/**
-	 * 
 	 * @param precMolecule
 	 * @throws Exception
 	 */
 	Precursor(final String smiles) throws Exception {
 		this.atomContainer = getAtomContainer(smiles);
-		this.ringBondToBelongingRingBondIndeces = new FastBitArray[this.atomContainer.getBondCount() + 1];
 		this.aromaticBonds = new FastBitArray(this.getNonHydrogenBondCount(), false);
 		this.atomAdjacencyList = new int[getIndex(this.getNonHydrogenAtomCount() - 2,
 				this.getNonHydrogenAtomCount() - 1) + 1];
@@ -219,8 +213,6 @@ public class Precursor {
 		final AllRingsFinder allRingsFinder = new AllRingsFinder();
 		final IRingSet ringSet = allRingsFinder.findAllRings(this.atomContainer);
 
-		this.initialiseRingBondToBelongingRingBondIndecesFastBitArrays(ringSet);
-
 		if (ringSet.getAtomContainerCount() != 0) {
 			final Aromaticity arom = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
 			final Set<IBond> aromBonds = arom.findBonds(this.atomContainer);
@@ -228,31 +220,6 @@ public class Precursor {
 
 			while (it.hasNext()) {
 				this.aromaticBonds.set(this.atomContainer.indexOf(it.next()));
-			}
-		}
-	}
-
-	/**
-	 * initialises ringBondToBelongingRingBondIndeces FastBitArray array fast and
-	 * easy way to retrieve all bond indices belonging to a ring including the bond
-	 * at specified index of that array.
-	 * 
-	 * @param ringSet
-	 */
-	private void initialiseRingBondToBelongingRingBondIndecesFastBitArrays(final IRingSet ringSet) {
-		for (int i = 0; i < this.ringBondToBelongingRingBondIndeces.length; i++) {
-			this.ringBondToBelongingRingBondIndeces[i] = new FastBitArray(this.atomContainer.getBondCount() + 1, false);
-		}
-
-		for (int i = 0; i < ringSet.getAtomContainerCount(); i++) {
-			final int[] indexes = new int[ringSet.getAtomContainer(i).getBondCount()];
-
-			for (int j = 0; j < ringSet.getAtomContainer(i).getBondCount(); j++) {
-				indexes[j] = this.atomContainer.indexOf(ringSet.getAtomContainer(i).getBond(j));
-			}
-
-			for (int j = 0; j < indexes.length; j++) {
-				this.ringBondToBelongingRingBondIndeces[indexes[j]].setBits(indexes);
 			}
 		}
 	}

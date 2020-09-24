@@ -1,5 +1,8 @@
 package uk.ac.liverpool.metfraglib;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -60,16 +63,94 @@ public class Fragment {
 	 * Constructor.
 	 * 
 	 * @param precursor
-	 * @param atomsArray
-	 * @param bondsArray
-	 * @param brokenBondsArray
+	 * @param atoms
+	 * @param bonds
+	 * @param brokenBonds
 	 */
-	private Fragment(final Precursor precursor, final FastBitArray atomsArray, final FastBitArray bondsArray,
-			final FastBitArray brokenBondsArray) {
+	private Fragment(final Precursor precursor, final FastBitArray atoms, final FastBitArray bonds,
+			final FastBitArray brokenBonds) {
 		this.prec = precursor;
-		this.atomsArray = atomsArray;
-		this.bondsArray = bondsArray;
-		this.brokenBondsArray = brokenBondsArray;
+		this.atomsArray = atoms;
+		this.bondsArray = bonds;
+		this.brokenBondsArray = brokenBonds;
+	}
+	
+	@Override
+	public String toString() {
+		return getFormula();
+	}
+	
+	/**
+	 * 
+	 * @return float
+	 */
+	public float getMonoisotopicMass() {
+		float mass = 0.0f;
+
+		for (int i = 0; i < this.atomsArray.getSize(); i++) {
+			if (this.atomsArray.get(i)) {
+				mass += this.prec.getMassOfAtom(i);
+			}
+		}
+		return mass;
+	}
+
+	/**
+	 * 
+	 * @return String
+	 */
+	public String getFormula() {
+		final String HYDROGEN = "H"; //$NON-NLS-1$
+		final Map<String, Integer> elementCount = new TreeMap<>();
+
+		for (int i = 0; i < this.atomsArray.getSize(); i++) {
+			if (this.atomsArray.get(i)) {
+				final String element = this.prec.getAtom(i);
+
+				if (elementCount.get(element) == null) {
+					elementCount.put(element, Integer.valueOf(1));
+				} else {
+					elementCount.put(element, Integer.valueOf(elementCount.get(element).intValue() + 1));
+				}
+
+				final int hCount = this.prec.getNumberHydrogensConnectedToAtomIndex(i);
+
+				if (elementCount.get(HYDROGEN) == null) {
+					elementCount.put(HYDROGEN, Integer.valueOf(hCount));
+				} else {
+					elementCount.put(HYDROGEN, Integer.valueOf(elementCount.get(HYDROGEN).intValue() + hCount));
+				}
+			}
+		}
+
+		final StringBuilder builder = new StringBuilder();
+
+		for (Map.Entry<String, Integer> entry : elementCount.entrySet()) {
+			builder.append(entry.getKey());
+			final int count = entry.getValue().intValue();
+
+			if (count > 1) {
+				builder.append(count);
+			}
+		}
+
+		return builder.toString();
+	}
+	
+	/**
+	 * 
+	 * @return Collection<List<Object>>
+	 */
+	public Collection<List<Object>> getBrokenBonds() {
+		final Collection<List<Object>> bonds = new ArrayList<>();
+		
+		for (int i = 0; i < this.brokenBondsArray.getSize(); i++) {
+			if(this.brokenBondsArray.get(i)) {
+				bonds.add(this.prec.getBond(i));
+			}
+		}
+		
+		return bonds;
 	}
 
 	/**
@@ -114,63 +195,6 @@ public class Fragment {
 
 	/**
 	 * 
-	 * @return float
-	 */
-	float getMonoisotopicMass() {
-		float mass = 0.0f;
-
-		for (int i = 0; i < this.atomsArray.getSize(); i++) {
-			if (this.atomsArray.get(i)) {
-				mass += this.prec.getMassOfAtom(i);
-			}
-		}
-		return mass;
-	}
-
-	/**
-	 * 
-	 * @return String
-	 */
-	String getFormula() {
-		final String HYDROGEN = "H"; //$NON-NLS-1$
-		final Map<String, Integer> elementCount = new TreeMap<>();
-
-		for (int i = 0; i < this.atomsArray.getSize(); i++) {
-			if (this.atomsArray.get(i)) {
-				final String element = this.prec.getAtom(i);
-
-				if (elementCount.get(element) == null) {
-					elementCount.put(element, Integer.valueOf(1));
-				} else {
-					elementCount.put(element, Integer.valueOf(elementCount.get(element).intValue() + 1));
-				}
-
-				final int hCount = this.prec.getNumberHydrogensConnectedToAtomIndex(i);
-
-				if (elementCount.get(HYDROGEN) == null) {
-					elementCount.put(HYDROGEN, Integer.valueOf(hCount));
-				} else {
-					elementCount.put(HYDROGEN, Integer.valueOf(elementCount.get(HYDROGEN).intValue() + hCount));
-				}
-			}
-		}
-
-		final StringBuilder builder = new StringBuilder();
-
-		for (Map.Entry<String, Integer> entry : elementCount.entrySet()) {
-			builder.append(entry.getKey());
-			final int count = entry.getValue().intValue();
-
-			if (count > 1) {
-				builder.append(count);
-			}
-		}
-
-		return builder.toString();
-	}
-
-	/**
-	 * 
 	 * @param i
 	 */
 	void setAddedToQueueCounts(final int i) {
@@ -186,16 +210,14 @@ public class Fragment {
 	}
 
 	/**
-	 * main function of fragment generation traverse the given fragment and return
-	 * two new fragments by removing bond with removeBond
 	 * 
-	 * @param fragment
-	 * @param bondNumber
-	 * @param bondAtoms
+	 * @param precursorMolecule
+	 * @param removeBond
+	 * @param bondConnectedAtoms
 	 * @return Fragment[]
 	 * @throws Exception
 	 */
-	Fragment[] traverseMolecule(final Precursor precursorMolecule, final int removeBond, final int[] bondConnectedAtoms) throws Exception {
+	Fragment[] fragment(final Precursor precursorMolecule, final int removeBond, final int[] bondConnectedAtoms) throws Exception {
 
 		// Generate first fragment:
 		// Traverse to first direction from atomIndex connected by broken bond:
