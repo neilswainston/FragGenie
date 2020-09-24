@@ -67,7 +67,7 @@ public class Fragmenter {
 				final Fragment fragment = fragmentsQueue.poll();
 
 				for (final Fragment childFragment : getFragmentsOfNextTreeDepth(fragment)) {
-					fragments.add(precursorFragment);
+					fragments.add(childFragment);
 
 					if (maxTreeDepth > 0) {
 						newFragmentsQueue.add(childFragment);

@@ -37,7 +37,7 @@ public class MetFragFragmenter {
 	 * @return double[]
 	 * @throws Exception
 	 */
-	public static float[] getFragmentMasses(final String smiles, final int maximumTreeDepth) throws Exception {
+	public static float[] getFragmentData(final String smiles, final int maximumTreeDepth) throws Exception {
 		final Fragmenter fragmenter = new Fragmenter(smiles);
 		final Collection<Fragment> fragments = fragmenter.getFragments(maximumTreeDepth);
 		final float[] ionMassCorrections = new float[] { 1.00728f };
@@ -82,7 +82,7 @@ public class MetFragFragmenter {
 
 				if (smiles.length() < maxLenSmiles) {
 					try {
-						final float[] fragments = getFragmentMasses(smiles, 2);
+						final float[] fragments = getFragmentData(smiles, 2);
 						final Map<String, String> recordMap = record.toMap();
 						recordMap.put(METFRAG_HEADER, Arrays.toString(fragments));
 
