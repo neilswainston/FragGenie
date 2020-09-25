@@ -40,7 +40,22 @@ public class MetFragFragmenter {
 	 * 
 	 * @param smiles
 	 * @param maximumTreeDepth
-	 * @return double[]
+	 * @param fields
+	 * @return Object[]
+	 * @throws Exception
+	 */
+	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final List<String> fields) throws Exception {
+		final List<List<Object>> brokenBondsFilter = null;
+		return getFragmentData(smiles, maximumTreeDepth, fields, brokenBondsFilter);
+	}
+		
+	/**
+	 * 
+	 * @param smiles
+	 * @param maximumTreeDepth
+	 * @param fields
+	 * @param brokenBondsFilter
+	 * @return Object[]
 	 * @throws Exception
 	 */
 	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final List<String> fields, final List<List<Object>> brokenBondsFilter) throws Exception {
@@ -80,6 +95,20 @@ public class MetFragFragmenter {
 		data[Headers.METFRAG_FORMULAE.ordinal()] = formulae;
 		data[Headers.METFRAG_BROKEN_BONDS.ordinal()] = brokenBonds;
 		return data;
+	}
+	
+	/**
+	 * 
+	 * @param inFile
+	 * @param outFile
+	 * @throws Exception
+	 */
+	public static void fragment(final File inFile, final File outFile, final String smilesHeader,
+			final List<String> fields,
+			final int maxLenSmiles, final int maxRecords) throws Exception {
+		final List<List<Object>> brokenBondsFilter = null;
+		
+		fragment(inFile, outFile, smilesHeader, fields, brokenBondsFilter, maxLenSmiles, maxRecords);
 	}
 
 	/**
@@ -150,16 +179,19 @@ public class MetFragFragmenter {
 	 * @return boolean
 	 */
 	private static boolean filter(final Collection<List<Object>> fragBrokenBonds, final List<List<Object>> brokenBondsFilter) {
-		for(final List<Object> fragBrokenBond : fragBrokenBonds) {
-			for(int i = 0; i < fragBrokenBond.size(); i++) {
-				final Object value = fragBrokenBond.get(i);
-				final List<Object> filter = brokenBondsFilter.get(i);
-				
-				if(filter != null && !filter.contains(value)) {
-					return false;
+		if(brokenBondsFilter != null) {
+			for(final List<Object> fragBrokenBond : fragBrokenBonds) {
+				for(int i = 0; i < fragBrokenBond.size(); i++) {
+					final Object value = fragBrokenBond.get(i);
+					final List<Object> filter = brokenBondsFilter.get(i);
+					
+					if(filter != null && !filter.contains(value)) {
+						return false;
+					}
 				}
 			}
 		}
+		
 		return true;
 	}
 
