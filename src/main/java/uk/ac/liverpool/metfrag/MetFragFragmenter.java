@@ -169,9 +169,11 @@ public class MetFragFragmenter {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
+		final File inFile = new File(new File(args[0]).getAbsolutePath());
+		final File outFile = new File(new File(args[1]).getAbsolutePath());
+		final String smilesHeader = args[2];
 		final int maxLenSmiles = Integer.parseInt(args[3]);
 		final int maxRecords = Integer.parseInt(args[4]);
-		
 		final List<String> fields = Arrays.asList(Arrays.copyOfRange(args, 5, args.length));
 		
 		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
@@ -179,9 +181,9 @@ public class MetFragFragmenter {
 		brokenBondsFilter.add(Arrays.asList(new Object[] {"SINGLE"})); //$NON-NLS-1$
 		brokenBondsFilter.add(Arrays.asList(new Object[] {Boolean.FALSE}));
 		
-		fragment(new File(new File(args[0]).getAbsolutePath()),
-				new File(new File(args[1]).getAbsolutePath()),
-				args[2],
+		fragment(inFile,
+				outFile,
+				smilesHeader,
 				fields,
 				brokenBondsFilter,
 				maxLenSmiles,
