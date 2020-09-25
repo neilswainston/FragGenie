@@ -41,17 +41,7 @@ public class MetFragFragmenterTest {
 				// 236.96283
 		};
 		
-		final List<String> headers = Arrays.asList(new String[] {MetFragFragmenter.Headers.METFRAG_MZ.name()});
-		final Object[] data = MetFragFragmenter.getFragmentData("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", 2, headers); //$NON-NLS-1$
-		
-		@SuppressWarnings("unchecked")
-		final List<Float> fragments = (List<Float>)data[MetFragFragmenter.Headers.METFRAG_MZ.ordinal()];
-		final float epsilon = 1e-5f;
-
-		for (double mass : expected) {
-			final DoubleStream ds = IntStream.range(0, fragments.size()).mapToDouble(i -> fragments.get(i).doubleValue());
-			Assert.assertTrue(ds.anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
-		}
+		doTest("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", expected); //$NON-NLS-1$
 	}
 
 	/**
@@ -62,18 +52,7 @@ public class MetFragFragmenterTest {
 	@Test
 	public void testGetFragmentsPrecursor() throws Exception {
 		final double[] expected = { 15.02294, 16.03077, 18.010021, 30.04643, 32.02568, 47.049168 };
-
-		final List<String> headers = Arrays.asList(new String[] {MetFragFragmenter.Headers.METFRAG_MZ.name()});
-		final Object[] data = MetFragFragmenter.getFragmentData("CCO", 2, headers); //$NON-NLS-1$
-		
-		@SuppressWarnings("unchecked")
-		final List<Float> fragments = (List<Float>)data[MetFragFragmenter.Headers.METFRAG_MZ.ordinal()];
-		final float epsilon = 1e-5f;
-
-		for (double mass : expected) {
-			final DoubleStream ds = IntStream.range(0, fragments.size()).mapToDouble(i -> fragments.get(i).doubleValue());
-			Assert.assertTrue(ds.anyMatch(x -> x > mass - epsilon && x < mass + epsilon));
-		}
+		doTest("CCO", expected); //$NON-NLS-1$
 	}
 
 	/**
@@ -84,11 +63,19 @@ public class MetFragFragmenterTest {
 	@Test
 	public void testGetFragmentsAromatic() throws Exception {
 		final double[] expected = { 27.02294, 40.03077, 53.0386, 66.04643, 79.05426, 14.01511 };
-
+		doTest("C1=CC=CC=C1", expected); //$NON-NLS-1$
+	}
+	
+	/**
+	 * 
+	 * @param smiles
+	 * @param expected
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	private static void doTest(final String smiles, final double[] expected) throws Exception {
 		final List<String> headers = Arrays.asList(new String[] {MetFragFragmenter.Headers.METFRAG_MZ.name()});
-		final Object[] data = MetFragFragmenter.getFragmentData("C1=CC=CC=C1", 2, headers); //$NON-NLS-1$
-		
-		@SuppressWarnings("unchecked")
+		final Object[] data = MetFragFragmenter.getFragmentData(smiles, 2, headers);
 		final List<Float> fragments = (List<Float>)data[MetFragFragmenter.Headers.METFRAG_MZ.ordinal()];
 		final float epsilon = 1e-5f;
 
