@@ -2,7 +2,6 @@ package uk.ac.liverpool.metfraglib;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -157,23 +156,17 @@ public class Precursor {
 	/**
 	 * 
 	 * @param i
-	 * @return List<Object>
+	 * @return Object
 	 */
-	List<Object> getBond(final int i) {
-		final List<Object> bondDefinition = new ArrayList<>();
-		final List<String> atoms = new ArrayList<>();
-		final IBond bond = this.atomContainer.getBond(i);
+	Bond getBond(final int i) {
+		final List<IAtom> atoms = new ArrayList<>();
+		final IBond iBond = this.atomContainer.getBond(i);
 
-		for (IAtom atom : bond.atoms()) {
-			atoms.add(atom.getSymbol());
+		for (IAtom atom : iBond.atoms()) {
+			atoms.add(atom);
 		}
 
-		Collections.sort(atoms);
-
-		bondDefinition.add(atoms);
-		bondDefinition.add(bond.getOrder().name());
-		bondDefinition.add(Boolean.valueOf(bond.isAromatic()));
-		return bondDefinition;
+		return new Bond(atoms.get(0), atoms.get(1), iBond.getOrder(), iBond.isAromatic());
 	}
 
 	/**

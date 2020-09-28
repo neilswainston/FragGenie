@@ -2,7 +2,6 @@ package uk.ac.liverpool.metfraglib;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -139,10 +138,10 @@ public class Fragment {
 	
 	/**
 	 * 
-	 * @return Collection<List<Object>>
+	 * @return Collection<Bond>
 	 */
-	public Collection<List<Object>> getBrokenBonds() {
-		final Collection<List<Object>> bonds = new ArrayList<>();
+	public Collection<Bond> getBrokenBonds() {
+		final Collection<Bond> bonds = new ArrayList<>();
 		
 		for (int i = 0; i < this.brokenBondsArray.getSize(); i++) {
 			if(this.brokenBondsArray.get(i)) {

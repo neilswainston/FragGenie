@@ -16,6 +16,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
+import uk.ac.liverpool.metfraglib.Bond;
 import uk.ac.liverpool.metfraglib.Fragment;
 import uk.ac.liverpool.metfraglib.Fragmenter;
 
@@ -67,10 +68,10 @@ public class MetFragFragmenter {
 		
 		final List<Float> masses = getMasses ? new ArrayList<>() : null;
 		final List<String> formulae = getFormulae ? new ArrayList<>() : null;
-		final List<Collection<List<Object>>> brokenBonds = getBonds ? new ArrayList<>() : null;
+		final List<Collection<Bond>> brokenBonds = getBonds ? new ArrayList<>() : null;
 		
 		for (final Fragment fragment : fragments) {
-			final Collection<List<Object>> fragBrokenBonds = fragment.getBrokenBonds();
+			final Collection<Bond> fragBrokenBonds = fragment.getBrokenBonds();
 			
 			if(filter(fragBrokenBonds, brokenBondsFilter)) {
 				for (float ionMassCorrection : ION_MASS_CORRECTIONS) {
@@ -178,14 +179,13 @@ public class MetFragFragmenter {
 	 * @param brokenBondsFilter
 	 * @return boolean
 	 */
-	private static boolean filter(final Collection<List<Object>> fragBrokenBonds, final List<List<Object>> brokenBondsFilter) {
+	private static boolean filter(final Collection<Bond> fragBrokenBonds, final List<List<Object>> brokenBondsFilter) {
 		if(brokenBondsFilter != null) {
-			for(final List<Object> fragBrokenBond : fragBrokenBonds) {
-				for(int i = 0; i < fragBrokenBond.size(); i++) {
-					final Object value = fragBrokenBond.get(i);
+			for(final Object fragBrokenBond : fragBrokenBonds) {
+				for(int i = 0; i < brokenBondsFilter.size(); i++) {
 					final List<Object> filter = brokenBondsFilter.get(i);
 					
-					if(filter != null && !filter.contains(value)) {
+					if(filter != null && !filter.contains(fragBrokenBond)) {
 						return false;
 					}
 				}
@@ -208,10 +208,11 @@ public class MetFragFragmenter {
 		final int maxRecords = Integer.parseInt(args[4]);
 		final List<String> fields = Arrays.asList(Arrays.copyOfRange(args, 5, args.length));
 		
-		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
-		brokenBondsFilter.add(null);
-		brokenBondsFilter.add(Arrays.asList(new Object[] {"SINGLE"})); //$NON-NLS-1$
-		brokenBondsFilter.add(Arrays.asList(new Object[] {Boolean.FALSE}));
+		final List<List<Object>> brokenBondsFilter = null;
+		// final List<List<Object>> brokenBondsFilter = new ArrayList<>();
+		// brokenBondsFilter.add(null);
+		// brokenBondsFilter.add(Arrays.asList(new Object[] {"SINGLE"})); //$NON-NLS-1$
+		// brokenBondsFilter.add(Arrays.asList(new Object[] {Boolean.FALSE}));
 		
 		fragment(inFile,
 				outFile,
