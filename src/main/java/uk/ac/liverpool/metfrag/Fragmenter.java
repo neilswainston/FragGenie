@@ -1,4 +1,4 @@
-package uk.ac.liverpool.metfraglib;
+package uk.ac.liverpool.metfrag;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -148,7 +148,7 @@ public class Fragmenter {
 	 * @throws Exception
 	 */
 	private ArrayList<Fragment> createRingBondCleavedFragments(ArrayList<Fragment> newGeneratedTopDownFragments,
-			Fragment precursorFragment, java.util.Queue<Fragment> toProcess, FastBitArray ringBondFastBitArray,
+			Fragment precursorFragment, java.util.Queue<Fragment> toProcess, FastBitArray ringBondArray,
 			java.util.Queue<Integer> lastCuttedRingBond) throws Exception {
 		/*
 		 * process all fragments that have been cutted in a ring without generating a
@@ -163,8 +163,8 @@ public class Fragmenter {
 			/*
 			 * 
 			 */
-			for (int currentBond = nextRingBondToCut; currentBond < ringBondFastBitArray.getSize(); currentBond++) {
-				if (!ringBondFastBitArray.get(currentBond))
+			for (int currentBond = nextRingBondToCut; currentBond < ringBondArray.getSize(); currentBond++) {
+				if (!ringBondArray.get(currentBond))
 					continue;
 				if (currentFragment.getBrokenBondsArray().get(currentBond))
 					continue;

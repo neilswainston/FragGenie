@@ -16,9 +16,9 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
-import uk.ac.liverpool.metfraglib.Bond;
-import uk.ac.liverpool.metfraglib.Fragment;
-import uk.ac.liverpool.metfraglib.Fragmenter;
+import uk.ac.liverpool.metfrag.Bond;
+import uk.ac.liverpool.metfrag.Fragment;
+import uk.ac.liverpool.metfrag.Fragmenter;
 
 /**
  * 

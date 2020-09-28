@@ -1,4 +1,4 @@
-package uk.ac.liverpool.metfraglib;
+package uk.ac.liverpool.metfrag;
 
 import javolution.util.FastBitSet;
 
