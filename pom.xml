@@ -17,26 +17,11 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-		<cdk.version>2.1.1</cdk.version>
+		<cdk.version>2.3</cdk.version>
 	</properties>
 
 	<dependencies>
 		<!-- Compile/runtime dependencies -->
-		<dependency>
-			<groupId>jstl</groupId>
-			<artifactId>jstl</artifactId>
-			<version>1.2</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.json</groupId>
-			<artifactId>javax.json-api</artifactId>
-			<version>1.1.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>javax.json</artifactId>
-			<version>1.1</version>
-		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
@@ -44,37 +29,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.openscience.cdk</groupId>
-			<artifactId>cdk-core</artifactId>
-			<version>${cdk.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openscience.cdk</groupId>
-			<artifactId>cdk-data</artifactId>
-			<version>${cdk.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openscience.cdk</groupId>
-			<artifactId>cdk-sdg</artifactId>
-			<version>${cdk.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openscience.cdk</groupId>
-			<artifactId>cdk-formula</artifactId>
-			<version>${cdk.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openscience.cdk</groupId>
-			<artifactId>cdk-silent</artifactId>
-			<version>${cdk.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openscience.cdk</groupId>
-			<artifactId>cdk-smarts</artifactId>
-			<version>${cdk.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openscience.cdk</groupId>
-			<artifactId>cdk-smiles</artifactId>
+			<artifactId>cdk-bundle</artifactId>
 			<version>${cdk.version}</version>
 		</dependency>
 		<dependency>
@@ -82,7 +37,6 @@
 			<artifactId>javolution-core-java</artifactId>
 			<version>6.0.0</version>
 		</dependency>
-
 
 		<!-- Test Dependencies -->
 		<dependency>
@@ -92,7 +46,8 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
+	
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -111,20 +66,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>uk.ac.liverpool.MetFragFragmenter</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

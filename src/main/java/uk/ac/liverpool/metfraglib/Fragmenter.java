@@ -1,15 +1,16 @@
 package uk.ac.liverpool.metfraglib;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
-import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
+import org.openscience.cdk.smiles.smarts.SmartsPattern;
 
+@SuppressWarnings("deprecation")
 public class Fragmenter {
 
 	/**
@@ -329,33 +330,34 @@ public class Fragmenter {
 	 * @param precursorMolecule
 	 * @return
 	 * @throws CDKException
+	 * @throws IOException 
 	 */
-	private FastBitArray[][] getMatchingAtoms(Precursor precursorMolecule) throws CDKException {
-		final SMARTSQueryTool[] smartsQuerytools = new SMARTSQueryTool[this.smartPatterns.length];
+	private FastBitArray[][] getMatchingAtoms(Precursor precursorMolecule) throws CDKException, IOException {
+		final SmartsPattern[] smartsPattern = new SmartsPattern[this.smartPatterns.length];
 
-		for (int i = 0; i < smartsQuerytools.length; i++) {
-			smartsQuerytools[i] = new SMARTSQueryTool(this.smartPatterns[i], DefaultChemObjectBuilder.getInstance());
+		for (int i = 0; i < smartsPattern.length; i++) {
+			smartsPattern[i] = SmartsPattern.create(this.smartPatterns[i]);
 		}
 
 		final List<FastBitArray[]> matchedNeutralLossTypes = new ArrayList<>();
 
-		for (byte i = 0; i < smartsQuerytools.length; i++) {
-			if (smartsQuerytools[i].matches(precursorMolecule.getStructureAsIAtomContainer())) {
+		for (byte i = 0; i < smartsPattern.length; i++) {
+			if (smartsPattern[i].matches(precursorMolecule.getStructureAsIAtomContainer())) {
 				/*
 				 * get atom indeces containing to a neutral loss
 				 */
-				java.util.List<java.util.List<Integer>> matchingAtoms = smartsQuerytools[i].getMatchingAtoms();
+				final int[][] matchingAtoms = smartsPattern[i].matchAll(precursorMolecule.getStructureAsIAtomContainer()).toArray();
 				/*
 				 * store which is a valid loss based on the number of hydrogens
 				 */
-				boolean[] validMatches = new boolean[matchingAtoms.size()];
-				FastBitArray[] allMatches = new FastBitArray[matchingAtoms.size()];
+				boolean[] validMatches = new boolean[matchingAtoms.length];
+				FastBitArray[] allMatches = new FastBitArray[matchingAtoms.length];
 				int numberOfValidNeutralLosses = 0;
 				/*
 				 * check each part that is marked as neutral loss
 				 */
-				for (int ii = 0; ii < matchingAtoms.size(); ii++) {
-					java.util.List<Integer> part = matchingAtoms.get(ii);
+				for (int ii = 0; ii < matchingAtoms.length; ii++) {
+					int[] part = matchingAtoms[ii];
 					/*
 					 * count number of implicit hydrogens of this neutral loss
 					 */
@@ -364,13 +366,13 @@ public class Fragmenter {
 					/*
 					 * check all atoms
 					 */
-					for (int iii = 0; iii < part.size(); iii++) {
-						allMatches[ii].set(part.get(iii).intValue());
+					for (int iii = 0; iii < part.length; iii++) {
+						allMatches[ii].set(part[iii]);
 						/*
 						 * count number of implicit hydrogens of this neutral loss
 						 */
 						numberImplicitHydrogens += precursorMolecule
-								.getNumberHydrogensConnectedToAtomIndex(part.get(iii).intValue());
+								.getNumberHydrogensConnectedToAtomIndex(part[iii]);
 					}
 					/*
 					 * valid neutral loss match if number implicit hydrogens are at least the number
