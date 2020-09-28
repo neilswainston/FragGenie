@@ -1,6 +1,7 @@
 package uk.ac.liverpool.metfrag;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.openscience.cdk.config.IsotopeFactory;
 import org.openscience.cdk.config.Isotopes;
@@ -41,8 +42,8 @@ public class Bond {
 	 * @param aromatic
 	 */
 	public Bond(final IElement element1, final IElement element2, final Order order, final boolean aromatic) {
-		this.elem1 = element1;
-		this.elem2 = element2;
+		this.elem1 = element1.getAtomicNumber().intValue() < element2.getAtomicNumber().intValue() ? element1 : element2;
+		this.elem2 = element1.getAtomicNumber().intValue() < element2.getAtomicNumber().intValue() ? element2 : element1;
 		this.ord = order;
 		this.arom = aromatic;
 	}
@@ -74,6 +75,35 @@ public class Bond {
 		final boolean aromatic = (encoded & 1) == 1;
 		
 		return new Bond(factory.getElement(elementicNumber1), factory.getElement(elementicNumber2), Order.values()[orderOrdinal], aromatic);
+	}
+	
+	/**
+	 * 
+	 * @param filter
+	 * @return boolean
+	 */
+	public boolean passesFilter(final List<Object> filter) {
+		if(filter.get(0) != null && filter.get(0) instanceof List<?>) {
+			final List<?> symbols = (List<?>)filter.get(0);
+			
+			if(symbols.get(0) != this.elem1.getSymbol()) {
+				return false;
+			}
+			
+			if(symbols.get(1) != this.elem2.getSymbol()) {
+				return false;
+			}
+		}
+		
+		if(filter.get(1) != null && filter.get(1) != this.ord) {
+			return false;
+		}
+		
+		if(filter.get(2) != null && ((Boolean)filter.get(2)).booleanValue() != this.arom) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	@Override

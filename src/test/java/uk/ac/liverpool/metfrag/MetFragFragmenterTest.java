@@ -40,9 +40,7 @@ public class MetFragFragmenterTest {
 		final double[] expected = { 47.049168, 16.03077, 32.02568 };
 		
 		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
-		brokenBondsFilter.add(Arrays.asList(new Object[] {Arrays.asList(new String[] {"C", "C"})})); //$NON-NLS-1$ //$NON-NLS-2$
-		brokenBondsFilter.add(null);
-		brokenBondsFilter.add(null);
+		brokenBondsFilter.add(Arrays.asList(new Object[] {Arrays.asList(new String[] {"C", "C"}), null, null})); //$NON-NLS-1$ //$NON-NLS-2$
 		
 		doTest("CCO", expected, brokenBondsFilter); //$NON-NLS-1$
 	}
@@ -57,9 +55,7 @@ public class MetFragFragmenterTest {
 		final double[] expected = { 29.0386 };
 		
 		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
-		brokenBondsFilter.add(null);
-		brokenBondsFilter.add(Arrays.asList(new Object[] {"SINGLE"})); //$NON-NLS-1$
-		brokenBondsFilter.add(null);
+		brokenBondsFilter.add(Arrays.asList(new Object[] {null, "SINGLE", null})); //$NON-NLS-1$
 		
 		doTest("C=C", expected, brokenBondsFilter); //$NON-NLS-1$
 	}
@@ -85,9 +81,7 @@ public class MetFragFragmenterTest {
 		final double[] expected = { 79.05426 };
 		
 		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
-		brokenBondsFilter.add(null);
-		brokenBondsFilter.add(null);
-		brokenBondsFilter.add(Arrays.asList(new Object[] {Boolean.FALSE}));
+		brokenBondsFilter.add(Arrays.asList(new Object[] {null, null, Boolean.FALSE}));
 		
 		doTest("C1=CC=CC=C1", expected, brokenBondsFilter); //$NON-NLS-1$
 	}

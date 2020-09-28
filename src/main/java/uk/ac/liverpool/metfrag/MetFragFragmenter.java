@@ -181,11 +181,11 @@ public class MetFragFragmenter {
 	 */
 	private static boolean filter(final Collection<Bond> fragBrokenBonds, final List<List<Object>> brokenBondsFilter) {
 		if(brokenBondsFilter != null) {
-			for(final Object fragBrokenBond : fragBrokenBonds) {
+			for(final Bond fragBrokenBond : fragBrokenBonds) {
 				for(int i = 0; i < brokenBondsFilter.size(); i++) {
 					final List<Object> filter = brokenBondsFilter.get(i);
 					
-					if(filter != null && !filter.contains(fragBrokenBond)) {
+					if(!fragBrokenBond.passesFilter(filter)) {
 						return false;
 					}
 				}
