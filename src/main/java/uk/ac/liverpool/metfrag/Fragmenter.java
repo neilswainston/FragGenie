@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.TreeSet;
 
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.smiles.smarts.SmartsPattern;
@@ -54,7 +55,7 @@ public class Fragmenter {
 	 * @throws Exception
 	 */
 	public Collection<Fragment> getFragments(final int maxTreeDepth) throws Exception {
-		final Collection<Fragment> fragments = new ArrayList<>();
+		final Collection<Fragment> fragments = new TreeSet<>();
 		Queue<Fragment> fragmentsQueue = new LinkedList<>();
 
 		final Fragment precursorFragment = new Fragment(this.precursor);

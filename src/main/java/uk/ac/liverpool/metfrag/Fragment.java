@@ -10,7 +10,7 @@ import java.util.TreeMap;
  * 
  * @author neilswainston
  */
-public class Fragment {
+public class Fragment implements Comparable<Fragment> {
 
 	/**
 	 * 
@@ -318,5 +318,79 @@ public class Fragment {
 		final Fragment newFragment = new Fragment(precursorMolecule, newAtomArray, newBondArray, brokenBondArrayOfNewFragment);
 
 		return new Object[] {Boolean.valueOf(singleFragment), newFragment};
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.atomsArray == null) ? 0 : this.atomsArray.hashCode());
+		result = prime * result + ((this.bondsArray == null) ? 0 : this.bondsArray.hashCode());
+		result = prime * result + ((this.brokenBondsArray == null) ? 0 : this.brokenBondsArray.hashCode());
+		result = prime * result + ((this.prec == null) ? 0 : this.prec.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+			
+		if (obj == null) {
+			return false;
+		}
+			
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+			
+		
+		final Fragment other = (Fragment) obj;
+		
+		if (this.atomsArray == null) {
+			if (other.atomsArray != null) {
+				return false;
+			}	
+		}
+		else if (!this.atomsArray.equals(other.atomsArray)) {
+			return false;
+		}
+			
+		
+		if (this.bondsArray == null) {
+			if (other.bondsArray != null) {
+				return false;
+			}	
+		}
+		else if (!this.bondsArray.equals(other.bondsArray)) {
+			return false;
+		}
+			
+		if (this.brokenBondsArray == null) {
+			if (other.brokenBondsArray != null) {
+				return false;
+			}
+		}
+		else if (!this.brokenBondsArray.equals(other.brokenBondsArray)) {
+			return false;
+		}
+			
+		if (this.prec == null) {
+			if (other.prec != null) {
+				return false;
+			}
+				
+		}
+		else if (!this.prec.equals(other.prec)) {
+			return false;
+		}
+			
+		return true;
+	}
+
+	@Override
+	public int compareTo(final Fragment obj) {
+		return (int)((this.getMonoisotopicMass() - obj.getMonoisotopicMass()) * 1000000);
 	}
 }

@@ -270,6 +270,43 @@ public class Precursor {
 			molecule.removeAtom(atom);
 		}
 	}
+	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.atomContainer == null) ? 0 : this.atomContainer.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+			
+		if (obj == null) {
+			return false;
+		}
+			
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+			
+		final Precursor other = (Precursor) obj;
+		
+		if (this.atomContainer == null) {
+			if (other.atomContainer != null) {
+				return false;
+			}
+		}
+		else if (!this.atomContainer.equals(other.atomContainer)) {
+			return false;
+		}
+			
+		return true;
+	}
 
 	static {
 		MONOISOTOPIC_MASSES.put("[13C]", 13.00335); //$NON-NLS-1$
