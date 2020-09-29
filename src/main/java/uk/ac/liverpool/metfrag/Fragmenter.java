@@ -10,7 +10,6 @@ import java.util.TreeSet;
 
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.smiles.smarts.SmartsPattern;
 
 @SuppressWarnings("deprecation")
@@ -206,10 +205,8 @@ public class Fragmenter {
 				continue;
 			}
 			
-			final int[] indecesOfBondConnectedAtoms = this.getConnectedAtomIndicesFromBondIndex(bondIdx);
-
 			// Try to generate at most two fragments by the breaking of the given bond:
-			final Fragment[] newGeneratedTopDownFragments = parentFragment.fragment(this.prec, bondIdx, indecesOfBondConnectedAtoms);
+			final Fragment[] newGeneratedTopDownFragments = parentFragment.fragment(bondIdx);
 			
 			/*
 			 * in case the precursor wasn't splitted try to cleave an additional bond until
@@ -357,9 +354,7 @@ public class Fragmenter {
 					continue;
 				if (currentFragment.getBrokenBondsArray()[currentBond])
 					continue;
-				Fragment[] newFragments = { currentFragment };
-				int[] connectedAtomIndeces = this.getConnectedAtomIndicesFromBondIndex(currentBond);
-				newFragments = currentFragment.fragment(this.prec, currentBond, connectedAtomIndeces);
+				Fragment[] newFragments = currentFragment.fragment(currentBond);
 
 				//
 				// pre-processing of the generated fragment/s
@@ -411,10 +406,7 @@ public class Fragmenter {
 			if (!precursorFragment.getBondsArray()[currentBond])
 				continue;
 
-			int[] connectedAtomIndeces = this.getConnectedAtomIndicesFromBondIndex(currentBond);
-
-			final Fragment[] newFragments = precursorFragment.fragment(this.prec, currentBond,
-					connectedAtomIndeces);
+			final Fragment[] newFragments = precursorFragment.fragment(currentBond);
 
 			Fragmenter.processGeneratedFragments(newFragments);
 			if (newFragments.length == 2) {
@@ -430,17 +422,6 @@ public class Fragmenter {
 				}
 			}
 		}
-	}
-	
-	/**
-	 * Returns atom indices that are connected to bond with bondIdx.
-	 * 
-	 * @param bondIdx
-	 * @return int[]
-	 */
-	private int[] getConnectedAtomIndicesFromBondIndex(final int bondIdx) {
-		final IBond bond = this.prec.getBond(bondIdx);
-		return new int[] { this.prec.indexOf(bond.getAtom(0)), this.prec.indexOf(bond.getAtom(1)) };
 	}
 	
 	/**

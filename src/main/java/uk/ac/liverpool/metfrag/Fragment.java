@@ -230,17 +230,18 @@ public class Fragment implements Comparable<Fragment> {
 
 	/**
 	 * 
-	 * @param precursorMolecule
-	 * @param removeBond
-	 * @param bondConnectedAtoms
+	 * @param bondIdx
 	 * @return Fragment[]
 	 */
-	Fragment[] fragment(final IAtomContainer precursorMolecule, final int removeBond, final int[] bondConnectedAtoms)  {
+	Fragment[] fragment(final int bondIdx) {
 
+		final IBond bond = this.prec.getBond(bondIdx);
+		final int[] bondConnectedAtoms =  new int[] { this.prec.indexOf(bond.getAtom(0)), this.prec.indexOf(bond.getAtom(1)) };
+		
 		// Generate first fragment:
 		// Traverse to first direction from atomIndex connected by broken bond:
-		final Object[] result1 = this.traverse(precursorMolecule, bondConnectedAtoms[0], bondConnectedAtoms[1],
-				removeBond, this.brokenBondsArray.clone());
+		final Object[] result1 = this.traverse(bondConnectedAtoms[0], bondConnectedAtoms[1],
+				bondIdx, this.brokenBondsArray.clone());
 
 		final Fragment fragment1 = (Fragment)result1[1];
 
@@ -255,8 +256,8 @@ public class Fragment implements Comparable<Fragment> {
 		
 		// Generate second fragment:
 		// Traverse the second direction from atomIndex connected by broken bond:
-		final Object[] result2 = this.traverse(precursorMolecule, bondConnectedAtoms[1], bondConnectedAtoms[0],
-				removeBond, this.brokenBondsArray.clone());
+		final Object[] result2 = this.traverse(bondConnectedAtoms[1], bondConnectedAtoms[0],
+				bondIdx, this.brokenBondsArray.clone());
 
 		final Fragment fragment2 = (Fragment)result2[1];
 		fragment2.treeDepth = this.treeDepth + 1;
@@ -288,16 +289,16 @@ public class Fragment implements Comparable<Fragment> {
 	 * @param brokenBondArrayOfNewFragment
 	 * @return Object[]
 	 */
-	private Object[] traverse(final IAtomContainer precursorMolecule, final int startAtom, final int endAtom,
+	private Object[] traverse(final int startAtom, final int endAtom,
 			final int removeBond, final boolean[] brokenBondArrayOfNewFragment) {
-		final boolean[] newAtomArray = new boolean[precursorMolecule.getAtomCount()];
-		final boolean[] newBondArray = new boolean[precursorMolecule.getBondCount()];
+		final boolean[] newAtomArray = new boolean[this.prec.getAtomCount()];
+		final boolean[] newBondArray = new boolean[this.prec.getBondCount()];
 		final boolean[] currentBondArray = this.bondsArray;
 		
 		// When traversing the fragment graph, we want to know if we already visited
 		// a node (atom) to check for ringed structures.
 		// If traversed an already visited atom, then no new fragment was generated.
-		final boolean[] visited = new boolean[precursorMolecule.getAtomCount()];
+		final boolean[] visited = new boolean[this.prec.getAtomCount()];
 
 		// Traverse molecule in the first direction:
 		final Stack<int[]> toProcessConnectedAtoms = new Stack<>();
@@ -346,7 +347,7 @@ public class Fragment implements Comparable<Fragment> {
 		brokenBondArrayOfNewFragment[removeBond] = true;
 		newBondArray[removeBond] = false;
 		
-		final Fragment newFragment = new Fragment(precursorMolecule, newAtomArray, newBondArray, brokenBondArrayOfNewFragment);
+		final Fragment newFragment = new Fragment(this.prec, newAtomArray, newBondArray, brokenBondArrayOfNewFragment);
 
 		return new Object[] {Boolean.valueOf(singleFragment), newFragment};
 	}
