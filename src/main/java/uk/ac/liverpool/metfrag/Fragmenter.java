@@ -5,46 +5,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.TreeSet;
 
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.smiles.smarts.SmartsPattern;
 
-@SuppressWarnings("deprecation")
 public class Fragmenter {
-	
-	/**
-	 * 
-	 */
-	private final static String[] SMARTS_PATTERNS_STRINGS = { "O", "C(=O)O", "N", "C[Si](C)(C)O", "C[Si](C)C", "CO", "CN" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
-
-	/**
-	 * 
-	 */
-	private final static int[] MIN_NUM_IMPLICIT_HYDROGENS = { 1, 1, 2, 9, 9, 1, 0 };
-	
-	/**
-	 * 
-	 */
-	private final static SmartsPattern[] SMARTS_PATTERNS;
-	
-	/**
-	 * 
-	 */
-	private List<List<boolean[]>> neutralLosses = new ArrayList<>();
-	
-	/**
-	 * 
-	 */
-	private List<Integer> brokenBondToNeutralLossIndex = new ArrayList<>();
-	
-	/**
-	 * 
-	 */
-	private List<Integer> neutralLossIndex = new ArrayList<>();
 	
 	/**
 	 * 
@@ -61,22 +28,6 @@ public class Fragmenter {
 	 */
 	private boolean[] ringBondArray;
 	
-
-	
-	
-	static {
-		SMARTS_PATTERNS = new SmartsPattern[SMARTS_PATTERNS_STRINGS.length];
-
-		for (int i = 0; i < SMARTS_PATTERNS_STRINGS.length; i++) {
-			try {
-				SMARTS_PATTERNS[i] = SmartsPattern.create(SMARTS_PATTERNS_STRINGS[i]);
-			}
-			catch (IOException e) {
-				throw new ExceptionInInitializerError(e);
-			}
-		}
-	}
-	
 	/**
 	 * 
 	 * @param precursor
@@ -86,62 +37,6 @@ public class Fragmenter {
 	public Fragmenter(final IAtomContainer precursor) throws IOException, CDKException {
 		this.prec = precursor;
 		this.ringBondArray = new boolean[this.prec.getBondCount()];
-		initialiseNeutralLosses();
-	}
-	
-	/**
-	 * 
-	 * @throws CDKException
-	 * @throws IOException
-	 */
-	private void initialiseNeutralLosses() throws CDKException, IOException {
-		int i = 0;
-		
-		for (final SmartsPattern pattern : SMARTS_PATTERNS) {
-			// Get atom indices corresponding to a neutral loss:
-			final int[][] matchingAtoms = pattern.matchAll(this.prec).toArray();
-			
-			if (matchingAtoms.length > 0) {
-				// Store valid losses based on the number of hydrogens:
-				final boolean[] validMatches = new boolean[matchingAtoms.length];
-				final boolean[][] allMatches = new boolean[matchingAtoms.length][];
-				
-				// Check each part that is marked as neutral loss:
-				for (int ii = 0; ii < matchingAtoms.length; ii++) {
-					final int[] part = matchingAtoms[ii];
-					
-					// Count number of implicit hydrogens of this neutral loss:
-					int numberImplicitHydrogens = 0;
-					allMatches[ii] = new boolean[this.prec.getAtomCount()];
-					
-					// Check all atoms:
-					for (int atomIdx : part) {
-						allMatches[ii][atomIdx] = true;
-						// Count number of implicit hydrogens of this neutral loss:
-						numberImplicitHydrogens += this.prec.getAtom(atomIdx).getImplicitHydrogenCount().intValue();
-					}
-					
-					// Valid neutral loss match if number implicit hydrogens are at least the number
-					// of hydrogens needed for the certain neutral loss:
-					if (numberImplicitHydrogens >= MIN_NUM_IMPLICIT_HYDROGENS[i]) {
-						validMatches[ii] = true;
-					}
-				}
-				
-				// Create new neutral loss of valid neutral loss part detections:
-				final List<boolean[]> newNeutralLoss = new ArrayList<>();
-				
-				for (int k = 0; k < validMatches.length; k++) {
-					if (validMatches[k]) {
-						newNeutralLoss.add(allMatches[k]);
-					}
-				}
-				
-				this.neutralLosses.add(newNeutralLoss);
-			}
-			
-			i++;
-		}
 	}
 
 	/**
@@ -161,7 +56,7 @@ public class Fragmenter {
 
 			while (!fragmentsQueue.isEmpty()) {
 				final Fragment fragment = fragmentsQueue.poll();
-				final Collection<Fragment> childFragments = getFragmentsOfNextTreeDepth(fragment);
+				final Collection<Fragment> childFragments = getFragments(fragment);
 				fragments.addAll(childFragments);
 				newFragmentsQueue.addAll(childFragments);
 			}
@@ -178,10 +73,11 @@ public class Fragmenter {
 	 * @param parentFragment
 	 * @return Collection<Fragment>
 	 */
-	private Collection<Fragment> getFragmentsOfNextTreeDepth(final Fragment parentFragment) {
+	private Collection<Fragment> getFragments(final Fragment parentFragment) {
 		final Collection<Fragment> childFragments = new ArrayList<>();
+		final boolean[] bondsArray = parentFragment.getBondsArray();
 		
-		final boolean[] ringBonds = new boolean[parentFragment.getBondsArray().length];
+		final boolean[] ringBonds = new boolean[bondsArray.length];
 		final Queue<Fragment> ringBondCuttedFragments = new LinkedList<>();
 		final Queue<Integer> lastCuttedBondOfRing = new LinkedList<>();
 		
@@ -194,8 +90,8 @@ public class Fragmenter {
 		final int nextBondBreakIdx = getLastSetBit(parentFragment.getBrokenBondsArray()) + 1;
 		
 		// Start from the last broken bond index:
-		for (int bondIdx = nextBondBreakIdx; bondIdx < parentFragment.getBondsArray().length; bondIdx++) {
-			if (!parentFragment.getBondsArray()[bondIdx]) {
+		for (int bondIdx = nextBondBreakIdx; bondIdx < bondsArray.length; bondIdx++) {
+			if (!bondsArray[bondIdx]) {
 				continue;
 			}
 			
@@ -221,8 +117,6 @@ public class Fragmenter {
 			}
 			else if (currentChildFragments.length == 2) {
 				// If two new fragments have been generated set them as valid:
-				this.checkForNeutralLosses(currentChildFragments, bondIdx);
-				
 				childFragments.addAll(Arrays.asList(currentChildFragments));
 			}
 		}
@@ -233,69 +127,6 @@ public class Fragmenter {
 		this.ringBondsInitialised = true;
 
 		return childFragments;
-	}
-
-	/**
-	 * return true if neutral loss has been detected before true is returned mass as
-	 * well as molecular formula is modified
-	 * 
-	 * @param newGeneratedTopDownFragments
-	 * @return
-	 * @throws Exception
-	 */
-	private boolean checkForNeutralLosses(Fragment[] newGeneratedTopDownFragments, int removedBondIndex) {
-		byte neutralLossFragment = -1;
-		
-		for (int i = 0; i < this.neutralLosses.size(); i++) {
-			for (int ii = 0; ii < this.neutralLosses.get(i).size(); ii++) {
-				if (newGeneratedTopDownFragments[0].getAtomsArray().equals(this.neutralLosses.get(i).get(ii))) {
-					/*
-					 * check for previous broken bonds caused by neutral loss
-					 */
-					boolean[] brokenBondsArray = newGeneratedTopDownFragments[1].getBrokenBondsArray();
-					
-					for (int s = 0; s < brokenBondsArray.length; s++) {
-						if(brokenBondsArray[s]) {
-							int index = this.brokenBondToNeutralLossIndex.indexOf(Integer.valueOf(s));
-							if (s == removedBondIndex) {
-								if (index == -1) {
-									this.brokenBondToNeutralLossIndex.add(Integer.valueOf(removedBondIndex));
-									this.neutralLossIndex.add(Integer.valueOf(i));
-								}
-								continue;
-							}
-						}
-						
-					}
-					return true;
-				}
-				else if (newGeneratedTopDownFragments[1].getAtomsArray().equals(this.neutralLosses.get(i).get(ii))) {
-
-					/*
-					 * check for previous broken bonds caused by neutral loss
-					 */
-					boolean[] brokenBondsArray = newGeneratedTopDownFragments[0].getBrokenBondsArray();
-					
-					for (int s = 0; s < brokenBondsArray.length; s++) {
-						if(brokenBondsArray[s]) {
-							int index = this.brokenBondToNeutralLossIndex.indexOf(Integer.valueOf(s));
-							if (s == removedBondIndex) {
-								if (index == -1) {
-									this.brokenBondToNeutralLossIndex.add(Integer.valueOf(removedBondIndex));
-									this.neutralLossIndex.add(Integer.valueOf(i));
-								}
-								continue;
-							}
-						}
-					}
-					return true;
-				}
-			}
-		}
-		if (neutralLossFragment == -1)
-			return false;
-		
-		return true;
 	}
 
 	/**
@@ -372,8 +203,6 @@ public class Fragmenter {
 				continue;
 
 			final Fragment[] newFragments = precursorFragment.fragment(currentBond);
-			
-			this.checkForNeutralLosses(newFragments, currentBond);
 
 			for (int k = 0; k < newFragments.length; k++) {
 				if (newFragments.length == 2) {
