@@ -70,8 +70,8 @@ public class MetFragFragmenter {
 	 * @throws Exception
 	 */
 	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final List<String> fields, final List<List<Object>> brokenBondsFilter) throws Exception {
-		final Fragmenter fragmenter = new Fragmenter(getAtomContainer(smiles), maximumTreeDepth);
-		final Collection<Fragment> fragments = fragmenter.getFragments();
+		final Fragmenter fragmenter = new Fragmenter(getAtomContainer(smiles));
+		final Collection<Fragment> fragments = fragmenter.getFragments(maximumTreeDepth);
 		final boolean getMasses = fields.indexOf(Headers.METFRAG_MZ.name()) != -1;
 		final boolean getFormulae = fields.indexOf(Headers.METFRAG_FORMULAE.name()) != -1;
 		final boolean getBonds = fields.indexOf(Headers.METFRAG_BROKEN_BONDS.name()) != -1;
