@@ -9,6 +9,8 @@ import java.util.Queue;
 import java.util.TreeSet;
 
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.smiles.smarts.SmartsPattern;
 
 @SuppressWarnings("deprecation")
@@ -73,7 +75,7 @@ public class Fragmenter {
 	 */
 	public Fragmenter(final String smiles) throws CDKException, IOException {
 		this.precursor = new Precursor(smiles);
-		this.ringBondFastBitArray = new FastBitArray(this.precursor.getBondCount(), false);
+		this.ringBondFastBitArray = new FastBitArray(this.precursor.getAtomContainer().getBondCount(), false);
 		this.smartsPatterns = new SmartsPattern[SMART_PATTERNS.length];
 
 		for (int i = 0; i < this.smartsPatterns.length; i++) {
@@ -215,7 +217,7 @@ public class Fragmenter {
 				if (currentFragment.getBrokenBondsArray().get(currentBond))
 					continue;
 				Fragment[] newFragments = { currentFragment };
-				int[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesFromBondIndex(currentBond);
+				int[] connectedAtomIndeces = this.getConnectedAtomIndicesFromBondIndex(currentBond);
 				newFragments = currentFragment.fragment(this.precursor, currentBond, connectedAtomIndeces);
 
 				//
@@ -275,7 +277,7 @@ public class Fragmenter {
 			if (!precursorFragment.getBondsArray().get(currentBond))
 				continue;
 
-			int[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesFromBondIndex(currentBond);
+			int[] connectedAtomIndeces = this.getConnectedAtomIndicesFromBondIndex(currentBond);
 
 			final Fragment[] newFragments = precursorFragment.fragment(this.precursor, currentBond,
 					connectedAtomIndeces);
@@ -323,7 +325,7 @@ public class Fragmenter {
 		for (int i = nextBrokenIndexBondIndexToRemove; i < precursorFragment.getBondsArray().getSize(); i++) {
 			if (!precursorFragment.getBondsArray().get(i))
 				continue;
-			final int[] indecesOfBondConnectedAtoms = this.precursor.getConnectedAtomIndecesFromBondIndex(i);
+			final int[] indecesOfBondConnectedAtoms = this.getConnectedAtomIndicesFromBondIndex(i);
 
 			// try to generate at most two fragments by the removal of the given bond
 			Fragment[] newGeneratedTopDownFragments = precursorFragment.fragment(this.precursor, i,
@@ -402,7 +404,7 @@ public class Fragmenter {
 					 * count number of implicit hydrogens of this neutral loss
 					 */
 					int numberImplicitHydrogens = 0;
-					allMatches[ii] = new FastBitArray(precursorMolecule.getAtomCount(), false);
+					allMatches[ii] = new FastBitArray(precursorMolecule.getAtomContainer().getAtomCount(), false);
 					/*
 					 * check all atoms
 					 */
@@ -411,8 +413,7 @@ public class Fragmenter {
 						/*
 						 * count number of implicit hydrogens of this neutral loss
 						 */
-						numberImplicitHydrogens += precursorMolecule
-								.getImplicitHydrogenCount(part[iii]);
+						numberImplicitHydrogens += this.getImplicitHydrogenCount(part[iii]);
 					}
 					/*
 					 * valid neutral loss match if number implicit hydrogens are at least the number
@@ -450,5 +451,27 @@ public class Fragmenter {
 		}
 
 		return matchedNeutralLossTypesArray;
+	}
+	
+	/**
+	 * Returns atom indices that are connected to bond with bondIdx.
+	 * 
+	 * @param bondIdx
+	 * @return int[]
+	 */
+	private int[] getConnectedAtomIndicesFromBondIndex(final int bondIdx) {
+		final IAtomContainer atomContainer = this.precursor.getAtomContainer();
+		final IBond bond = atomContainer.getBond(bondIdx);
+		return new int[] { atomContainer.indexOf(bond.getAtom(0)), atomContainer.indexOf(bond.getAtom(1)) };
+	}
+	
+	/**
+	 * 
+	 * @param atomIdx
+	 * @return int
+	 */
+	private int getImplicitHydrogenCount(final int atomIdx) {
+		final IAtomContainer atomContainer = this.precursor.getAtomContainer();
+		return atomContainer.getAtom(atomIdx).getImplicitHydrogenCount().intValue();
 	}
 }
