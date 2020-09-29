@@ -155,6 +155,22 @@ public class Fragment implements Comparable<Fragment> {
 		
 		return bonds;
 	}
+	
+	/**
+	 * 
+	 * @return int
+	 */
+	int getNumBrokenBonds() {
+		int numBrokenBonds = 0;
+		
+		for (int i = 0; i < this.brokenBondsArray.length; i++) {
+			if(this.brokenBondsArray[i]) {
+				numBrokenBonds++;
+			}
+		}
+		
+		return numBrokenBonds;
+	}
 
 	/**
 	 * 
