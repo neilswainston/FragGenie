@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.aromaticity.ElectronDonation;
@@ -15,8 +14,6 @@ import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
-import org.openscience.cdk.interfaces.IRingSet;
-import org.openscience.cdk.ringsearch.AllRingsFinder;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
@@ -38,12 +35,6 @@ public class Precursor {
 	 * 
 	 */
 	private final IAtomContainer atomContainer;
-	
-	/**
-	 * 
-	 */
-	private final FastBitArray aromaticBonds;
-
 	/**
 	 * 
 	 */
@@ -56,9 +47,6 @@ public class Precursor {
 	 */
 	Precursor(final String smiles) throws CDKException {
 		this.atomContainer = getAtomContainer(smiles);
-		
-		this.aromaticBonds = new FastBitArray(this.getBondCount(), false);
-		this.initialiseAromaticBonds();
 		
 		// Initialise atomAdjacencies:
 		this.atomAdjacencies = new int[getIndex(this.getAtomCount() - 2, this.getAtomCount() - 1) + 1];
@@ -224,25 +212,6 @@ public class Precursor {
 		}
 
 		return row * this.getAtomCount() + col - ((row + 1) * (row + 2)) / 2;
-	}
-
-	/**
-	 * Initialise indices belonging to a ring in the precursor molecule.
-	 * 
-	 * @throws CDKException 
-	 */
-	private void initialiseAromaticBonds() throws CDKException {
-		final IRingSet ringSet = new AllRingsFinder().findAllRings(this.atomContainer);
-
-		if (ringSet.getAtomContainerCount() != 0) {
-			final Aromaticity arom = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
-			final Set<IBond> aromBonds = arom.findBonds(this.atomContainer);
-			final Iterator<IBond> it = aromBonds.iterator();
-
-			while (it.hasNext()) {
-				this.aromaticBonds.set(this.atomContainer.indexOf(it.next()));
-			}
-		}
 	}
 	
 	/**
