@@ -182,22 +182,6 @@ public class Fragment implements Comparable<Fragment> {
 		
 		return numBrokenBonds;
 	}
-
-	/**
-	 * 
-	 * @return boolean[]
-	 */
-	boolean[] getBondsArray() {
-		return this.bondsArray;
-	}
-
-	/**
-	 * 
-	 * @return boolean[]
-	 */
-	boolean[] getBrokenBondsArray() {
-		return this.brokenBondsArray;
-	}
 	
 	/**
 	 * 
@@ -209,12 +193,9 @@ public class Fragment implements Comparable<Fragment> {
 		if(fragment.getNumBrokenBonds() <= maxBrokenBonds) {
 			fragments.add(fragment);
 			
-			final boolean[] bondsArray = fragment.getBondsArray();
-			final boolean[] brokenBondsArray = fragment.getBrokenBondsArray();
-			
 			if(fragment.getNumBrokenBonds() < maxBrokenBonds) {
-				for(int bondIdx = 0; bondIdx < bondsArray.length; bondIdx++) {
-					if(bondsArray[bondIdx] && !brokenBondsArray[bondIdx]) {
+				for(int bondIdx = 0; bondIdx < fragment.bondsArray.length; bondIdx++) {
+					if(fragment.bondsArray[bondIdx] && !fragment.brokenBondsArray[bondIdx]) {
 						for(final Fragment childFragment : fragment.fragmentBond(bondIdx)) {
 							fragment(childFragment, fragments, maxBrokenBonds);
 						}
