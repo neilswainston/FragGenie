@@ -18,67 +18,7 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
  * 
  * @author neilswainston
  */
-public class Precursor {
-
-
-	/**
-	 * 
-	 */
-	private final IAtomContainer atomContainer;
-
-	/**
-	 * 
-	 * @param smiles
-	 * @throws CDKException
-	 */
-	Precursor(final String smiles) throws CDKException {
-		this.atomContainer = getAtomContainer(smiles);
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((this.atomContainer == null) ? 0 : this.atomContainer.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-			
-		if (obj == null) {
-			return false;
-		}
-			
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-			
-		final Precursor other = (Precursor) obj;
-		
-		if (this.atomContainer == null) {
-			if (other.atomContainer != null) {
-				return false;
-			}
-		}
-		else if (!this.atomContainer.equals(other.atomContainer)) {
-			return false;
-		}
-			
-		return true;
-	}
-
-	/**
-	 * 
-	 * @return IAtomContainer
-	 */
-	IAtomContainer getAtomContainer() {
-		return this.atomContainer;
-	}
-	
+public class Precursor {	
 	/**
 	 * 
 	 * @param smiles
@@ -86,7 +26,7 @@ public class Precursor {
 	 * @throws CDKException 
 	 * @throws Exception
 	 */
-	private static IAtomContainer getAtomContainer(final String smiles) throws CDKException {
+	public static IAtomContainer getAtomContainer(final String smiles) throws CDKException {
 		final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
 		final IAtomContainer molecule = parser.parseSmiles(smiles);
 		final Aromaticity aromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());

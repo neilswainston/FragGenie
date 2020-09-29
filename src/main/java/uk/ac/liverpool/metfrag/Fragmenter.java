@@ -54,7 +54,7 @@ public class Fragmenter {
 	/**
 	 * 
 	 */
-	private Precursor precursor;
+	private IAtomContainer precursor;
 
 	/**
 	 * 
@@ -74,8 +74,8 @@ public class Fragmenter {
 	 * @throws Exception
 	 */
 	public Fragmenter(final String smiles) throws CDKException, IOException {
-		this.precursor = new Precursor(smiles);
-		this.ringBondFastBitArray = new FastBitArray(this.precursor.getAtomContainer().getBondCount(), false);
+		this.precursor = Precursor.getAtomContainer(smiles);
+		this.ringBondFastBitArray = new FastBitArray(this.precursor.getBondCount(), false);
 		this.smartsPatterns = new SmartsPattern[SMART_PATTERNS.length];
 
 		for (int i = 0; i < this.smartsPatterns.length; i++) {
@@ -380,15 +380,15 @@ public class Fragmenter {
 	 * @throws CDKException
 	 * @throws IOException 
 	 */
-	private FastBitArray[][] getMatchingAtoms(Precursor precursorMolecule) throws CDKException, IOException {
+	private FastBitArray[][] getMatchingAtoms(IAtomContainer precursorMolecule) throws CDKException, IOException {
 		final List<FastBitArray[]> matchedNeutralLossTypes = new ArrayList<>();
 
 		for (byte i = 0; i < this.smartsPatterns.length; i++) {
-			if (this.smartsPatterns[i].matches(precursorMolecule.getAtomContainer())) {
+			if (this.smartsPatterns[i].matches(precursorMolecule)) {
 				/*
 				 * get atom indeces containing to a neutral loss
 				 */
-				final int[][] matchingAtoms = this.smartsPatterns[i].matchAll(precursorMolecule.getAtomContainer()).toArray();
+				final int[][] matchingAtoms = this.smartsPatterns[i].matchAll(precursorMolecule).toArray();
 				/*
 				 * store which is a valid loss based on the number of hydrogens
 				 */
@@ -404,7 +404,7 @@ public class Fragmenter {
 					 * count number of implicit hydrogens of this neutral loss
 					 */
 					int numberImplicitHydrogens = 0;
-					allMatches[ii] = new FastBitArray(precursorMolecule.getAtomContainer().getAtomCount(), false);
+					allMatches[ii] = new FastBitArray(precursorMolecule.getAtomCount(), false);
 					/*
 					 * check all atoms
 					 */
@@ -460,7 +460,7 @@ public class Fragmenter {
 	 * @return int[]
 	 */
 	private int[] getConnectedAtomIndicesFromBondIndex(final int bondIdx) {
-		final IAtomContainer atomContainer = this.precursor.getAtomContainer();
+		final IAtomContainer atomContainer = this.precursor;
 		final IBond bond = atomContainer.getBond(bondIdx);
 		return new int[] { atomContainer.indexOf(bond.getAtom(0)), atomContainer.indexOf(bond.getAtom(1)) };
 	}
@@ -471,7 +471,7 @@ public class Fragmenter {
 	 * @return int
 	 */
 	private int getImplicitHydrogenCount(final int atomIdx) {
-		final IAtomContainer atomContainer = this.precursor.getAtomContainer();
+		final IAtomContainer atomContainer = this.precursor;
 		return atomContainer.getAtom(atomIdx).getImplicitHydrogenCount().intValue();
 	}
 }
