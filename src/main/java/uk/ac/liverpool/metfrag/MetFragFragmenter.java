@@ -15,6 +15,16 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.openscience.cdk.aromaticity.Aromaticity;
+import org.openscience.cdk.aromaticity.ElectronDonation;
+import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.graph.Cycles;
+import org.openscience.cdk.interfaces.IAtom;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
+import org.openscience.cdk.smiles.SmilesParser;
+import org.openscience.cdk.tools.CDKHydrogenAdder;
+import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import uk.ac.liverpool.metfrag.Bond;
 import uk.ac.liverpool.metfrag.Fragment;
@@ -60,7 +70,7 @@ public class MetFragFragmenter {
 	 * @throws Exception
 	 */
 	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final List<String> fields, final List<List<Object>> brokenBondsFilter) throws Exception {
-		final Fragmenter fragmenter = new Fragmenter(smiles);
+		final Fragmenter fragmenter = new Fragmenter(getAtomContainer(smiles));
 		final Collection<Fragment> fragments = fragmenter.getFragments(maximumTreeDepth);
 		final boolean getMasses = fields.indexOf(Headers.METFRAG_MZ.name()) != -1;
 		final boolean getFormulae = fields.indexOf(Headers.METFRAG_FORMULAE.name()) != -1;
@@ -193,6 +203,61 @@ public class MetFragFragmenter {
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * 
+	 * @param smiles
+	 * @return IAtomContainer
+	 * @throws CDKException 
+	 * @throws Exception
+	 */
+	private static IAtomContainer getAtomContainer(final String smiles) throws CDKException {
+		final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
+		final IAtomContainer molecule = parser.parseSmiles(smiles);
+		final Aromaticity aromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
+
+		AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(molecule);
+		aromaticity.apply(molecule);
+
+		final CDKHydrogenAdder hAdder = CDKHydrogenAdder.getInstance(molecule.getBuilder());
+
+		for (int i = 0; i < molecule.getAtomCount(); i++) {
+			hAdder.addImplicitHydrogens(molecule, molecule.getAtom(i));
+		}
+
+		AtomContainerManipulator.convertImplicitToExplicitHydrogens(molecule);
+
+		removeHydrogens(molecule);
+		return molecule;
+	}
+
+	/**
+	 * 
+	 * @param molecule
+	 */
+	private static void removeHydrogens(final IAtomContainer molecule) {
+		final Collection<IAtom> hydrogenAtoms = new ArrayList<>();
+
+		for (IAtom atom : molecule.atoms()) {
+			if (atom.getSymbol().equals("H")) { //$NON-NLS-1$
+				hydrogenAtoms.add(atom);
+			}
+
+			int numberHydrogens = 0;
+
+			for (IAtom neighbour : molecule.getConnectedAtomsList(atom)) {
+				if (neighbour.getSymbol().equals("H")) { //$NON-NLS-1$
+					numberHydrogens++;
+				}
+			}
+
+			atom.setImplicitHydrogenCount(Integer.valueOf(numberHydrogens));
+		}
+
+		for (IAtom atom : hydrogenAtoms) {
+			molecule.removeAtom(atom);
+		}
 	}
 
 	/**

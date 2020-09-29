@@ -68,13 +68,12 @@ public class Fragmenter {
 	
 	/**
 	 * 
-	 * @param smiles
-	 * @throws CDKException 
-	 * @throws IOException 
-	 * @throws Exception
+	 * @param precursor
+	 * @throws CDKException
+	 * @throws IOException
 	 */
-	public Fragmenter(final String smiles) throws CDKException, IOException {
-		this.precursor = Precursor.getAtomContainer(smiles);
+	public Fragmenter(final IAtomContainer precursor) throws IOException, CDKException {
+		this.precursor = precursor;
 		this.ringBondFastBitArray = new FastBitArray(this.precursor.getBondCount(), false);
 		this.smartsPatterns = new SmartsPattern[SMART_PATTERNS.length];
 
