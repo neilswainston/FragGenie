@@ -11,6 +11,10 @@ import java.util.TreeSet;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 
+/**
+ * 
+ * @author neilswainston
+ */
 public class Fragmenter {
 	
 	/**
@@ -120,10 +124,9 @@ public class Fragmenter {
 				childFragments.addAll(Arrays.asList(currentChildFragments));
 			}
 		}
-		/*
-		 * create fragments by ring bond cleavage and store them in the given vector
-		 */
-		createRingBondCleavedFragments(childFragments, parentFragment, ringBondCuttedFragments, ringBonds, lastCuttedBondOfRing);
+		
+		// Create fragments by ring bond cleavage:
+		childFragments.addAll(createRingBondCleavedFragments(ringBondCuttedFragments, ringBonds, lastCuttedBondOfRing));
 		this.ringBondsInitialised = true;
 
 		return childFragments;
@@ -131,58 +134,38 @@ public class Fragmenter {
 
 	/**
 	 * 
-	 * @param childFragments
-	 * @param precursorFragment
-	 * @param toProcess
+	 * @param fragments
 	 * @param ringBondArray
-	 * @param lastCuttedRingBond
+	 * @param lastBrokenBonds
 	 * @return
 	 */
-	private static void createRingBondCleavedFragments(Collection<Fragment> childFragments,
-			Fragment precursorFragment, Queue<Fragment> toProcess, boolean[] ringBondArray,
-			Queue<Integer> lastCuttedRingBond) {
-		/*
-		 * process all fragments that have been cutted in a ring without generating a
-		 * new one
-		 */
-		while (!toProcess.isEmpty() && lastCuttedRingBond.size() != 0) {
-			/*
-			 * 
-			 */
-			Fragment currentFragment = toProcess.poll();
-			int nextRingBondToCut = lastCuttedRingBond.poll().intValue() + 1;
-			/*
-			 * 
-			 */
-			for (int currentBond = nextRingBondToCut; currentBond < ringBondArray.length; currentBond++) {
-				if (!ringBondArray[currentBond])
-					continue;
-				if (currentFragment.getBrokenBondsArray()[currentBond])
-					continue;
-				Fragment[] newFragments = currentFragment.fragment(currentBond);
+	private static Collection<Fragment> createRingBondCleavedFragments(final Queue<Fragment> fragments, final boolean[] ringBonds, final Queue<Integer> lastBrokenBonds) {
+		final Collection<Fragment> childFragments = new ArrayList<>();
+		
+		// Process all fragments that have been cut in a ring without generating a new one:
+		while (!fragments.isEmpty() && lastBrokenBonds.size() != 0) {
+			final Fragment fragment = fragments.poll();
+			final int nextRingBondToCut = lastBrokenBonds.poll().intValue() + 1;
 
-				// if two new fragments have been generated set them as valid
-				//
-				if (newFragments.length == 2) {
-					newFragments[0].setLastSkippedBond(currentFragment.getLastSkippedBond());
-					newFragments[1].setLastSkippedBond(currentFragment.getLastSkippedBond());
-				}
-				//
-				// set precursor fragment of generated fragment(s) and the child(ren) of
-				// precursor fragments
-				//
-				for (int k = 0; k < newFragments.length; k++) {
+			for (int currentBond = nextRingBondToCut; currentBond < ringBonds.length; currentBond++) {
+				if (ringBonds[currentBond] && !fragment.getBrokenBondsArray()[currentBond]) {
+					final Fragment[] newFragments = fragment.fragment(currentBond);
+
 					if (newFragments.length == 2) {
-						childFragments.add(newFragments[k]);
+						newFragments[0].setLastSkippedBond(fragment.getLastSkippedBond());
+						newFragments[1].setLastSkippedBond(fragment.getLastSkippedBond());
 					}
-				}
-
-				if (newFragments.length == 1) {
-					toProcess.add(newFragments[0]);
-					lastCuttedRingBond.add(Integer.valueOf(currentBond));
+					
+					childFragments.addAll(Arrays.asList(newFragments));
+					
+					if (newFragments.length == 1) {
+						lastBrokenBonds.add(Integer.valueOf(currentBond));
+					}
 				}
 			}
 		}
+		
+		return childFragments;
 	}
 
 	/**
