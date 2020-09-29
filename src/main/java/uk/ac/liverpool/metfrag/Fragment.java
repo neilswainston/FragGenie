@@ -234,9 +234,8 @@ public class Fragment implements Comparable<Fragment> {
 	 * @param removeBond
 	 * @param bondConnectedAtoms
 	 * @return Fragment[]
-	 * @throws Exception
 	 */
-	Fragment[] fragment(final IAtomContainer precursorMolecule, final int removeBond, final int[] bondConnectedAtoms) throws Exception {
+	Fragment[] fragment(final IAtomContainer precursorMolecule, final int removeBond, final int[] bondConnectedAtoms)  {
 
 		// Generate first fragment:
 		// Traverse to first direction from atomIndex connected by broken bond:
