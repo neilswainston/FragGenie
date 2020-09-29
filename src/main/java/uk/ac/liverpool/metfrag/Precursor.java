@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.aromaticity.ElectronDonation;
+import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -46,58 +47,100 @@ public class Precursor {
 	/**
 	 * 
 	 */
-	private final int[] atomAdjacencyList;
+	private final int[] atomAdjacencies;
 
 	/**
 	 * 
-	 * @param precMolecule
-	 * @throws Exception
+	 * @param smiles
+	 * @throws CDKException
 	 */
-	Precursor(final String smiles) throws Exception {
+	Precursor(final String smiles) throws CDKException {
 		this.atomContainer = getAtomContainer(smiles);
-		this.aromaticBonds = new FastBitArray(this.getNonHydrogenBondCount(), false);
-		this.atomAdjacencyList = new int[getIndex(this.getNonHydrogenAtomCount() - 2,
-				this.getNonHydrogenAtomCount() - 1) + 1];
+		
+		this.aromaticBonds = new FastBitArray(this.getBondCount(), false);
+		this.initialiseAromaticBonds();
+		
+		// Initialise atomAdjacencies:
+		this.atomAdjacencies = new int[getIndex(this.getAtomCount() - 2, this.getAtomCount() - 1) + 1];
+		
+		for (int i = 0; i < this.getBondCount(); i++) {
+			final Iterator<IAtom> atoms = this.atomContainer.getBond(i).atoms().iterator();
+			this.atomAdjacencies[getIndex(this.atomContainer.indexOf(atoms.next()), this.atomContainer.indexOf(atoms.next()))] = i + 1;
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.atomContainer == null) ? 0 : this.atomContainer.hashCode());
+		return result;
+	}
 
-		this.initialiseRingBondsFastBitArray();
-		this.initialiseAtomAdjacencyList();
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+			
+		if (obj == null) {
+			return false;
+		}
+			
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+			
+		final Precursor other = (Precursor) obj;
+		
+		if (this.atomContainer == null) {
+			if (other.atomContainer != null) {
+				return false;
+			}
+		}
+		else if (!this.atomContainer.equals(other.atomContainer)) {
+			return false;
+		}
+			
+		return true;
 	}
 
 	/**
-	 * Returns bond index + 1
+	 * Returns bond index + 1.
 	 * 
-	 * @param x
-	 * @param y
+	 * @param atomIdx1
+	 * @param atomIdx2
 	 * @return int
 	 */
-	int getBondIndexFromAtomAdjacencyList(final int x, final int y) {
-		return this.atomAdjacencyList[this.getIndex(x, y)];
+	int getBondIndex(final int atomIdx1, final int atomIdx2) {
+		return this.atomAdjacencies[this.getIndex(atomIdx1, atomIdx2)];
 	}
 
 	/**
-	 * returns atom indeces that are connected by bond with bondIndex
+	 * Returns atom indices that are connected to atom with atomIndex.
 	 * 
 	 * @param atomIndex
 	 * @return int[]
 	 */
-	int[] getConnectedAtomIndecesOfAtomIndex(final int idx) {
-		final List<IAtom> connectedAtoms = this.atomContainer.getConnectedAtomsList(this.atomContainer.getAtom(idx));
-		final int[] connectedAtomIndeces = new int[connectedAtoms.size()];
+	int[] getConnectedAtomIndicesFromAtomIdx(final int atomIdx) {
+		final List<IAtom> connected = this.atomContainer.getConnectedAtomsList(this.atomContainer.getAtom(atomIdx));
+		final int[] connectedIdxs = new int[connected.size()];
 
-		for (int k = 0; k < connectedAtoms.size(); k++) {
-			connectedAtomIndeces[k] = this.atomContainer.indexOf(connectedAtoms.get(k));
+		for (int k = 0; k < connected.size(); k++) {
+			connectedIdxs[k] = this.atomContainer.indexOf(connected.get(k));
 		}
 
-		return connectedAtomIndeces;
+		return connectedIdxs;
 	}
 
 	/**
+	 * Returns atom indices that are connected to bond with bondIdx.
 	 * 
-	 * @param idx
+	 * @param bondIdx
 	 * @return int[]
 	 */
-	int[] getConnectedAtomIndecesOfBondIndex(final int idx) {
-		final IBond bond = this.atomContainer.getBond(idx);
+	int[] getConnectedAtomIndecesFromBondIndex(final int bondIdx) {
+		final IBond bond = this.atomContainer.getBond(bondIdx);
 		return new int[] { this.atomContainer.indexOf(bond.getAtom(0)), this.atomContainer.indexOf(bond.getAtom(1)) };
 	}
 
@@ -107,24 +150,24 @@ public class Precursor {
 	 * @return double
 	 */
 	double getMassOfAtom(final int idx) {
-		return MONOISOTOPIC_MASSES.get(this.getAtom(idx)).doubleValue()
-				+ this.getNumberHydrogensConnectedToAtomIndex(idx) * MONOISOTOPIC_MASSES.get("H").doubleValue(); //$NON-NLS-1$
+		return MONOISOTOPIC_MASSES.get(this.getAtomSymbol(idx)).doubleValue()
+				+ this.getImplicitHydrogenCount(idx) * MONOISOTOPIC_MASSES.get("H").doubleValue(); //$NON-NLS-1$
 	}
 
 	/**
 	 * 
-	 * @param index
+	 * @param atomIdx
 	 * @return String
 	 */
-	String getAtom(final int index) {
-		return this.atomContainer.getAtom(index).getSymbol();
+	String getAtomSymbol(final int atomIdx) {
+		return this.atomContainer.getAtom(atomIdx).getSymbol();
 	}
 
 	/**
 	 * 
 	 * @return int
 	 */
-	int getNonHydrogenAtomCount() {
+	int getAtomCount() {
 		return this.atomContainer.getAtomCount();
 	}
 
@@ -132,41 +175,36 @@ public class Precursor {
 	 * 
 	 * @return int
 	 */
-	int getNonHydrogenBondCount() {
+	int getBondCount() {
 		return this.atomContainer.getBondCount();
 	}
 
 	/**
 	 * 
-	 * @param atomIndex
+	 * @param atomIdx
 	 * @return int
 	 */
-	int getNumberHydrogensConnectedToAtomIndex(final int idx) {
-		return this.atomContainer.getAtom(idx).getImplicitHydrogenCount();
+	int getImplicitHydrogenCount(final int atomIdx) {
+		return this.atomContainer.getAtom(atomIdx).getImplicitHydrogenCount();
 	}
 
 	/**
 	 * 
 	 * @return IAtomContainer
 	 */
-	IAtomContainer getStructureAsIAtomContainer() {
+	IAtomContainer getAtomContainer() {
 		return this.atomContainer;
 	}
 
 	/**
 	 * 
-	 * @param i
-	 * @return Object
+	 * @param bondIdx
+	 * @return Bond
 	 */
-	Bond getBond(final int i) {
-		final List<IAtom> atoms = new ArrayList<>();
-		final IBond iBond = this.atomContainer.getBond(i);
-
-		for (IAtom atom : iBond.atoms()) {
-			atoms.add(atom);
-		}
-
-		return new Bond(atoms.get(0), atoms.get(1), iBond.getOrder(), iBond.isAromatic());
+	Bond getBond(final int bondIdx) {
+		final IBond iBond = this.atomContainer.getBond(bondIdx);
+		final Iterator<IAtom> atoms = iBond.atoms().iterator();
+		return new Bond(atoms.next(), atoms.next(), iBond.getOrder(), iBond.isAromatic());
 	}
 
 	/**
@@ -185,26 +223,16 @@ public class Precursor {
 			col = a;
 		}
 
-		return row * this.getNonHydrogenAtomCount() + col - ((row + 1) * (row + 2)) / 2;
+		return row * this.getAtomCount() + col - ((row + 1) * (row + 2)) / 2;
 	}
 
 	/**
-	 * Initialise 1D atom adjacency list.
+	 * Initialise indices belonging to a ring in the precursor molecule.
+	 * 
+	 * @throws CDKException 
 	 */
-	private void initialiseAtomAdjacencyList() {
-		for (int i = 0; i < this.getNonHydrogenBondCount(); i++) {
-			final Iterator<IAtom> atoms = this.atomContainer.getBond(i).atoms().iterator();
-			this.atomAdjacencyList[getIndex(this.atomContainer.indexOf(atoms.next()),
-					this.atomContainer.indexOf(atoms.next()))] = i + 1;
-		}
-	}
-
-	/**
-	 * Initialise indeces belonging to a ring in the precursor molecule.
-	 */
-	private void initialiseRingBondsFastBitArray() throws Exception {
-		final AllRingsFinder allRingsFinder = new AllRingsFinder();
-		final IRingSet ringSet = allRingsFinder.findAllRings(this.atomContainer);
+	private void initialiseAromaticBonds() throws CDKException {
+		final IRingSet ringSet = new AllRingsFinder().findAllRings(this.atomContainer);
 
 		if (ringSet.getAtomContainerCount() != 0) {
 			final Aromaticity arom = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
@@ -216,14 +244,15 @@ public class Precursor {
 			}
 		}
 	}
-
+	
 	/**
 	 * 
 	 * @param smiles
 	 * @return IAtomContainer
+	 * @throws CDKException 
 	 * @throws Exception
 	 */
-	private static IAtomContainer getAtomContainer(final String smiles) throws Exception {
+	private static IAtomContainer getAtomContainer(final String smiles) throws CDKException {
 		final SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance());
 		final IAtomContainer molecule = parser.parseSmiles(smiles);
 		final Aromaticity aromaticity = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
@@ -269,43 +298,6 @@ public class Precursor {
 		for (IAtom atom : hydrogenAtoms) {
 			molecule.removeAtom(atom);
 		}
-	}
-	
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((this.atomContainer == null) ? 0 : this.atomContainer.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-			
-		if (obj == null) {
-			return false;
-		}
-			
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-			
-		final Precursor other = (Precursor) obj;
-		
-		if (this.atomContainer == null) {
-			if (other.atomContainer != null) {
-				return false;
-			}
-		}
-		else if (!this.atomContainer.equals(other.atomContainer)) {
-			return false;
-		}
-			
-		return true;
 	}
 
 	static {

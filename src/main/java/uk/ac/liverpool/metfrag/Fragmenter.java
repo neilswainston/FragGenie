@@ -13,39 +13,73 @@ import org.openscience.cdk.smiles.smarts.SmartsPattern;
 
 @SuppressWarnings("deprecation")
 public class Fragmenter {
+	
+	/**
+	 * 
+	 */
+	private final static String[] SMART_PATTERNS = { "O", "C(=O)O", "N", "C[Si](C)(C)O", "C[Si](C)C", "CO", "CN" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
 
 	/**
 	 * 
-	 * @param newGeneratedTopDownFragments
 	 */
-	private static void processGeneratedFragments(Fragment[] newGeneratedTopDownFragments) {
-		if (newGeneratedTopDownFragments.length == 2) {
-			newGeneratedTopDownFragments[0].setAddedToQueueCounts((byte) 1);
-			newGeneratedTopDownFragments[1].setAddedToQueueCounts((byte) 1);
-		}
-	}
-
+	private final SmartsPattern[] smartsPatterns;
+	
+	/**
+	 * 
+	 */
 	private List<Integer> brokenBondToNeutralLossIndex = new ArrayList<>();
+	
+	/**
+	 * 
+	 */
 	private FastBitArray[][] detectedNeutralLosses;
+	
+	/**
+	 * 
+	 */
 	private byte maximumNumberOfAFragmentAddedToQueue = 2;
+	
+	/**
+	 * 
+	 */
 	private final short[] minimumNumberImplicitHydrogens = { 1, 1, 2, 9, 9, 1, 0 };
+	
+	/**
+	 * 
+	 */
 	private List<Integer> neutralLossIndex = new ArrayList<>();
+	
+	/**
+	 * 
+	 */
 	private Precursor precursor;
 
-	private FastBitArray ringBondFastBitArray;
-	private boolean ringBondsInitialised = false;
-
-	private final String[] smartPatterns = { "O", "C(=O)O", "N", "C[Si](C)(C)O", "C[Si](C)C", "CO", "CN" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
-
 	/**
 	 * 
-	 * @param precursor
-	 * @param maximumTreeDepth
+	 */
+	private FastBitArray ringBondFastBitArray;
+	
+	/**
+	 * 
+	 */
+	private boolean ringBondsInitialised = false;
+	
+	/**
+	 * 
+	 * @param smiles
+	 * @throws CDKException 
+	 * @throws IOException 
 	 * @throws Exception
 	 */
-	public Fragmenter(final String smiles) throws Exception {
+	public Fragmenter(final String smiles) throws CDKException, IOException {
 		this.precursor = new Precursor(smiles);
-		this.ringBondFastBitArray = new FastBitArray(this.precursor.getNonHydrogenBondCount(), false);
+		this.ringBondFastBitArray = new FastBitArray(this.precursor.getBondCount(), false);
+		this.smartsPatterns = new SmartsPattern[SMART_PATTERNS.length];
+
+		for (int i = 0; i < this.smartsPatterns.length; i++) {
+			this.smartsPatterns[i] = SmartsPattern.create(SMART_PATTERNS[i]);
+		}
+		
 		this.detectedNeutralLosses = getMatchingAtoms(this.precursor);
 	}
 
@@ -81,6 +115,17 @@ public class Fragmenter {
 		}
 
 		return fragments;
+	}
+	
+	/**
+	 * 
+	 * @param newGeneratedTopDownFragments
+	 */
+	private static void processGeneratedFragments(Fragment[] newGeneratedTopDownFragments) {
+		if (newGeneratedTopDownFragments.length == 2) {
+			newGeneratedTopDownFragments[0].setAddedToQueueCounts((byte) 1);
+			newGeneratedTopDownFragments[1].setAddedToQueueCounts((byte) 1);
+		}
 	}
 
 	/**
@@ -170,7 +215,7 @@ public class Fragmenter {
 				if (currentFragment.getBrokenBondsArray().get(currentBond))
 					continue;
 				Fragment[] newFragments = { currentFragment };
-				int[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesOfBondIndex(currentBond);
+				int[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesFromBondIndex(currentBond);
 				newFragments = currentFragment.fragment(this.precursor, currentBond, connectedAtomIndeces);
 
 				//
@@ -230,7 +275,7 @@ public class Fragmenter {
 			if (!precursorFragment.getBondsArray().get(currentBond))
 				continue;
 
-			int[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesOfBondIndex(currentBond);
+			int[] connectedAtomIndeces = this.precursor.getConnectedAtomIndecesFromBondIndex(currentBond);
 
 			final Fragment[] newFragments = precursorFragment.fragment(this.precursor, currentBond,
 					connectedAtomIndeces);
@@ -278,7 +323,7 @@ public class Fragmenter {
 		for (int i = nextBrokenIndexBondIndexToRemove; i < precursorFragment.getBondsArray().getSize(); i++) {
 			if (!precursorFragment.getBondsArray().get(i))
 				continue;
-			final int[] indecesOfBondConnectedAtoms = this.precursor.getConnectedAtomIndecesOfBondIndex(i);
+			final int[] indecesOfBondConnectedAtoms = this.precursor.getConnectedAtomIndecesFromBondIndex(i);
 
 			// try to generate at most two fragments by the removal of the given bond
 			Fragment[] newGeneratedTopDownFragments = precursorFragment.fragment(this.precursor, i,
@@ -334,20 +379,14 @@ public class Fragmenter {
 	 * @throws IOException 
 	 */
 	private FastBitArray[][] getMatchingAtoms(Precursor precursorMolecule) throws CDKException, IOException {
-		final SmartsPattern[] smartsPattern = new SmartsPattern[this.smartPatterns.length];
-
-		for (int i = 0; i < smartsPattern.length; i++) {
-			smartsPattern[i] = SmartsPattern.create(this.smartPatterns[i]);
-		}
-
 		final List<FastBitArray[]> matchedNeutralLossTypes = new ArrayList<>();
 
-		for (byte i = 0; i < smartsPattern.length; i++) {
-			if (smartsPattern[i].matches(precursorMolecule.getStructureAsIAtomContainer())) {
+		for (byte i = 0; i < this.smartsPatterns.length; i++) {
+			if (this.smartsPatterns[i].matches(precursorMolecule.getAtomContainer())) {
 				/*
 				 * get atom indeces containing to a neutral loss
 				 */
-				final int[][] matchingAtoms = smartsPattern[i].matchAll(precursorMolecule.getStructureAsIAtomContainer()).toArray();
+				final int[][] matchingAtoms = this.smartsPatterns[i].matchAll(precursorMolecule.getAtomContainer()).toArray();
 				/*
 				 * store which is a valid loss based on the number of hydrogens
 				 */
@@ -363,7 +402,7 @@ public class Fragmenter {
 					 * count number of implicit hydrogens of this neutral loss
 					 */
 					int numberImplicitHydrogens = 0;
-					allMatches[ii] = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
+					allMatches[ii] = new FastBitArray(precursorMolecule.getAtomCount(), false);
 					/*
 					 * check all atoms
 					 */
@@ -373,7 +412,7 @@ public class Fragmenter {
 						 * count number of implicit hydrogens of this neutral loss
 						 */
 						numberImplicitHydrogens += precursorMolecule
-								.getNumberHydrogensConnectedToAtomIndex(part[iii]);
+								.getImplicitHydrogenCount(part[iii]);
 					}
 					/*
 					 * valid neutral loss match if number implicit hydrogens are at least the number

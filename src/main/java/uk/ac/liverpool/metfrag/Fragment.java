@@ -53,9 +53,9 @@ public class Fragment implements Comparable<Fragment> {
 	 * @param precursor
 	 */
 	Fragment(final Precursor precursor) {
-		this(precursor, new FastBitArray(precursor.getNonHydrogenAtomCount(), true),
-				new FastBitArray(precursor.getNonHydrogenBondCount(), true),
-				new FastBitArray(precursor.getNonHydrogenBondCount(), false));
+		this(precursor, new FastBitArray(precursor.getAtomCount(), true),
+				new FastBitArray(precursor.getBondCount(), true),
+				new FastBitArray(precursor.getBondCount(), false));
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class Fragment implements Comparable<Fragment> {
 
 		for (int i = 0; i < this.atomsArray.getSize(); i++) {
 			if (this.atomsArray.get(i)) {
-				final String element = this.prec.getAtom(i);
+				final String element = this.prec.getAtomSymbol(i);
 
 				if (elementCount.get(element) == null) {
 					elementCount.put(element, Integer.valueOf(1));
@@ -112,7 +112,7 @@ public class Fragment implements Comparable<Fragment> {
 					elementCount.put(element, Integer.valueOf(elementCount.get(element).intValue() + 1));
 				}
 
-				final int hCount = this.prec.getNumberHydrogensConnectedToAtomIndex(i);
+				final int hCount = this.prec.getImplicitHydrogenCount(i);
 
 				if (elementCount.get(HYDROGEN) == null) {
 					elementCount.put(HYDROGEN, Integer.valueOf(hCount));
@@ -258,20 +258,20 @@ public class Fragment implements Comparable<Fragment> {
 	 */
 	private Object[] traverse(final Precursor precursorMolecule, final int startAtom, final int endAtom,
 			final int removeBond, final FastBitArray brokenBondArrayOfNewFragment) {
-		final FastBitArray newAtomArray = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
-		final FastBitArray newBondArray = new FastBitArray(precursorMolecule.getNonHydrogenBondCount(), false);
+		final FastBitArray newAtomArray = new FastBitArray(precursorMolecule.getAtomCount(), false);
+		final FastBitArray newBondArray = new FastBitArray(precursorMolecule.getBondCount(), false);
 		final FastBitArray currentBondArray = this.bondsArray;
 		
 		// When traversing the fragment graph, we want to know if we already visited
 		// a node (atom) to check for ringed structures.
 		// If traversed an already visited atom, then no new fragment was generated.
-		final FastBitArray visited = new FastBitArray(precursorMolecule.getNonHydrogenAtomCount(), false);
+		final FastBitArray visited = new FastBitArray(precursorMolecule.getAtomCount(), false);
 
 		// Traverse molecule in the first direction:
 		final Stack<int[]> toProcessConnectedAtoms = new Stack<>();
 		final Stack<Integer> toProcessAtom = new Stack<>();
 		
-		toProcessConnectedAtoms.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(startAtom));
+		toProcessConnectedAtoms.push(precursorMolecule.getConnectedAtomIndicesFromAtomIdx(startAtom));
 		toProcessAtom.push(Integer.valueOf(startAtom));
 		visited.set(startAtom);
 		
@@ -285,10 +285,9 @@ public class Fragment implements Comparable<Fragment> {
 			
 			for (int nextAtom : toProcessConnectedAtoms.pop()) {
 				// Did we visit the current atom already?
-				final int currentBond = precursorMolecule.getBondIndexFromAtomAdjacencyList(nextAtom, midAtom) - 1;
+				final int currentBond = precursorMolecule.getBondIndex(nextAtom, midAtom) - 1;
 
 				if (!currentBondArray.get(currentBond) || currentBond == removeBond) {
-					
 					continue;
 				}
 				
@@ -306,8 +305,8 @@ public class Fragment implements Comparable<Fragment> {
 				visited.set(nextAtom);
 				newAtomArray.set(nextAtom);
 
-				newBondArray.set(precursorMolecule.getBondIndexFromAtomAdjacencyList(midAtom, nextAtom) - 1);
-				toProcessConnectedAtoms.push(precursorMolecule.getConnectedAtomIndecesOfAtomIndex(nextAtom));
+				newBondArray.set(precursorMolecule.getBondIndex(midAtom, nextAtom) - 1);
+				toProcessConnectedAtoms.push(precursorMolecule.getConnectedAtomIndicesFromAtomIdx(nextAtom));
 				toProcessAtom.push(Integer.valueOf(nextAtom));
 			}
 		}
