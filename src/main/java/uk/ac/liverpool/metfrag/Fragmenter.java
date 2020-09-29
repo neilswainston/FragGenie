@@ -40,17 +40,15 @@ public class Fragmenter {
 	 */
 	private List<Integer> brokenBondToNeutralLossIndex = new ArrayList<>();
 	
-
-	
-	/**
-	 * 
-	 */
-	private byte maximumNumberOfAFragmentAddedToQueue = 2;
-	
 	/**
 	 * 
 	 */
 	private List<Integer> neutralLossIndex = new ArrayList<>();
+	
+	/**
+	 * 
+	 */
+	private boolean ringBondsInitialised = false;
 	
 	/**
 	 * 
@@ -62,10 +60,7 @@ public class Fragmenter {
 	 */
 	private boolean[] ringBondArray;
 	
-	/**
-	 * 
-	 */
-	private boolean ringBondsInitialised = false;
+
 	
 	
 	static {
@@ -101,7 +96,7 @@ public class Fragmenter {
 	private void initialiseNeutralLosses() throws CDKException, IOException {
 		int i = 0;
 		
-		for (SmartsPattern pattern : SMARTS_PATTERNS) {
+		for (final SmartsPattern pattern : SMARTS_PATTERNS) {
 			// Get atom indices corresponding to a neutral loss:
 			final int[][] matchingAtoms = pattern.matchAll(this.prec).toArray();
 			
@@ -122,7 +117,7 @@ public class Fragmenter {
 					for (int atomIdx : part) {
 						allMatches[ii][atomIdx] = true;
 						// Count number of implicit hydrogens of this neutral loss:
-						numberImplicitHydrogens += this.getImplicitHydrogenCount(atomIdx);
+						numberImplicitHydrogens += this.prec.getAtom(atomIdx).getImplicitHydrogenCount().intValue();
 					}
 					
 					// Valid neutral loss match if number implicit hydrogens are at least the number
@@ -195,12 +190,10 @@ public class Fragmenter {
 		}
 			
 		// Get the last bond index that was removed; from there on the next bonds will be removed:
-		final int nextBondIndexToRemove = getLastSetBit(parentFragment.getBrokenBondsArray()) + 1;
+		final int nextBondBreakIdx = getLastSetBit(parentFragment.getBrokenBondsArray()) + 1;
 		
-		/*
-		 * start from the last broken bond index
-		 */
-		for (int bondIdx = nextBondIndexToRemove; bondIdx < parentFragment.getBondsArray().length; bondIdx++) {
+		// Start from the last broken bond index:
+		for (int bondIdx = nextBondBreakIdx; bondIdx < parentFragment.getBondsArray().length; bondIdx++) {
 			if (!parentFragment.getBondsArray()[bondIdx]) {
 				continue;
 			}
@@ -209,23 +202,23 @@ public class Fragmenter {
 			final Fragment[] newGeneratedTopDownFragments = parentFragment.fragment(bondIdx);
 			
 			/*
-			 * in case the precursor wasn't splitted try to cleave an additional bond until
+			 * In case the precursor wasn't split, try to cleave an additional bond until:
 			 * 
-			 * 1. two fragments are generated or 2. the maximum number of trials have been
-			 * reached 3. no further bond can be removed
+			 * 1. two fragments are generated; or
+			 * 2. the maximum number of trials have been reached; or
+			 * 3. no further bond can be removed.
 			 */
 			if (newGeneratedTopDownFragments.length == 1) {
 				ringBonds[bondIdx] = true;
 				newGeneratedTopDownFragments[0].setLastSkippedBond(bondIdx + 1);
 				ringBondCuttedFragments.add(newGeneratedTopDownFragments[0]);
 				lastCuttedBondOfRing.add(Integer.valueOf(bondIdx));
-				if (!this.ringBondsInitialised)
+				
+				if (!this.ringBondsInitialised) {
 					this.ringBondArray[bondIdx] = true;
+				}
 			}
-			/*
-			 * pre-processing of the generated fragment/s
-			 */
-			Fragmenter.processGeneratedFragments(newGeneratedTopDownFragments);
+			
 			/*
 			 * if two new fragments have been generated set them as valid
 			 */
@@ -244,21 +237,10 @@ public class Fragmenter {
 		/*
 		 * create fragments by ring bond cleavage and store them in the given vector
 		 */
-		this.createRingBondCleavedFragments(childFragments, parentFragment, ringBondCuttedFragments, ringBonds, lastCuttedBondOfRing);
+		createRingBondCleavedFragments(childFragments, parentFragment, ringBondCuttedFragments, ringBonds, lastCuttedBondOfRing);
 		this.ringBondsInitialised = true;
 
 		return childFragments;
-	}
-	
-	/**
-	 * 
-	 * @param newGeneratedTopDownFragments
-	 */
-	private static void processGeneratedFragments(Fragment[] newGeneratedTopDownFragments) {
-		if (newGeneratedTopDownFragments.length == 2) {
-			newGeneratedTopDownFragments[0].setAddedToQueueCounts((byte) 1);
-			newGeneratedTopDownFragments[1].setAddedToQueueCounts((byte) 1);
-		}
 	}
 
 	/**
@@ -333,7 +315,7 @@ public class Fragmenter {
 	 * @param lastCuttedRingBond
 	 * @return
 	 */
-	private void createRingBondCleavedFragments(Collection<Fragment> childFragments,
+	private static void createRingBondCleavedFragments(Collection<Fragment> childFragments,
 			Fragment precursorFragment, Queue<Fragment> toProcess, boolean[] ringBondArray,
 			Queue<Integer> lastCuttedRingBond) {
 		/*
@@ -356,11 +338,6 @@ public class Fragmenter {
 					continue;
 				Fragment[] newFragments = currentFragment.fragment(currentBond);
 
-				//
-				// pre-processing of the generated fragment/s
-				//
-				Fragmenter.processGeneratedFragments(newFragments);
-				//
 				// if two new fragments have been generated set them as valid
 				//
 				if (newFragments.length == 2) {
@@ -378,12 +355,8 @@ public class Fragmenter {
 				}
 
 				if (newFragments.length == 1) {
-					if (newFragments[0].getAddedToQueueCounts() < this.maximumNumberOfAFragmentAddedToQueue) {
-						toProcess.add(newFragments[0]);
-						lastCuttedRingBond.add(Integer.valueOf(currentBond));
-					} else {
-						childFragments.add(newFragments[0]);
-					}
+					toProcess.add(newFragments[0]);
+					lastCuttedRingBond.add(Integer.valueOf(currentBond));
 				}
 			}
 		}
@@ -407,14 +380,8 @@ public class Fragmenter {
 				continue;
 
 			final Fragment[] newFragments = precursorFragment.fragment(currentBond);
-
-			Fragmenter.processGeneratedFragments(newFragments);
-			if (newFragments.length == 2) {
-				this.checkForNeutralLossesAdaptMolecularFormulas(newFragments, currentBond);
-			} else {
-				System.err.println("problem generating fragments"); //$NON-NLS-1$
-				System.exit(1);
-			}
+			
+			this.checkForNeutralLossesAdaptMolecularFormulas(newFragments, currentBond);
 
 			for (int k = 0; k < newFragments.length; k++) {
 				if (newFragments.length == 2) {
@@ -422,15 +389,6 @@ public class Fragmenter {
 				}
 			}
 		}
-	}
-	
-	/**
-	 * 
-	 * @param atomIdx
-	 * @return int
-	 */
-	private int getImplicitHydrogenCount(final int atomIdx) {
-		return this.prec.getAtom(atomIdx).getImplicitHydrogenCount().intValue();
 	}
 	
 	/**

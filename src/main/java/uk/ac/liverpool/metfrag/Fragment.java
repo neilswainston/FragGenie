@@ -49,11 +49,6 @@ public class Fragment implements Comparable<Fragment> {
 	/**
 	 * 
 	 */
-	private int addedToQueueCounts = 0;
-
-	/**
-	 * 
-	 */
 	private int lastSkippedBond = -1;
 
 	/**
@@ -67,7 +62,8 @@ public class Fragment implements Comparable<Fragment> {
 	 * @param precursor
 	 */
 	Fragment(final IAtomContainer precursor) {
-		this(precursor, new boolean[precursor.getAtomCount()],
+		this(precursor,
+				new boolean[precursor.getAtomCount()],
 				new boolean[precursor.getBondCount()],
 				new boolean[precursor.getBondCount()]);
 		
@@ -83,8 +79,7 @@ public class Fragment implements Comparable<Fragment> {
 	 * @param bonds
 	 * @param brokenBonds
 	 */
-	private Fragment(final IAtomContainer precursor, final boolean[] atoms, final boolean[] bonds,
-			final boolean[] brokenBonds) {
+	private Fragment(final IAtomContainer precursor, final boolean[] atoms, final boolean[] bonds, final boolean[] brokenBonds) {
 		this.prec = precursor;
 		this.atomsArray = atoms;
 		this.bondsArray = bonds;
@@ -174,14 +169,6 @@ public class Fragment implements Comparable<Fragment> {
 
 	/**
 	 * 
-	 * @return int
-	 */
-	int getAddedToQueueCounts() {
-		return this.addedToQueueCounts;
-	}
-
-	/**
-	 * 
 	 * @return boolean[]
 	 */
 	boolean[] getAtomsArray() {
@@ -216,14 +203,6 @@ public class Fragment implements Comparable<Fragment> {
 	 * 
 	 * @param i
 	 */
-	void setAddedToQueueCounts(final int i) {
-		this.addedToQueueCounts = i;
-	}
-
-	/**
-	 * 
-	 * @param i
-	 */
 	void setLastSkippedBond(final int i) {
 		this.lastSkippedBond = i;
 	}
@@ -248,7 +227,6 @@ public class Fragment implements Comparable<Fragment> {
 		// Only one fragment is generated when a ring bond was broken:
 		if (((Boolean)result1[0]).booleanValue()) {
 			fragment1.treeDepth = this.treeDepth;
-			fragment1.addedToQueueCounts = this.addedToQueueCounts + 1;
 			return new Fragment[] { fragment1 };
 		}
 		
