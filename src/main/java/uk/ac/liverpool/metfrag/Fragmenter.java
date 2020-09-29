@@ -24,6 +24,11 @@ public class Fragmenter {
 	/**
 	 * 
 	 */
+	private final static int[] MIN_NUM_IMPLICIT_HYDROGENS = { 1, 1, 2, 9, 9, 1, 0 };
+	
+	/**
+	 * 
+	 */
 	private final SmartsPattern[] smartsPatterns;
 	
 	/**
@@ -34,7 +39,7 @@ public class Fragmenter {
 	/**
 	 * 
 	 */
-	private FastBitArray[][] detectedNeutralLosses;
+	private boolean[][][] detectedNeutralLosses;
 	
 	/**
 	 * 
@@ -44,22 +49,17 @@ public class Fragmenter {
 	/**
 	 * 
 	 */
-	private final short[] minimumNumberImplicitHydrogens = { 1, 1, 2, 9, 9, 1, 0 };
-	
-	/**
-	 * 
-	 */
 	private List<Integer> neutralLossIndex = new ArrayList<>();
 	
 	/**
 	 * 
 	 */
-	private IAtomContainer precursor;
+	private IAtomContainer prec;
 
 	/**
 	 * 
 	 */
-	private FastBitArray ringBondFastBitArray;
+	private boolean[] ringBondFastBitArray;
 	
 	/**
 	 * 
@@ -73,15 +73,15 @@ public class Fragmenter {
 	 * @throws IOException
 	 */
 	public Fragmenter(final IAtomContainer precursor) throws IOException, CDKException {
-		this.precursor = precursor;
-		this.ringBondFastBitArray = new FastBitArray(this.precursor.getBondCount(), false);
+		this.prec = precursor;
+		this.ringBondFastBitArray = new boolean[this.prec.getBondCount()];
 		this.smartsPatterns = new SmartsPattern[SMART_PATTERNS.length];
 
 		for (int i = 0; i < this.smartsPatterns.length; i++) {
 			this.smartsPatterns[i] = SmartsPattern.create(SMART_PATTERNS[i]);
 		}
 		
-		this.detectedNeutralLosses = getMatchingAtoms(this.precursor);
+		this.detectedNeutralLosses = getMatchingAtoms(this.prec);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class Fragmenter {
 		final Collection<Fragment> fragments = new TreeSet<>();
 		Queue<Fragment> fragmentsQueue = new LinkedList<>();
 
-		final Fragment precursorFragment = new Fragment(this.precursor);
+		final Fragment precursorFragment = new Fragment(this.prec);
 		fragmentsQueue.add(precursorFragment);
 		fragments.add(precursorFragment);
 
@@ -147,32 +147,40 @@ public class Fragmenter {
 					/*
 					 * check for previous broken bonds caused by neutral loss
 					 */
-					int[] brokenBondIndeces = newGeneratedTopDownFragments[1].getBrokenBondsArray().getSetIndices();
-					for (int s = 0; s < brokenBondIndeces.length; s++) {
-						int index = this.brokenBondToNeutralLossIndex.indexOf(Integer.valueOf(brokenBondIndeces[s]));
-						if ((short) brokenBondIndeces[s] == removedBondIndex) {
-							if (index == -1) {
-								this.brokenBondToNeutralLossIndex.add(Integer.valueOf(removedBondIndex));
-								this.neutralLossIndex.add(Integer.valueOf(i));
+					boolean[] brokenBondsArray = newGeneratedTopDownFragments[1].getBrokenBondsArray();
+					
+					for (int s = 0; s < brokenBondsArray.length; s++) {
+						if(brokenBondsArray[s]) {
+							int index = this.brokenBondToNeutralLossIndex.indexOf(Integer.valueOf(s));
+							if (s == removedBondIndex) {
+								if (index == -1) {
+									this.brokenBondToNeutralLossIndex.add(Integer.valueOf(removedBondIndex));
+									this.neutralLossIndex.add(Integer.valueOf(i));
+								}
+								continue;
 							}
-							continue;
 						}
+						
 					}
 					return true;
-				} else if (newGeneratedTopDownFragments[1].getAtomsArray().equals(this.detectedNeutralLosses[i][ii])) {
+				}
+				else if (newGeneratedTopDownFragments[1].getAtomsArray().equals(this.detectedNeutralLosses[i][ii])) {
 
 					/*
 					 * check for previous broken bonds caused by neutral loss
 					 */
-					int[] brokenBondIndeces = newGeneratedTopDownFragments[0].getBrokenBondsArray().getSetIndices();
-					for (int s = 0; s < brokenBondIndeces.length; s++) {
-						int index = this.brokenBondToNeutralLossIndex.indexOf(Integer.valueOf(brokenBondIndeces[s]));
-						if ((short) brokenBondIndeces[s] == removedBondIndex) {
-							if (index == -1) {
-								this.brokenBondToNeutralLossIndex.add(Integer.valueOf(removedBondIndex));
-								this.neutralLossIndex.add(Integer.valueOf(i));
+					boolean[] brokenBondsArray = newGeneratedTopDownFragments[0].getBrokenBondsArray();
+					
+					for (int s = 0; s < brokenBondsArray.length; s++) {
+						if(brokenBondsArray[s]) {
+							int index = this.brokenBondToNeutralLossIndex.indexOf(Integer.valueOf(s));
+							if (s == removedBondIndex) {
+								if (index == -1) {
+									this.brokenBondToNeutralLossIndex.add(Integer.valueOf(removedBondIndex));
+									this.neutralLossIndex.add(Integer.valueOf(i));
+								}
+								continue;
 							}
-							continue;
 						}
 					}
 					return true;
@@ -181,6 +189,7 @@ public class Fragmenter {
 		}
 		if (neutralLossFragment == -1)
 			return false;
+		
 		return true;
 	}
 
@@ -191,11 +200,11 @@ public class Fragmenter {
 	 * @param toProcess
 	 * @param ringBondFastBitArray
 	 * @param lastCuttedRingBond
-	 * @return
+	 * @return List<Fragment>
 	 * @throws Exception
 	 */
-	private ArrayList<Fragment> createRingBondCleavedFragments(ArrayList<Fragment> newGeneratedTopDownFragments,
-			Fragment precursorFragment, java.util.Queue<Fragment> toProcess, FastBitArray ringBondArray,
+	private List<Fragment> createRingBondCleavedFragments(ArrayList<Fragment> newGeneratedTopDownFragments,
+			Fragment precursorFragment, java.util.Queue<Fragment> toProcess, boolean[] ringBondArray,
 			java.util.Queue<Integer> lastCuttedRingBond) throws Exception {
 		/*
 		 * process all fragments that have been cutted in a ring without generating a
@@ -210,14 +219,14 @@ public class Fragmenter {
 			/*
 			 * 
 			 */
-			for (int currentBond = nextRingBondToCut; currentBond < ringBondArray.getSize(); currentBond++) {
-				if (!ringBondArray.get(currentBond))
+			for (int currentBond = nextRingBondToCut; currentBond < ringBondArray.length; currentBond++) {
+				if (!ringBondArray[currentBond])
 					continue;
-				if (currentFragment.getBrokenBondsArray().get(currentBond))
+				if (currentFragment.getBrokenBondsArray()[currentBond])
 					continue;
 				Fragment[] newFragments = { currentFragment };
 				int[] connectedAtomIndeces = this.getConnectedAtomIndicesFromBondIndex(currentBond);
-				newFragments = currentFragment.fragment(this.precursor, currentBond, connectedAtomIndeces);
+				newFragments = currentFragment.fragment(this.prec, currentBond, connectedAtomIndeces);
 
 				//
 				// pre-processing of the generated fragment/s
@@ -255,30 +264,26 @@ public class Fragmenter {
 	}
 
 	/**
-	 * @throws Exception
+	 * Generate fragments by removing bonds that were skipped due to ring bond cleavage.
 	 * 
-	 */
-
-	/*
-	 * generate fragments by removing bonds that were skipped due to ring bond
-	 * cleavage
+	 * @throws Exception
 	 */
 	private void generateFragmentsOfSkippedBonds(ArrayList<Fragment> newGeneratedTopDownFragments,
 			Fragment precursorFragment) throws Exception {
 		int lastSkippedBonds = precursorFragment.getLastSkippedBond();
-		short lastCuttedBond = (short) (precursorFragment.getBrokenBondsArray().getLastSetBit());
+		int lastCuttedBond = getLastSetBit(precursorFragment.getBrokenBondsArray());
 		if (lastSkippedBonds == -1)
 			return;
 		for (int currentBond = lastSkippedBonds; currentBond < lastCuttedBond; currentBond++) {
 
-			if (this.ringBondFastBitArray.get(currentBond))
+			if (this.ringBondFastBitArray[currentBond])
 				continue;
-			if (!precursorFragment.getBondsArray().get(currentBond))
+			if (!precursorFragment.getBondsArray()[currentBond])
 				continue;
 
 			int[] connectedAtomIndeces = this.getConnectedAtomIndicesFromBondIndex(currentBond);
 
-			final Fragment[] newFragments = precursorFragment.fragment(this.precursor, currentBond,
+			final Fragment[] newFragments = precursorFragment.fragment(this.prec, currentBond,
 					connectedAtomIndeces);
 
 			Fragmenter.processGeneratedFragments(newFragments);
@@ -304,7 +309,7 @@ public class Fragmenter {
 	 * @throws Exception
 	 */
 	private ArrayList<Fragment> getFragmentsOfNextTreeDepth(Fragment precursorFragment) throws Exception {
-		FastBitArray ringBonds = new FastBitArray(precursorFragment.getBondsArray().getSize(), false);
+		boolean[] ringBonds = new boolean[precursorFragment.getBondsArray().length];
 		java.util.Queue<Fragment> ringBondCuttedFragments = new java.util.LinkedList<>();
 		java.util.Queue<Integer> lastCuttedBondOfRing = new java.util.LinkedList<>();
 		ArrayList<Fragment> fragmentsOfNextTreeDepth = new ArrayList<>();
@@ -317,17 +322,17 @@ public class Fragmenter {
 		 * get the last bond index that was removed; from there on the next bonds will
 		 * be removed
 		 */
-		int nextBrokenIndexBondIndexToRemove = precursorFragment.getBrokenBondsArray().getLastSetBit() + 1;
+		int nextBrokenIndexBondIndexToRemove = getLastSetBit(precursorFragment.getBrokenBondsArray()) + 1;
 		/*
 		 * start from the last broken bond index
 		 */
-		for (int i = nextBrokenIndexBondIndexToRemove; i < precursorFragment.getBondsArray().getSize(); i++) {
-			if (!precursorFragment.getBondsArray().get(i))
+		for (int i = nextBrokenIndexBondIndexToRemove; i < precursorFragment.getBondsArray().length; i++) {
+			if (!precursorFragment.getBondsArray()[i])
 				continue;
 			final int[] indecesOfBondConnectedAtoms = this.getConnectedAtomIndicesFromBondIndex(i);
 
 			// try to generate at most two fragments by the removal of the given bond
-			Fragment[] newGeneratedTopDownFragments = precursorFragment.fragment(this.precursor, i,
+			Fragment[] newGeneratedTopDownFragments = precursorFragment.fragment(this.prec, i,
 					indecesOfBondConnectedAtoms);
 			/*
 			 * in case the precursor wasn't splitted try to cleave an additional bond until
@@ -336,12 +341,12 @@ public class Fragmenter {
 			 * reached 3. no further bond can be removed
 			 */
 			if (newGeneratedTopDownFragments.length == 1) {
-				ringBonds.set(i);
-				newGeneratedTopDownFragments[0].setLastSkippedBond((short) (i + 1));
+				ringBonds[i] = true;
+				newGeneratedTopDownFragments[0].setLastSkippedBond(i + 1);
 				ringBondCuttedFragments.add(newGeneratedTopDownFragments[0]);
 				lastCuttedBondOfRing.add(Integer.valueOf(i));
 				if (!this.ringBondsInitialised)
-					this.ringBondFastBitArray.set(i);
+					this.ringBondFastBitArray[i] = true;
 			}
 			/*
 			 * pre-processing of the generated fragment/s
@@ -379,8 +384,8 @@ public class Fragmenter {
 	 * @throws CDKException
 	 * @throws IOException 
 	 */
-	private FastBitArray[][] getMatchingAtoms(IAtomContainer precursorMolecule) throws CDKException, IOException {
-		final List<FastBitArray[]> matchedNeutralLossTypes = new ArrayList<>();
+	private boolean[][][] getMatchingAtoms(IAtomContainer precursorMolecule) throws CDKException, IOException {
+		final List<boolean[][]> matchedNeutralLossTypes = new ArrayList<>();
 
 		for (byte i = 0; i < this.smartsPatterns.length; i++) {
 			if (this.smartsPatterns[i].matches(precursorMolecule)) {
@@ -392,7 +397,7 @@ public class Fragmenter {
 				 * store which is a valid loss based on the number of hydrogens
 				 */
 				boolean[] validMatches = new boolean[matchingAtoms.length];
-				FastBitArray[] allMatches = new FastBitArray[matchingAtoms.length];
+				boolean[][] allMatches = new boolean[matchingAtoms.length][];
 				int numberOfValidNeutralLosses = 0;
 				/*
 				 * check each part that is marked as neutral loss
@@ -403,12 +408,12 @@ public class Fragmenter {
 					 * count number of implicit hydrogens of this neutral loss
 					 */
 					int numberImplicitHydrogens = 0;
-					allMatches[ii] = new FastBitArray(precursorMolecule.getAtomCount(), false);
+					allMatches[ii] = new boolean[precursorMolecule.getAtomCount()];
 					/*
 					 * check all atoms
 					 */
 					for (int iii = 0; iii < part.length; iii++) {
-						allMatches[ii].set(part[iii]);
+						allMatches[ii][part[iii]] = true;
 						/*
 						 * count number of implicit hydrogens of this neutral loss
 						 */
@@ -418,7 +423,7 @@ public class Fragmenter {
 					 * valid neutral loss match if number implicit hydrogens are at least the number
 					 * of hydrogens needed for the certain neutral loss
 					 */
-					if (numberImplicitHydrogens >= this.minimumNumberImplicitHydrogens[i]) {
+					if (numberImplicitHydrogens >= MIN_NUM_IMPLICIT_HYDROGENS[i]) {
 						validMatches[ii] = true;
 						numberOfValidNeutralLosses++;
 					}
@@ -427,7 +432,7 @@ public class Fragmenter {
 				 * create BitArrayNeutralLosses of valid neutral loss part detections
 				 */
 				if (numberOfValidNeutralLosses != 0) {
-					FastBitArray[] newDetectedNeutralLoss = new FastBitArray[numberOfValidNeutralLosses];
+					boolean[][] newDetectedNeutralLoss = new boolean[numberOfValidNeutralLosses][];
 					int neutralLossIndexOfBitArrayNeutralLoss = 0;
 					for (int k = 0; k < validMatches.length; k++) {
 						if (validMatches[k]) {
@@ -443,7 +448,7 @@ public class Fragmenter {
 			}
 		}
 
-		final FastBitArray[][] matchedNeutralLossTypesArray = new FastBitArray[matchedNeutralLossTypes.size()][];
+		final boolean[][][] matchedNeutralLossTypesArray = new boolean[matchedNeutralLossTypes.size()][][];
 
 		for (int i = 0; i < matchedNeutralLossTypes.size(); i++) {
 			matchedNeutralLossTypesArray[i] = matchedNeutralLossTypes.get(i);
@@ -459,9 +464,8 @@ public class Fragmenter {
 	 * @return int[]
 	 */
 	private int[] getConnectedAtomIndicesFromBondIndex(final int bondIdx) {
-		final IAtomContainer atomContainer = this.precursor;
-		final IBond bond = atomContainer.getBond(bondIdx);
-		return new int[] { atomContainer.indexOf(bond.getAtom(0)), atomContainer.indexOf(bond.getAtom(1)) };
+		final IBond bond = this.prec.getBond(bondIdx);
+		return new int[] { this.prec.indexOf(bond.getAtom(0)), this.prec.indexOf(bond.getAtom(1)) };
 	}
 	
 	/**
@@ -470,7 +474,21 @@ public class Fragmenter {
 	 * @return int
 	 */
 	private int getImplicitHydrogenCount(final int atomIdx) {
-		final IAtomContainer atomContainer = this.precursor;
-		return atomContainer.getAtom(atomIdx).getImplicitHydrogenCount().intValue();
+		return this.prec.getAtom(atomIdx).getImplicitHydrogenCount().intValue();
+	}
+	
+	/**
+	 * 
+	 * @param array
+	 * @return int
+	 */
+	private static int getLastSetBit(final boolean[] array) {
+		for(int i = array.length - 1; i > -1; i--) {
+			if(array[i]) {
+				return i;
+			}
+		}
+		
+		return -1;
 	}
 }
