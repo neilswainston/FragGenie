@@ -2,6 +2,7 @@ package uk.ac.liverpool.metfrag;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -199,7 +200,7 @@ public class Fragmenter {
 			}
 			
 			// Try to generate at most two fragments by the breaking of the given bond:
-			final Fragment[] newGeneratedTopDownFragments = parentFragment.fragment(bondIdx);
+			final Fragment[] currentChildFragments = parentFragment.fragment(bondIdx);
 			
 			/*
 			 * In case the precursor wasn't split, try to cleave an additional bond until:
@@ -208,30 +209,21 @@ public class Fragmenter {
 			 * 2. the maximum number of trials have been reached; or
 			 * 3. no further bond can be removed.
 			 */
-			if (newGeneratedTopDownFragments.length == 1) {
+			if (currentChildFragments.length == 1) {
 				ringBonds[bondIdx] = true;
-				newGeneratedTopDownFragments[0].setLastSkippedBond(bondIdx + 1);
-				ringBondCuttedFragments.add(newGeneratedTopDownFragments[0]);
+				currentChildFragments[0].setLastSkippedBond(bondIdx + 1);
+				ringBondCuttedFragments.add(currentChildFragments[0]);
 				lastCuttedBondOfRing.add(Integer.valueOf(bondIdx));
 				
 				if (!this.ringBondsInitialised) {
 					this.ringBondArray[bondIdx] = true;
 				}
 			}
-			
-			/*
-			 * if two new fragments have been generated set them as valid
-			 */
-			if (newGeneratedTopDownFragments.length == 2) {
-				this.checkForNeutralLossesAdaptMolecularFormulas(newGeneratedTopDownFragments, bondIdx);
-			}
-			/*
-			 * add fragment/s to vector after setting the proper precursor
-			 */
-			for (int k = 0; k < newGeneratedTopDownFragments.length; k++) {
-				// precursorFragment.addChild(newGeneratedTopDownFragments[k]);
-				if (newGeneratedTopDownFragments.length == 2)
-					childFragments.add(newGeneratedTopDownFragments[k]);
+			else if (currentChildFragments.length == 2) {
+				// If two new fragments have been generated set them as valid:
+				this.checkForNeutralLosses(currentChildFragments, bondIdx);
+				
+				childFragments.addAll(Arrays.asList(currentChildFragments));
 			}
 		}
 		/*
@@ -251,9 +243,9 @@ public class Fragmenter {
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean checkForNeutralLossesAdaptMolecularFormulas(Fragment[] newGeneratedTopDownFragments, int removedBondIndex) {
-
+	private boolean checkForNeutralLosses(Fragment[] newGeneratedTopDownFragments, int removedBondIndex) {
 		byte neutralLossFragment = -1;
+		
 		for (int i = 0; i < this.neutralLosses.size(); i++) {
 			for (int ii = 0; ii < this.neutralLosses.get(i).size(); ii++) {
 				if (newGeneratedTopDownFragments[0].getAtomsArray().equals(this.neutralLosses.get(i).get(ii))) {
@@ -381,7 +373,7 @@ public class Fragmenter {
 
 			final Fragment[] newFragments = precursorFragment.fragment(currentBond);
 			
-			this.checkForNeutralLossesAdaptMolecularFormulas(newFragments, currentBond);
+			this.checkForNeutralLosses(newFragments, currentBond);
 
 			for (int k = 0; k < newFragments.length; k++) {
 				if (newFragments.length == 2) {

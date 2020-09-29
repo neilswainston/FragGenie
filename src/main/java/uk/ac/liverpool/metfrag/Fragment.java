@@ -52,11 +52,6 @@ public class Fragment implements Comparable<Fragment> {
 	private int lastSkippedBond = -1;
 
 	/**
-	 * 
-	 */
-	private int treeDepth = 0;
-
-	/**
 	 * Constructor.
 	 * 
 	 * @param precursor
@@ -226,11 +221,8 @@ public class Fragment implements Comparable<Fragment> {
 
 		// Only one fragment is generated when a ring bond was broken:
 		if (((Boolean)result1[0]).booleanValue()) {
-			fragment1.treeDepth = this.treeDepth;
 			return new Fragment[] { fragment1 };
 		}
-		
-		fragment1.treeDepth = this.treeDepth + 1;
 		
 		// Generate second fragment:
 		// Traverse the second direction from atomIndex connected by broken bond:
@@ -238,7 +230,6 @@ public class Fragment implements Comparable<Fragment> {
 				bondIdx, this.brokenBondsArray.clone());
 
 		final Fragment fragment2 = (Fragment)result2[1];
-		fragment2.treeDepth = this.treeDepth + 1;
 
 		return new Fragment[] { fragment1, fragment2 };
 	}
