@@ -28,7 +28,6 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import uk.ac.liverpool.metfrag.Bond;
 import uk.ac.liverpool.metfrag.Fragment;
-import uk.ac.liverpool.metfrag.Fragmenter;
 
 /**
  * 
@@ -70,8 +69,8 @@ public class MetFragFragmenter {
 	 * @throws Exception
 	 */
 	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final List<String> fields, final List<List<Object>> brokenBondsFilter) throws Exception {
-		final Fragmenter fragmenter = new Fragmenter(getAtomContainer(smiles));
-		final Collection<Fragment> fragments = fragmenter.getFragments(maximumTreeDepth);
+		final Fragment fragment = new Fragment(getAtomContainer(smiles));
+		final Collection<Fragment> fragments = fragment.fragment(maximumTreeDepth);
 		final boolean getMasses = fields.indexOf(Headers.METFRAG_MZ.name()) != -1;
 		final boolean getFormulae = fields.indexOf(Headers.METFRAG_FORMULAE.name()) != -1;
 		final boolean getBonds = fields.indexOf(Headers.METFRAG_BROKEN_BONDS.name()) != -1;
@@ -80,18 +79,18 @@ public class MetFragFragmenter {
 		final List<String> formulae = getFormulae ? new ArrayList<>() : null;
 		final List<Collection<Bond>> brokenBonds = getBonds ? new ArrayList<>() : null;
 		
-		for (final Fragment fragment : fragments) {
-			final Collection<Bond> fragBrokenBonds = fragment.getBrokenBonds();
+		for (final Fragment childFragment : fragments) {
+			final Collection<Bond> fragBrokenBonds = childFragment.getBrokenBonds();
 			
 			if(filter(fragBrokenBonds, brokenBondsFilter)) {
 				for (float ionMassCorrection : ION_MASS_CORRECTIONS) {
 					if(masses != null) {
-						masses.add(Float.valueOf(fragment.getMonoisotopicMass() + ionMassCorrection));
+						masses.add(Float.valueOf(childFragment.getMonoisotopicMass() + ionMassCorrection));
 					}
 				}
 				
 				if(formulae != null) {
-					formulae.add(fragment.getFormula());
+					formulae.add(childFragment.getFormula());
 				}
 				
 				if(brokenBonds != null) {

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -73,6 +74,16 @@ public class Fragment implements Comparable<Fragment> {
 		this.atomsArray = atoms;
 		this.bondsArray = bonds;
 		this.brokenBondsArray = brokenBonds;
+	}
+	
+	/**
+	 * 
+	 * @return Collection<List<Object>>
+	 */
+	public Collection<Fragment> fragment(final int maxBrokenBonds) {
+		final Collection<Fragment> fragments = new TreeSet<>();
+		fragment(this, fragments, maxBrokenBonds);
+		return fragments;
 	}
 	
 	@Override
@@ -187,14 +198,38 @@ public class Fragment implements Comparable<Fragment> {
 	boolean[] getBrokenBondsArray() {
 		return this.brokenBondsArray;
 	}
+	
+	/**
+	 * 
+	 * @param fragment
+	 * @param fragments
+	 * @param maxBrokenBonds
+	 */
+	private static void fragment(final Fragment fragment, final Collection<Fragment> fragments, final int maxBrokenBonds) {
+		if(fragment.getNumBrokenBonds() <= maxBrokenBonds) {
+			fragments.add(fragment);
+			
+			final boolean[] bondsArray = fragment.getBondsArray();
+			final boolean[] brokenBondsArray = fragment.getBrokenBondsArray();
+			
+			if(fragment.getNumBrokenBonds() < maxBrokenBonds) {
+				for(int bondIdx = 0; bondIdx < bondsArray.length; bondIdx++) {
+					if(bondsArray[bondIdx] && !brokenBondsArray[bondIdx]) {
+						for(final Fragment childFragment : fragment.fragmentBond(bondIdx)) {
+							fragment(childFragment, fragments, maxBrokenBonds);
+						}
+					}
+				}
+			}
+		}
+	}
 
 	/**
 	 * 
 	 * @param bondIdx
 	 * @return Fragment[]
 	 */
-	Fragment[] fragment(final int bondIdx) {
-
+	Fragment[] fragmentBond(final int bondIdx) {
 		final IBond bond = this.prec.getBond(bondIdx);
 		final int[] bondConnectedAtoms =  new int[] { this.prec.indexOf(bond.getAtom(0)), this.prec.indexOf(bond.getAtom(1)) };
 		
