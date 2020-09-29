@@ -20,17 +20,7 @@ public class Fragmenter {
 	/**
 	 * 
 	 */
-	private boolean ringBondsInitialised = false;
-	
-	/**
-	 * 
-	 */
 	private IAtomContainer prec;
-
-	/**
-	 * 
-	 */
-	private boolean[] ringBondArray;
 	
 	/**
 	 * 
@@ -40,7 +30,6 @@ public class Fragmenter {
 	 */
 	public Fragmenter(final IAtomContainer precursor) throws IOException, CDKException {
 		this.prec = precursor;
-		this.ringBondArray = new boolean[this.prec.getBondCount()];
 	}
 
 	/**
@@ -77,18 +66,12 @@ public class Fragmenter {
 	 * @param parentFragment
 	 * @return Collection<Fragment>
 	 */
-	private Collection<Fragment> getFragments(final Fragment parentFragment) {
+	private static Collection<Fragment> getFragments(final Fragment parentFragment) {
 		final Collection<Fragment> childFragments = new ArrayList<>();
 		final boolean[] bondsArray = parentFragment.getBondsArray();
-		
 		final boolean[] ringBonds = new boolean[bondsArray.length];
-		final Queue<Fragment> ringBondCuttedFragments = new LinkedList<>();
-		final Queue<Integer> lastCuttedBondOfRing = new LinkedList<>();
-		
-		// Generate fragments of skipped bonds:
-		if (this.ringBondsInitialised) {
-			this.generateFragmentsOfSkippedBonds(childFragments, parentFragment);
-		}
+		final Queue<Fragment> ringBondFragments = new LinkedList<>();
+		final Queue<Integer> lastBrokenBonds = new LinkedList<>();
 			
 		// Get the last bond index that was removed; from there on the next bonds will be removed:
 		final int nextBondBreakIdx = getLastSetBit(parentFragment.getBrokenBondsArray()) + 1;
@@ -111,13 +94,8 @@ public class Fragmenter {
 			 */
 			if (currentChildFragments.length == 1) {
 				ringBonds[bondIdx] = true;
-				currentChildFragments[0].setLastSkippedBond(bondIdx + 1);
-				ringBondCuttedFragments.add(currentChildFragments[0]);
-				lastCuttedBondOfRing.add(Integer.valueOf(bondIdx));
-				
-				if (!this.ringBondsInitialised) {
-					this.ringBondArray[bondIdx] = true;
-				}
+				ringBondFragments.add(currentChildFragments[0]);
+				lastBrokenBonds.add(Integer.valueOf(bondIdx));
 			}
 			else if (currentChildFragments.length == 2) {
 				// If two new fragments have been generated set them as valid:
@@ -126,8 +104,7 @@ public class Fragmenter {
 		}
 		
 		// Create fragments by ring bond cleavage:
-		childFragments.addAll(createRingBondCleavedFragments(ringBondCuttedFragments, ringBonds, lastCuttedBondOfRing));
-		this.ringBondsInitialised = true;
+		childFragments.addAll(createRingBondCleavedFragments(ringBondFragments, ringBonds, lastBrokenBonds));
 
 		return childFragments;
 	}
@@ -137,7 +114,7 @@ public class Fragmenter {
 	 * @param fragments
 	 * @param ringBondArray
 	 * @param lastBrokenBonds
-	 * @return
+	 * @return Collection<Fragment>
 	 */
 	private static Collection<Fragment> createRingBondCleavedFragments(final Queue<Fragment> fragments, final boolean[] ringBonds, final Queue<Integer> lastBrokenBonds) {
 		final Collection<Fragment> childFragments = new ArrayList<>();
@@ -150,11 +127,6 @@ public class Fragmenter {
 			for (int currentBond = nextRingBondToCut; currentBond < ringBonds.length; currentBond++) {
 				if (ringBonds[currentBond] && !fragment.getBrokenBondsArray()[currentBond]) {
 					final Fragment[] newFragments = fragment.fragment(currentBond);
-
-					if (newFragments.length == 2) {
-						newFragments[0].setLastSkippedBond(fragment.getLastSkippedBond());
-						newFragments[1].setLastSkippedBond(fragment.getLastSkippedBond());
-					}
 					
 					childFragments.addAll(Arrays.asList(newFragments));
 					
@@ -166,33 +138,6 @@ public class Fragmenter {
 		}
 		
 		return childFragments;
-	}
-
-	/**
-	 * Generate fragments by removing bonds that were skipped due to ring bond cleavage.
-	 * 
-	 * @throws Exception
-	 */
-	private void generateFragmentsOfSkippedBonds(Collection<Fragment> childFragments, Fragment precursorFragment) {
-		int lastSkippedBonds = precursorFragment.getLastSkippedBond();
-		int lastCuttedBond = getLastSetBit(precursorFragment.getBrokenBondsArray());
-		if (lastSkippedBonds == -1)
-			return;
-		for (int currentBond = lastSkippedBonds; currentBond < lastCuttedBond; currentBond++) {
-
-			if (this.ringBondArray[currentBond])
-				continue;
-			if (!precursorFragment.getBondsArray()[currentBond])
-				continue;
-
-			final Fragment[] newFragments = precursorFragment.fragment(currentBond);
-
-			for (int k = 0; k < newFragments.length; k++) {
-				if (newFragments.length == 2) {
-					childFragments.add(newFragments[k]);
-				}
-			}
-		}
 	}
 	
 	/**

@@ -46,11 +46,6 @@ public class Fragment implements Comparable<Fragment> {
 	private boolean[] brokenBondsArray;
 
 	/**
-	 * 
-	 */
-	private int lastSkippedBond = -1;
-
-	/**
 	 * Constructor.
 	 * 
 	 * @param precursor
@@ -175,22 +170,6 @@ public class Fragment implements Comparable<Fragment> {
 	 */
 	boolean[] getBrokenBondsArray() {
 		return this.brokenBondsArray;
-	}
-
-	/**
-	 * 
-	 * @return int
-	 */
-	int getLastSkippedBond() {
-		return this.lastSkippedBond;
-	}
-
-	/**
-	 * 
-	 * @param i
-	 */
-	void setLastSkippedBond(final int i) {
-		this.lastSkippedBond = i;
 	}
 
 	/**
