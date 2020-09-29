@@ -20,7 +20,12 @@ public class Fragmenter {
 	/**
 	 * 
 	 */
-	private IAtomContainer prec;
+	private final Fragment precursorFragment;
+	
+	/**
+	 * 
+	 */
+	private final int maxTreeDepth;
 	
 	/**
 	 * 
@@ -28,23 +33,23 @@ public class Fragmenter {
 	 * @throws CDKException
 	 * @throws IOException
 	 */
-	public Fragmenter(final IAtomContainer precursor) throws IOException, CDKException {
-		this.prec = precursor;
+	public Fragmenter(final IAtomContainer precursor, final int maxTreeDepth) throws IOException, CDKException {
+		this.precursorFragment = new Fragment(precursor);
+		this.maxTreeDepth = maxTreeDepth;
 	}
 
 	/**
 	 * 
 	 * @return Collection<List<Object>>
 	 */
-	public Collection<Fragment> getFragments(final int maxTreeDepth) {
+	public Collection<Fragment> getFragments() {
 		final Collection<Fragment> fragments = new TreeSet<>();
 		final Queue<Fragment> fragmentsQueue = new LinkedList<>();
 
-		final Fragment precursorFragment = new Fragment(this.prec);
-		fragmentsQueue.add(precursorFragment);
-		fragments.add(precursorFragment);
+		fragmentsQueue.add(this.precursorFragment);
+		fragments.add(this.precursorFragment);
 
-		for (int k = 0; k < maxTreeDepth; k++) {
+		for (int k = 0; k < this.maxTreeDepth; k++) {
 			final Collection<Fragment> newFragmentsQueue = new LinkedList<>();
 
 			while (!fragmentsQueue.isEmpty()) {
