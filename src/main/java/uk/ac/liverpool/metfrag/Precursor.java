@@ -1,6 +1,7 @@
 package uk.ac.liverpool.metfrag;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,10 +36,6 @@ public class Precursor {
 	 * 
 	 */
 	private final IAtomContainer atomContainer;
-	/**
-	 * 
-	 */
-	private final int[] atomAdjacencies;
 
 	/**
 	 * 
@@ -47,14 +44,6 @@ public class Precursor {
 	 */
 	Precursor(final String smiles) throws CDKException {
 		this.atomContainer = getAtomContainer(smiles);
-		
-		// Initialise atomAdjacencies:
-		this.atomAdjacencies = new int[getIndex(this.getAtomCount() - 2, this.getAtomCount() - 1) + 1];
-		
-		for (int i = 0; i < this.getBondCount(); i++) {
-			final Iterator<IAtom> atoms = this.atomContainer.getBond(i).atoms().iterator();
-			this.atomAdjacencies[getIndex(this.atomContainer.indexOf(atoms.next()), this.atomContainer.indexOf(atoms.next()))] = i + 1;
-		}
 	}
 	
 	@Override
@@ -101,7 +90,21 @@ public class Precursor {
 	 * @return int
 	 */
 	int getBondIndex(final int atomIdx1, final int atomIdx2) {
-		return this.atomAdjacencies[this.getIndex(atomIdx1, atomIdx2)];
+		
+		final int[] queryAtomIdxs = new int[] {atomIdx1, atomIdx2};
+		Arrays.sort(queryAtomIdxs);
+		
+		for (int i = 0; i < this.getBondCount(); i++) {
+			final Iterator<IAtom> atoms = this.atomContainer.getBond(i).atoms().iterator();
+			final int[] bondAtomIdxs = new int[] {this.atomContainer.indexOf(atoms.next()), this.atomContainer.indexOf(atoms.next())};
+			Arrays.sort(bondAtomIdxs);
+			
+			if(Arrays.equals(queryAtomIdxs, bondAtomIdxs)) {
+				return i + 1;
+			}
+		}
+		
+		return -1;
 	}
 
 	/**
@@ -193,25 +196,6 @@ public class Precursor {
 		final IBond iBond = this.atomContainer.getBond(bondIdx);
 		final Iterator<IAtom> atoms = iBond.atoms().iterator();
 		return new Bond(atoms.next(), atoms.next(), iBond.getOrder(), iBond.isAromatic());
-	}
-
-	/**
-	 * Convert 2D matrix coordinates to 1D adjacency list coordinate.
-	 * 
-	 * @param a
-	 * @param b
-	 * @return int
-	 */
-	private int getIndex(final int a, final int b) {
-		int row = a;
-		int col = b;
-
-		if (a > b) {
-			row = b;
-			col = a;
-		}
-
-		return row * this.getAtomCount() + col - ((row + 1) * (row + 2)) / 2;
 	}
 	
 	/**
