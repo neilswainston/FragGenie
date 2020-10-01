@@ -32,11 +32,6 @@
 			<artifactId>cdk-bundle</artifactId>
 			<version>${cdk.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.javolution</groupId>
-			<artifactId>javolution-core-java</artifactId>
-			<version>6.0.0</version>
-		</dependency>
 
 		<!-- Test Dependencies -->
 		<dependency>
@@ -46,7 +41,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
 	
 	<build>
 		<plugins>

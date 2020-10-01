@@ -3,6 +3,7 @@ package uk.ac.liverpool.metfrag;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -154,7 +155,7 @@ public class Fragment implements Comparable<Fragment> {
 	 * @return Collection<Bond>
 	 */
 	public Collection<Bond> getBrokenBonds() {
-		final Collection<Bond> bonds = new ArrayList<>();
+		final List<Bond> bonds = new ArrayList<>();
 		
 		for (int i = 0; i < this.brokenBondsArray.length; i++) {
 			if(this.brokenBondsArray[i]) {
@@ -163,6 +164,8 @@ public class Fragment implements Comparable<Fragment> {
 				bonds.add(new Bond(atoms.next(), atoms.next(), iBond.getOrder(), iBond.isAromatic()));
 			}
 		}
+		
+		Collections.sort(bonds);
 		
 		return bonds;
 	}

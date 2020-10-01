@@ -12,7 +12,7 @@ import org.openscience.cdk.interfaces.IElement;
  * 
  * @author neilswainston
  */
-public class Bond {
+public class Bond implements Comparable<Bond> {
 	
 	/**
 	 * 
@@ -165,5 +165,10 @@ public class Bond {
 		}
 			
 		return true;
+	}
+
+	@Override
+	public int compareTo(final Bond obj) {
+		return this.encode() - obj.encode();
 	}
 }
