@@ -48,6 +48,16 @@ public class Fragment implements Comparable<Fragment> {
 	private boolean[] brokenBondsArray;
 
 	/**
+	 * 
+	 */
+	private final int[][] bondAtomIdxs;
+
+	/**
+	 * 
+	 */
+	private float monoisotopicMass = Float.NaN;
+
+	/**
 	 * Constructor.
 	 * 
 	 * @param precursor
@@ -75,6 +85,14 @@ public class Fragment implements Comparable<Fragment> {
 		this.atomsArray = atoms;
 		this.bondsArray = bonds;
 		this.brokenBondsArray = brokenBonds;
+		this.bondAtomIdxs = new int[this.prec.getBondCount()][];
+		
+		for (int i = 0; i < this.prec.getBondCount(); i++) {
+			final Iterator<IAtom> atomsIterator = this.prec.getBond(i).atoms().iterator();
+			final int[] currentBondAtomIdxs = new int[] {this.prec.indexOf(atomsIterator.next()), this.prec.indexOf(atomsIterator.next())};
+			Arrays.sort(currentBondAtomIdxs);
+			this.bondAtomIdxs[i] = currentBondAtomIdxs;
+		}
 	}
 	
 	/**
@@ -97,14 +115,19 @@ public class Fragment implements Comparable<Fragment> {
 	 * @return float
 	 */
 	public float getMonoisotopicMass() {
-		float mass = 0.0f;
+		if(Float.isNaN(this.monoisotopicMass)) {
+			float mass = 0.0f;
 
-		for (int i = 0; i < this.atomsArray.length; i++) {
-			if (this.atomsArray[i]) {
-				mass += this.getAtomMass(i);
+			for (int i = 0; i < this.atomsArray.length; i++) {
+				if (this.atomsArray[i]) {
+					mass += this.getAtomMass(i);
+				}
 			}
+			
+			this.monoisotopicMass = mass;
 		}
-		return mass;
+		
+		return this.monoisotopicMass;
 	}
 
 	/**
@@ -338,11 +361,7 @@ public class Fragment implements Comparable<Fragment> {
 		Arrays.sort(queryAtomIdxs);
 		
 		for (int i = 0; i < this.prec.getBondCount(); i++) {
-			final Iterator<IAtom> atoms = this.prec.getBond(i).atoms().iterator();
-			final int[] bondAtomIdxs = new int[] {this.prec.indexOf(atoms.next()), this.prec.indexOf(atoms.next())};
-			Arrays.sort(bondAtomIdxs);
-			
-			if(Arrays.equals(queryAtomIdxs, bondAtomIdxs)) {
+			if(Arrays.equals(queryAtomIdxs, this.bondAtomIdxs[i])) {
 				return i;
 			}
 		}
