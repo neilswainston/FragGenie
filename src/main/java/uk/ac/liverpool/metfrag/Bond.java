@@ -69,12 +69,12 @@ public class Bond implements Comparable<Bond> {
 	public static Bond decode(final int encoded) throws IOException {
 		final IsotopeFactory factory = Isotopes.getInstance();
 		
-		final int elementicNumber1 = (encoded & (int)Math.pow(2, 18) - 1) >>> 11;
-		final int elementicNumber2 = (encoded & (int)Math.pow(2, 11) - 1) >>> 4;
+		final int atomicNumber1 = (encoded & (int)Math.pow(2, 18) - 1) >>> 11;
+		final int atomicNumber2 = (encoded & (int)Math.pow(2, 11) - 1) >>> 4;
 		final int orderOrdinal = (encoded & (int)Math.pow(2, 4) - 1) >>> 1;
 		final boolean aromatic = (encoded & 1) == 1;
 		
-		return new Bond(factory.getElement(elementicNumber1), factory.getElement(elementicNumber2), Order.values()[orderOrdinal], aromatic);
+		return new Bond(factory.getElement(atomicNumber1), factory.getElement(atomicNumber2), Order.values()[orderOrdinal], aromatic);
 	}
 	
 	/**
