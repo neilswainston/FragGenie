@@ -51,6 +51,11 @@ public class Fragment implements Comparable<Fragment> {
 	 * 
 	 */
 	private final int[][] bondAtomIdxs;
+	
+	/**
+	 * 
+	 */
+	private final int[][] connectedAtomIdxs;
 
 	/**
 	 * 
@@ -86,6 +91,7 @@ public class Fragment implements Comparable<Fragment> {
 		this.bondsArray = bonds;
 		this.brokenBondsArray = brokenBonds;
 		this.bondAtomIdxs = new int[atoms.length][atoms.length];
+		this.connectedAtomIdxs = new int[atoms.length][];
 		
 		for (int i = 0; i < this.prec.getBondCount(); i++) {
 			final Iterator<IAtom> atomsIterator = this.prec.getBond(i).atoms().iterator();
@@ -93,6 +99,17 @@ public class Fragment implements Comparable<Fragment> {
 			final int idx2 = this.prec.indexOf(atomsIterator.next());
 			this.bondAtomIdxs[idx1][idx2] = i;
 			this.bondAtomIdxs[idx2][idx1] = i;
+		}
+		
+		for (int i = 0; i < atoms.length; i++) {
+			final List<IAtom> connected = this.prec.getConnectedAtomsList(this.prec.getAtom(i));
+			final int[] connectedIdxs = new int[connected.size()];
+
+			for (int k = 0; k < connected.size(); k++) {
+				connectedIdxs[k] = this.prec.indexOf(connected.get(k));
+			}
+			
+			this.connectedAtomIdxs[i] = connectedIdxs;
 		}
 	}
 	
@@ -302,7 +319,7 @@ public class Fragment implements Comparable<Fragment> {
 		final Stack<int[]> toProcessConnectedAtoms = new Stack<>();
 		final Stack<Integer> toProcessAtom = new Stack<>();
 		
-		toProcessConnectedAtoms.push(this.getConnectedAtomIndicesFromAtomIdx(startAtom));
+		toProcessConnectedAtoms.push(this.connectedAtomIdxs[startAtom]);
 		toProcessAtom.push(Integer.valueOf(startAtom));
 		visited[startAtom] = true;
 		
@@ -337,7 +354,7 @@ public class Fragment implements Comparable<Fragment> {
 				newAtomArray[nextAtom] = true;
 
 				newBondArray[this.bondAtomIdxs[midAtom][nextAtom]] = true;
-				toProcessConnectedAtoms.push(this.getConnectedAtomIndicesFromAtomIdx(nextAtom));
+				toProcessConnectedAtoms.push(this.connectedAtomIdxs[nextAtom]);
 				toProcessAtom.push(Integer.valueOf(nextAtom));
 			}
 		}
@@ -348,23 +365,6 @@ public class Fragment implements Comparable<Fragment> {
 		final Fragment newFragment = new Fragment(this.prec, newAtomArray, newBondArray, brokenBondArrayOfNewFragment);
 
 		return new Object[] {Boolean.valueOf(singleFragment), newFragment};
-	}
-	
-	/**
-	 * Returns atom indices that are connected to atom with atomIndex.
-	 * 
-	 * @param atomIndex
-	 * @return int[]
-	 */
-	private int[] getConnectedAtomIndicesFromAtomIdx(final int atomIdx) {
-		final List<IAtom> connected = this.prec.getConnectedAtomsList(this.prec.getAtom(atomIdx));
-		final int[] connectedIdxs = new int[connected.size()];
-
-		for (int k = 0; k < connected.size(); k++) {
-			connectedIdxs[k] = this.prec.indexOf(connected.get(k));
-		}
-
-		return connectedIdxs;
 	}
 	
 	@Override
