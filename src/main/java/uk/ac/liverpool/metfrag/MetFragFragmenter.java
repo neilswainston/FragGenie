@@ -41,7 +41,7 @@ public class MetFragFragmenter {
 	/**
 	 * 
 	 */
-	private final static float[] ION_MASS_CORRECTIONS = new float[] { 1.00728f };
+	private final static float[] ION_MASS_CORRECTIONS = new float[] { -0.00055f, 1.00728f }; // { [M]+, [M]+H+
 
 	/**
 	 * 
