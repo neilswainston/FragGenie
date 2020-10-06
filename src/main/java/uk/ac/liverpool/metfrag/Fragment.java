@@ -85,13 +85,14 @@ public class Fragment implements Comparable<Fragment> {
 		this.atomsArray = atoms;
 		this.bondsArray = bonds;
 		this.brokenBondsArray = brokenBonds;
-		this.bondAtomIdxs = new int[this.prec.getBondCount()][];
+		this.bondAtomIdxs = new int[atoms.length][atoms.length];
 		
 		for (int i = 0; i < this.prec.getBondCount(); i++) {
 			final Iterator<IAtom> atomsIterator = this.prec.getBond(i).atoms().iterator();
-			final int[] currentBondAtomIdxs = new int[] {this.prec.indexOf(atomsIterator.next()), this.prec.indexOf(atomsIterator.next())};
-			Arrays.sort(currentBondAtomIdxs);
-			this.bondAtomIdxs[i] = currentBondAtomIdxs;
+			final int idx1 = this.prec.indexOf(atomsIterator.next());
+			final int idx2 = this.prec.indexOf(atomsIterator.next());
+			this.bondAtomIdxs[idx1][idx2] = i;
+			this.bondAtomIdxs[idx2][idx1] = i;
 		}
 	}
 	
@@ -315,7 +316,7 @@ public class Fragment implements Comparable<Fragment> {
 			
 			for (int nextAtom : toProcessConnectedAtoms.pop()) {
 				// Did we visit the current atom already?
-				final int currentBond = this.getBondIndex(nextAtom, midAtom);
+				final int currentBond = this.bondAtomIdxs[midAtom][nextAtom];
 
 				if (!currentBondArray[currentBond] || currentBond == removeBond) {
 					continue;
@@ -335,7 +336,7 @@ public class Fragment implements Comparable<Fragment> {
 				visited[nextAtom] = true;
 				newAtomArray[nextAtom] = true;
 
-				newBondArray[this.getBondIndex(midAtom, nextAtom)] = true;
+				newBondArray[this.bondAtomIdxs[midAtom][nextAtom]] = true;
 				toProcessConnectedAtoms.push(this.getConnectedAtomIndicesFromAtomIdx(nextAtom));
 				toProcessAtom.push(Integer.valueOf(nextAtom));
 			}
@@ -347,26 +348,6 @@ public class Fragment implements Comparable<Fragment> {
 		final Fragment newFragment = new Fragment(this.prec, newAtomArray, newBondArray, brokenBondArrayOfNewFragment);
 
 		return new Object[] {Boolean.valueOf(singleFragment), newFragment};
-	}
-	
-	/**
-	 * Returns bond index + 1.
-	 * 
-	 * @param atomIdx1
-	 * @param atomIdx2
-	 * @return int
-	 */
-	private int getBondIndex(final int atomIdx1, final int atomIdx2) {
-		final int[] queryAtomIdxs = new int[] {atomIdx1, atomIdx2};
-		Arrays.sort(queryAtomIdxs);
-		
-		for (int i = 0; i < this.prec.getBondCount(); i++) {
-			if(Arrays.equals(queryAtomIdxs, this.bondAtomIdxs[i])) {
-				return i;
-			}
-		}
-		
-		return -1;
 	}
 	
 	/**
