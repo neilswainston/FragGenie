@@ -4,33 +4,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.openscience.cdk.interfaces.IAtom;
-import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IBond;
-
 /**
  * 
  * @author neilswainston
  */
 public class Fragment implements Comparable<Fragment> {
-
-	/**
-	 * 
-	 */
-	private static final Map<String, Float> MONOISOTOPIC_MASSES = new HashMap<>();
 	
 	/**
 	 * 
 	 */
-	private final IAtomContainer prec;
+	private final Precursor prec;
 
 	/**
 	 * 
@@ -50,16 +39,6 @@ public class Fragment implements Comparable<Fragment> {
 	/**
 	 * 
 	 */
-	private final int[][] bondAtomIdxs;
-	
-	/**
-	 * 
-	 */
-	private final int[][] connectedAtomIdxs;
-
-	/**
-	 * 
-	 */
 	private float monoisotopicMass = Float.NaN;
 
 	/**
@@ -67,7 +46,7 @@ public class Fragment implements Comparable<Fragment> {
 	 * 
 	 * @param precursor
 	 */
-	Fragment(final IAtomContainer precursor) {
+	Fragment(final Precursor precursor) {
 		this(precursor,
 				new boolean[precursor.getAtomCount()],
 				new boolean[precursor.getBondCount()],
@@ -85,32 +64,11 @@ public class Fragment implements Comparable<Fragment> {
 	 * @param bonds
 	 * @param brokenBonds
 	 */
-	private Fragment(final IAtomContainer precursor, final boolean[] atoms, final boolean[] bonds, final boolean[] brokenBonds) {
+	private Fragment(final Precursor precursor, final boolean[] atoms, final boolean[] bonds, final boolean[] brokenBonds) {
 		this.prec = precursor;
 		this.atomsArray = atoms;
 		this.bondsArray = bonds;
 		this.brokenBondsArray = brokenBonds;
-		this.bondAtomIdxs = new int[atoms.length][atoms.length];
-		this.connectedAtomIdxs = new int[atoms.length][];
-		
-		for (int i = 0; i < this.prec.getBondCount(); i++) {
-			final Iterator<IAtom> atomsIterator = this.prec.getBond(i).atoms().iterator();
-			final int idx1 = this.prec.indexOf(atomsIterator.next());
-			final int idx2 = this.prec.indexOf(atomsIterator.next());
-			this.bondAtomIdxs[idx1][idx2] = i;
-			this.bondAtomIdxs[idx2][idx1] = i;
-		}
-		
-		for (int i = 0; i < atoms.length; i++) {
-			final List<IAtom> connected = this.prec.getConnectedAtomsList(this.prec.getAtom(i));
-			final int[] connectedIdxs = new int[connected.size()];
-
-			for (int k = 0; k < connected.size(); k++) {
-				connectedIdxs[k] = this.prec.indexOf(connected.get(k));
-			}
-			
-			this.connectedAtomIdxs[i] = connectedIdxs;
-		}
 	}
 	
 	/**
@@ -138,7 +96,7 @@ public class Fragment implements Comparable<Fragment> {
 
 			for (int i = 0; i < this.atomsArray.length; i++) {
 				if (this.atomsArray[i]) {
-					mass += this.getAtomMass(i);
+					mass += this.prec.getAtomMass(i);
 				}
 			}
 			
@@ -156,10 +114,9 @@ public class Fragment implements Comparable<Fragment> {
 		final String HYDROGEN = "H"; //$NON-NLS-1$
 		final Map<String, Integer> elementCount = new TreeMap<>();
 
-		for (int i = 0; i < this.atomsArray.length; i++) {
-			if (this.atomsArray[i]) {
-				final IAtom atom = this.prec.getAtom(i);
-				final String element = atom.getSymbol();
+		for (int atomIdx = 0; atomIdx < this.atomsArray.length; atomIdx++) {
+			if (this.atomsArray[atomIdx]) {
+				final String element = this.prec.getAtomSymbol(atomIdx);
 
 				if (elementCount.get(element) == null) {
 					elementCount.put(element, Integer.valueOf(1));
@@ -167,7 +124,7 @@ public class Fragment implements Comparable<Fragment> {
 					elementCount.put(element, Integer.valueOf(elementCount.get(element).intValue() + 1));
 				}
 
-				final int hCount = atom.getImplicitHydrogenCount().intValue();
+				final int hCount = this.prec.getAtomImplicitHydrogenCount(atomIdx);
 
 				if (elementCount.get(HYDROGEN) == null) {
 					elementCount.put(HYDROGEN, Integer.valueOf(hCount));
@@ -200,9 +157,7 @@ public class Fragment implements Comparable<Fragment> {
 		
 		for (int i = 0; i < this.brokenBondsArray.length; i++) {
 			if(this.brokenBondsArray[i]) {
-				final IBond iBond = this.prec.getBond(i);
-				final Iterator<IAtom> atoms = iBond.atoms().iterator();
-				bonds.add(new Bond(atoms.next(), atoms.next(), iBond.getOrder(), iBond.isAromatic()));
+				bonds.add(this.prec.getBond(i));
 			}
 		}
 		
@@ -255,8 +210,7 @@ public class Fragment implements Comparable<Fragment> {
 	 * @return Fragment[]
 	 */
 	Fragment[] fragmentBond(final int bondIdx) {
-		final IBond bond = this.prec.getBond(bondIdx);
-		final int[] bondConnectedAtoms =  new int[] { this.prec.indexOf(bond.getAtom(0)), this.prec.indexOf(bond.getAtom(1)) };
+		final int[] bondConnectedAtoms = this.prec.getBondConnectedAtoms(bondIdx);
 		
 		// Generate first fragment:
 		// Traverse to first direction from atomIndex connected by broken bond:
@@ -280,19 +234,7 @@ public class Fragment implements Comparable<Fragment> {
 		return new Fragment[] { fragment1, fragment2 };
 	}
 	
-	/**
-	 * 
-	 * @param atomIdx
-	 * @return float
-	 */
-	private float getAtomMass(final int atomIdx) {
-		final IAtom atom = this.prec.getAtom(atomIdx);
-		final String symbol = atom.getSymbol();
-		final int hCount = atom.getImplicitHydrogenCount().intValue();
-		
-		return MONOISOTOPIC_MASSES.get(symbol).floatValue()
-				+ hCount * MONOISOTOPIC_MASSES.get("H").floatValue(); //$NON-NLS-1$
-	}
+
 
 	/**
 	 * Traverse the fragment to one direction starting from startAtom.
@@ -304,8 +246,8 @@ public class Fragment implements Comparable<Fragment> {
 	 * @param brokenBondArrayOfNewFragment
 	 * @return Object[]
 	 */
-	private Object[] traverse(final int startAtom, final int endAtom,
-			final int removeBond, final boolean[] brokenBondArrayOfNewFragment) {
+	private Object[] traverse(final int startAtomIdx, final int endAtomIdx,
+			final int removeBondIdx, final boolean[] brokenBondArrayOfNewFragment) {
 		final boolean[] newAtomArray = new boolean[this.prec.getAtomCount()];
 		final boolean[] newBondArray = new boolean[this.prec.getBondCount()];
 		final boolean[] currentBondArray = this.bondsArray;
@@ -319,48 +261,48 @@ public class Fragment implements Comparable<Fragment> {
 		final Stack<int[]> toProcessConnectedAtoms = new Stack<>();
 		final Stack<Integer> toProcessAtom = new Stack<>();
 		
-		toProcessConnectedAtoms.push(this.connectedAtomIdxs[startAtom]);
-		toProcessAtom.push(Integer.valueOf(startAtom));
-		visited[startAtom] = true;
+		toProcessConnectedAtoms.push(this.prec.getConnectedAtomIdxs(startAtomIdx));
+		toProcessAtom.push(Integer.valueOf(startAtomIdx));
+		visited[startAtomIdx] = true;
 		
 		boolean singleFragment = false;
 		
 		// Set the first atom of possible new fragment atom as the one direction of cut bond.
-		newAtomArray[startAtom] = true;
+		newAtomArray[startAtomIdx] = true;
 		
 		while (!toProcessConnectedAtoms.isEmpty()) {
-			final int midAtom = toProcessAtom.pop().intValue();
+			final int midAtomIdx = toProcessAtom.pop().intValue();
 			
-			for (int nextAtom : toProcessConnectedAtoms.pop()) {
+			for (int nextAtomIdx : toProcessConnectedAtoms.pop()) {
 				// Did we visit the current atom already?
-				final int currentBond = this.bondAtomIdxs[midAtom][nextAtom];
+				final int currentBondIdx = this.prec.getBondIdx(midAtomIdx, nextAtomIdx);
 
-				if (!currentBondArray[currentBond] || currentBond == removeBond) {
+				if (!currentBondArray[currentBondIdx] || currentBondIdx == removeBondIdx) {
 					continue;
 				}
 				
 				// If we visited the current atom already, then we do not have to check it again:
-				if (visited[nextAtom]) {
-					newBondArray[currentBond] = true;
+				if (visited[nextAtomIdx]) {
+					newBondArray[currentBondIdx] = true;
 					continue;
 				}
 				
 				// If we reach the second atom of the cleaved bond then still one fragment is present:
-				if (nextAtom == endAtom) {
+				if (nextAtomIdx == endAtomIdx) {
 					singleFragment = true;
 				}
 
-				visited[nextAtom] = true;
-				newAtomArray[nextAtom] = true;
+				visited[nextAtomIdx] = true;
+				newAtomArray[nextAtomIdx] = true;
 
-				newBondArray[this.bondAtomIdxs[midAtom][nextAtom]] = true;
-				toProcessConnectedAtoms.push(this.connectedAtomIdxs[nextAtom]);
-				toProcessAtom.push(Integer.valueOf(nextAtom));
+				newBondArray[this.prec.getBondIdx(midAtomIdx, nextAtomIdx)] = true;
+				toProcessConnectedAtoms.push(this.prec.getConnectedAtomIdxs(nextAtomIdx));
+				toProcessAtom.push(Integer.valueOf(nextAtomIdx));
 			}
 		}
 
-		brokenBondArrayOfNewFragment[removeBond] = true;
-		newBondArray[removeBond] = false;
+		brokenBondArrayOfNewFragment[removeBondIdx] = true;
+		newBondArray[removeBondIdx] = false;
 		
 		final Fragment newFragment = new Fragment(this.prec, newAtomArray, newBondArray, brokenBondArrayOfNewFragment);
 
@@ -439,73 +381,5 @@ public class Fragment implements Comparable<Fragment> {
 	@Override
 	public int compareTo(final Fragment obj) {
 		return (int)((this.getMonoisotopicMass() - obj.getMonoisotopicMass()) * 1000000);
-	}
-	
-	static {
-		MONOISOTOPIC_MASSES.put("[13C]", Float.valueOf(13.00335f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("C", Float.valueOf(12.00000f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Al", Float.valueOf(26.98154f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Am", Float.valueOf(243.06140f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Ar", Float.valueOf(39.96238f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("As", Float.valueOf(74.92160f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("At", Float.valueOf(209.98710f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Au", Float.valueOf(196.96660f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("B", Float.valueOf(11.00931f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Ba", Float.valueOf(137.90520f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Bi", Float.valueOf(208.98040f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Br", Float.valueOf(78.91834f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Ca", Float.valueOf(39.96259f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Cd", Float.valueOf(113.90340f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Ce", Float.valueOf(139.90540f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Cl", Float.valueOf(34.96885f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Co", Float.valueOf(58.93320f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Cr", Float.valueOf(51.94051f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Cu", Float.valueOf(62.92960f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("D", Float.valueOf(2.01410f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("F", Float.valueOf(18.99840f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Fe", Float.valueOf(55.93494f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Ga", Float.valueOf(68.92558f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Gd", Float.valueOf(157.92410f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Ge", Float.valueOf(73.92118f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("H", Float.valueOf(1.00783f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("He", Float.valueOf(4.00260f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Hg", Float.valueOf(201.97060f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("I", Float.valueOf(126.90450f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("In", Float.valueOf(114.90390f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("K", Float.valueOf(38.96371f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Li", Float.valueOf(7.01600f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Mg", Float.valueOf(23.98504f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Mn", Float.valueOf(54.93805f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Mo", Float.valueOf(97.90541f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("[15N]", Float.valueOf(15.00011f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("N", Float.valueOf(14.00307f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Na", Float.valueOf(22.98977f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Ne", Float.valueOf(19.99244f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Ni", Float.valueOf(57.93535f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("[18O]", Float.valueOf(17.99916f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("O", Float.valueOf(15.99491f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("P", Float.valueOf(30.97376f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Pb", Float.valueOf(207.97660f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Po", Float.valueOf(208.98240f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Pt", Float.valueOf(194.96480f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Ra", Float.valueOf(226.02540f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Rb", Float.valueOf(84.91179f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Re", Float.valueOf(186.95580f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Ru", Float.valueOf(101.90430f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("S", Float.valueOf(31.97207f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Sb", Float.valueOf(120.90380f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Se", Float.valueOf(79.91652f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Si", Float.valueOf(27.97693f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Sn", Float.valueOf(119.90220f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Tc", Float.valueOf(97.90722f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Te", Float.valueOf(129.90620f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Ti", Float.valueOf(47.94795f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Tl", Float.valueOf(204.97440f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("U", Float.valueOf(238.05080f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("V", Float.valueOf(50.94396f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("W", Float.valueOf(183.95090f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Y", Float.valueOf(88.90585f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Zn", Float.valueOf(63.92915f)); //$NON-NLS-1$
-		MONOISOTOPIC_MASSES.put("Zr", Float.valueOf(89.90470f)); //$NON-NLS-1$
 	}
 }
