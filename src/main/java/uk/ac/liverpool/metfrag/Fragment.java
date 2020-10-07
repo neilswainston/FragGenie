@@ -49,11 +49,9 @@ public class Fragment implements Comparable<Fragment> {
 	Fragment(final Precursor precursor) {
 		this(precursor,
 				new boolean[precursor.getAtomCount()],
-				new boolean[precursor.getBondCount()],
 				new boolean[precursor.getBondCount()]);
 		
 		Arrays.fill(this.atomsArray, true);
-		Arrays.fill(this.bondsArray, true);
 	}
 
 	/**
@@ -61,13 +59,11 @@ public class Fragment implements Comparable<Fragment> {
 	 * 
 	 * @param precursor
 	 * @param atoms
-	 * @param bonds
 	 * @param brokenBonds
 	 */
-	private Fragment(final Precursor precursor, final boolean[] atoms, final boolean[] bonds, final boolean[] brokenBonds) {
+	private Fragment(final Precursor precursor, final boolean[] atoms, final boolean[] brokenBonds) {
 		this.prec = precursor;
 		this.atomsArray = atoms;
-		this.bondsArray = bonds;
 		this.brokenBondsArray = brokenBonds;
 	}
 	
@@ -193,8 +189,8 @@ public class Fragment implements Comparable<Fragment> {
 			fragments.add(fragment);
 			
 			if(fragment.getNumBrokenBonds() < maxBrokenBonds) {
-				for(int bondIdx = 0; bondIdx < fragment.bondsArray.length; bondIdx++) {
-					if(fragment.bondsArray[bondIdx] && !fragment.brokenBondsArray[bondIdx]) {
+				for(int bondIdx = 0; bondIdx < fragment.brokenBondsArray.length; bondIdx++) {
+					if(!fragment.brokenBondsArray[bondIdx]) {
 						for(final Fragment childFragment : fragment.fragmentBond(bondIdx)) {
 							fragment(childFragment, fragments, maxBrokenBonds);
 						}
@@ -214,8 +210,7 @@ public class Fragment implements Comparable<Fragment> {
 		
 		// Generate first fragment:
 		// Traverse to first direction from atomIndex connected by broken bond:
-		final Object[] result1 = this.traverse(bondConnectedAtoms[0], bondConnectedAtoms[1],
-				bondIdx, this.brokenBondsArray.clone());
+		final Object[] result1 = this.traverse(bondConnectedAtoms[0], bondConnectedAtoms[1], bondIdx);
 
 		final Fragment fragment1 = (Fragment)result1[1];
 
@@ -226,8 +221,7 @@ public class Fragment implements Comparable<Fragment> {
 		
 		// Generate second fragment:
 		// Traverse the second direction from atomIndex connected by broken bond:
-		final Object[] result2 = this.traverse(bondConnectedAtoms[1], bondConnectedAtoms[0],
-				bondIdx, this.brokenBondsArray.clone());
+		final Object[] result2 = this.traverse(bondConnectedAtoms[1], bondConnectedAtoms[0], bondIdx);
 
 		final Fragment fragment2 = (Fragment)result2[1];
 
@@ -239,18 +233,15 @@ public class Fragment implements Comparable<Fragment> {
 	/**
 	 * Traverse the fragment to one direction starting from startAtom.
 	 * 
-	 * @param precursorMolecule
-	 * @param startAtom
-	 * @param endAtom
-	 * @param removeBond
-	 * @param brokenBondArrayOfNewFragment
+	 * @param startAtomIdx
+	 * @param endAtomIdx
+	 * @param removeBondIdx
 	 * @return Object[]
 	 */
-	private Object[] traverse(final int startAtomIdx, final int endAtomIdx,
-			final int removeBondIdx, final boolean[] brokenBondArrayOfNewFragment) {
+	private Object[] traverse(final int startAtomIdx, final int endAtomIdx, final int removeBondIdx) {
 		final boolean[] newAtomArray = new boolean[this.prec.getAtomCount()];
-		final boolean[] newBondArray = new boolean[this.prec.getBondCount()];
-		final boolean[] currentBondArray = this.bondsArray;
+		final boolean[] currentBrokenBondArray = this.brokenBondsArray;
+		final boolean[] newBrokenBondArray = this.brokenBondsArray.clone();
 		
 		// When traversing the fragment graph, we want to know if we already visited
 		// a node (atom) to check for ringed structures.
@@ -277,13 +268,12 @@ public class Fragment implements Comparable<Fragment> {
 				// Did we visit the current atom already?
 				final int currentBondIdx = this.prec.getBondIdx(midAtomIdx, nextAtomIdx);
 
-				if (!currentBondArray[currentBondIdx] || currentBondIdx == removeBondIdx) {
+				if (currentBrokenBondArray[currentBondIdx] || currentBondIdx == removeBondIdx) {
 					continue;
 				}
 				
 				// If we visited the current atom already, then we do not have to check it again:
 				if (visited[nextAtomIdx]) {
-					newBondArray[currentBondIdx] = true;
 					continue;
 				}
 				
@@ -295,16 +285,14 @@ public class Fragment implements Comparable<Fragment> {
 				visited[nextAtomIdx] = true;
 				newAtomArray[nextAtomIdx] = true;
 
-				newBondArray[this.prec.getBondIdx(midAtomIdx, nextAtomIdx)] = true;
 				toProcessConnectedAtoms.push(this.prec.getConnectedAtomIdxs(nextAtomIdx));
 				toProcessAtom.push(Integer.valueOf(nextAtomIdx));
 			}
 		}
 
-		brokenBondArrayOfNewFragment[removeBondIdx] = true;
-		newBondArray[removeBondIdx] = false;
+		newBrokenBondArray[removeBondIdx] = true;
 		
-		final Fragment newFragment = new Fragment(this.prec, newAtomArray, newBondArray, brokenBondArrayOfNewFragment);
+		final Fragment newFragment = new Fragment(this.prec, newAtomArray, newBrokenBondArray);
 
 		return new Object[] {Boolean.valueOf(singleFragment), newFragment};
 	}
