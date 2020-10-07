@@ -71,9 +71,9 @@ public class Fragment implements Comparable<Fragment> {
 	 * 
 	 * @return Collection<List<Object>>
 	 */
-	public Collection<Fragment> fragment(final int maxBrokenBonds) {
+	public Collection<Fragment> fragment(final int maxBrokenBonds, final float minMass) {
 		final Collection<Fragment> fragments = new TreeSet<>();
-		fragment(this, fragments, maxBrokenBonds);
+		fragment(this, fragments, maxBrokenBonds, minMass);
 		return fragments;
 	}
 	
@@ -184,15 +184,15 @@ public class Fragment implements Comparable<Fragment> {
 	 * @param fragments
 	 * @param maxBrokenBonds
 	 */
-	private static void fragment(final Fragment fragment, final Collection<Fragment> fragments, final int maxBrokenBonds) {
-		if(fragment.getNumBrokenBonds() <= maxBrokenBonds) {
+	private static void fragment(final Fragment fragment, final Collection<Fragment> fragments, final int maxBrokenBonds, final float minMass) {
+		if(fragment.getNumBrokenBonds() <= maxBrokenBonds && fragment.getMonoisotopicMass() > minMass) {
 			fragments.add(fragment);
 			
 			if(fragment.getNumBrokenBonds() < maxBrokenBonds) {
 				for(int bondIdx = 0; bondIdx < fragment.brokenBondsArray.length; bondIdx++) {
 					if(!fragment.brokenBondsArray[bondIdx]) {
 						for(final Fragment childFragment : fragment.fragmentBond(bondIdx)) {
-							fragment(childFragment, fragments, maxBrokenBonds);
+							fragment(childFragment, fragments, maxBrokenBonds, minMass);
 						}
 					}
 				}

@@ -47,27 +47,29 @@ public class MetFragFragmenter {
 	 * 
 	 * @param smiles
 	 * @param maximumTreeDepth
+	 * @param minMass
 	 * @param fields
-	 * @return Object[]
+	 * @return
 	 * @throws Exception
 	 */
-	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final List<String> fields) throws Exception {
+	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final float minMass, final List<String> fields) throws Exception {
 		final List<List<Object>> brokenBondsFilter = null;
-		return getFragmentData(smiles, maximumTreeDepth, fields, brokenBondsFilter);
+		return getFragmentData(smiles, maximumTreeDepth, minMass, fields, brokenBondsFilter);
 	}
 		
 	/**
 	 * 
 	 * @param smiles
 	 * @param maximumTreeDepth
+	 * @param minMass
 	 * @param fields
 	 * @param brokenBondsFilter
 	 * @return Object[]
 	 * @throws Exception
 	 */
-	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final List<String> fields, final List<List<Object>> brokenBondsFilter) throws Exception {
+	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final float minMass, final List<String> fields, final List<List<Object>> brokenBondsFilter) throws Exception {
 		final Fragment fragment = new Fragment(new Precursor(getAtomContainer(smiles)));
-		final Collection<Fragment> fragments = fragment.fragment(maximumTreeDepth);
+		final Collection<Fragment> fragments = fragment.fragment(maximumTreeDepth, minMass);
 		final boolean getMasses = fields.indexOf(Headers.METFRAG_MZ.name()) != -1;
 		final boolean getFormulae = fields.indexOf(Headers.METFRAG_FORMULAE.name()) != -1;
 		final boolean getBonds = fields.indexOf(Headers.METFRAG_BROKEN_BONDS.name()) != -1;
@@ -111,16 +113,17 @@ public class MetFragFragmenter {
 	 * @param smilesHeader
 	 * @param fields
 	 * @param maximumTreeDepth
+	 * @param minMass
 	 * @param maxLenSmiles
 	 * @param maxRecords
 	 * @throws Exception
 	 */
 	public static void fragment(final File inFile, final File outFile, final String smilesHeader,
-			final List<String> fields, final int maximumTreeDepth,
+			final List<String> fields, final int maximumTreeDepth, final float minMass, 
 			final int maxLenSmiles, final int maxRecords) throws Exception {
 		final List<List<Object>> brokenBondsFilter = null;
 		
-		fragment(inFile, outFile, smilesHeader, fields, maximumTreeDepth, brokenBondsFilter, maxLenSmiles, maxRecords);
+		fragment(inFile, outFile, smilesHeader, fields, maximumTreeDepth, minMass, brokenBondsFilter, maxLenSmiles, maxRecords);
 	}
 
 	/**
@@ -130,13 +133,14 @@ public class MetFragFragmenter {
 	 * @param smilesHeader
 	 * @param fields
 	 * @param maximumTreeDepth
+	 * @param minMass
 	 * @param brokenBondsFilter
 	 * @param maxLenSmiles
 	 * @param maxRecords
 	 * @throws Exception
 	 */
 	public static void fragment(final File inFile, final File outFile, final String smilesHeader,
-			final List<String> fields, final int maximumTreeDepth, final List<List<Object>> brokenBondsFilter,
+			final List<String> fields, final int maximumTreeDepth, final float minMass, final List<List<Object>> brokenBondsFilter,
 			final int maxLenSmiles, final int maxRecords) throws Exception {
 
 		outFile.getParentFile().mkdirs();
@@ -159,7 +163,7 @@ public class MetFragFragmenter {
 
 				if (smiles.length() < maxLenSmiles) {
 					try {
-						final Object[] fragmentData = getFragmentData(smiles, maximumTreeDepth, fields, brokenBondsFilter);
+						final Object[] fragmentData = getFragmentData(smiles, maximumTreeDepth, minMass, fields, brokenBondsFilter);
 						final Map<String, String> recordMap = record.toMap();
 						
 						for(final String field : fields) {
@@ -277,9 +281,10 @@ public class MetFragFragmenter {
 		final File outFile = new File(new File(args[1]).getAbsolutePath());
 		final String smilesHeader = args[2];
 		final int maximumTreeDepth = Integer.parseInt(args[3]);
-		final int maxLenSmiles = Integer.parseInt(args[4]);
-		final int maxRecords = Integer.parseInt(args[5]);
-		final List<String> fields = Arrays.asList(Arrays.copyOfRange(args, 6, args.length));
+		final float minMass = Float.parseFloat(args[4]);
+		final int maxLenSmiles = Integer.parseInt(args[5]);
+		final int maxRecords = Integer.parseInt(args[6]);
+		final List<String> fields = Arrays.asList(Arrays.copyOfRange(args, 7, args.length));
 		
 		final List<List<Object>> brokenBondsFilter = null;
 		// final List<List<Object>> brokenBondsFilter = new ArrayList<>();
@@ -292,6 +297,7 @@ public class MetFragFragmenter {
 				smilesHeader,
 				fields,
 				maximumTreeDepth,
+				minMass,
 				brokenBondsFilter,
 				maxLenSmiles,
 				maxRecords);

@@ -47,7 +47,7 @@ public class MetFragFragmenterTest {
 				236.96283f // [C7H4Cl2FN2O2]+
 		};
 
-		doTest("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", expected, null, 3, false); //$NON-NLS-1$
+		doTest("C(C(=O)O)OC1=NC(=C(C(=C1Cl)N)Cl)F", expected, null, 3, 0.0f, false); //$NON-NLS-1$
 	}
 	
 	/**
@@ -58,7 +58,7 @@ public class MetFragFragmenterTest {
 	@Test
 	public void testGetFragmentsPrecursor() throws Exception {
 		final float[] expected = { 14.01511f, 15.02294f, 15.022941f, 16.03077f, 17.002192f, 18.010021f, 29.0386f, 30.04643f, 31.017853f, 32.02568f, 46.041344f, 47.04917f };
-		doTest("CCO", expected, null, 2, false); //$NON-NLS-1$
+		doTest("CCO", expected, null, 2, 0.0f, false); //$NON-NLS-1$
 	}
 	
 	/**
@@ -68,12 +68,12 @@ public class MetFragFragmenterTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public void testGetFragmentsFilterCC() throws Exception {
-		final float[] expected = { 15.02294f, 16.03077f, 31.017853f, 32.02568f, 46.041344f, 47.04917f };
+		final float[] expected = { 31.017853f, 32.02568f, 46.041344f, 47.04917f };
 		
 		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
 		brokenBondsFilter.add(Arrays.asList(new Object[] {Arrays.asList(new String[] {"C", "C"}), null, null})); //$NON-NLS-1$ //$NON-NLS-2$
 		
-		doTest("CCO", expected, brokenBondsFilter, 2, true); //$NON-NLS-1$
+		doTest("CCO", expected, brokenBondsFilter, 2, 20.0f, true); //$NON-NLS-1$
 	}
 	
 	/**
@@ -88,7 +88,7 @@ public class MetFragFragmenterTest {
 		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
 		brokenBondsFilter.add(Arrays.asList(new Object[] {null, "SINGLE", null})); //$NON-NLS-1$
 		
-		doTest("C=C", expected, brokenBondsFilter, 2, true); //$NON-NLS-1$
+		doTest("C=C", expected, brokenBondsFilter, 2, 0.0f, true); //$NON-NLS-1$
 	}
 
 	/**
@@ -99,7 +99,7 @@ public class MetFragFragmenterTest {
 	@Test
 	public void testGetFragmentsAromatic() throws Exception {
 		final float[] expected = { 13.007279f, 14.01511f, 26.01511f, 27.02294f, 39.02294f, 40.03077f, 52.03077f, 53.038597f, 65.0386f, 66.046425f, 78.046425f, 79.05425f };
-		doTest("C1=CC=CC=C1", expected, null, 2, true); //$NON-NLS-1$
+		doTest("C1=CC=CC=C1", expected, null, 2, 0f, true); //$NON-NLS-1$
 	}
 	
 	/**
@@ -114,7 +114,7 @@ public class MetFragFragmenterTest {
 		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
 		brokenBondsFilter.add(Arrays.asList(new Object[] {null, null, Boolean.FALSE}));
 		
-		doTest("C1=CC=CC=C1", expected, brokenBondsFilter, 2, true); //$NON-NLS-1$
+		doTest("C1=CC=CC=C1", expected, brokenBondsFilter, 2, 0.0f, true); //$NON-NLS-1$
 	}
 	
 	/**
@@ -123,16 +123,18 @@ public class MetFragFragmenterTest {
 	 * @param expected
 	 * @param brokenBondsFilter
 	 * @param maximumTreeDepth
+	 * @param minMass
+	 * @param biDirectional
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	private static void doTest(final String smiles, final float[] expected, final List<List<Object>> brokenBondsFilter, final int maximumTreeDepth, final boolean biDirectional) throws Exception {
+	private static void doTest(final String smiles, final float[] expected, final List<List<Object>> brokenBondsFilter, final int maximumTreeDepth, final float minMass, final boolean biDirectional) throws Exception {
 		final List<String> headers = Arrays.asList(new String[] {
 				MetFragFragmenter.Headers.METFRAG_MZ.name(),
 				MetFragFragmenter.Headers.METFRAG_FORMULAE.name(),
 				MetFragFragmenter.Headers.METFRAG_BROKEN_BONDS.name()
 				});
-		final Object[] data = MetFragFragmenter.getFragmentData(smiles, maximumTreeDepth, headers, brokenBondsFilter);
+		final Object[] data = MetFragFragmenter.getFragmentData(smiles, maximumTreeDepth, minMass, headers, brokenBondsFilter);
 		final List<Float> fragments = (List<Float>)data[MetFragFragmenter.Headers.METFRAG_MZ.ordinal()];
 		final Float[] uniqueFrags = new TreeSet<>(fragments).toArray(new Float[0]);
 		
