@@ -286,11 +286,9 @@ public class MetFragFragmenter {
 		final int maxRecords = Integer.parseInt(args[6]);
 		final List<String> fields = Arrays.asList(Arrays.copyOfRange(args, 7, args.length));
 		
-		final List<List<Object>> brokenBondsFilter = null;
-		// final List<List<Object>> brokenBondsFilter = new ArrayList<>();
-		// brokenBondsFilter.add(null);
-		// brokenBondsFilter.add(Arrays.asList(new Object[] {"SINGLE"})); //$NON-NLS-1$
-		// brokenBondsFilter.add(Arrays.asList(new Object[] {Boolean.FALSE}));
+		// final List<List<Object>> brokenBondsFilter = null;
+		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
+		brokenBondsFilter.add(Arrays.asList(new Object[] {null, "SINGLE", Boolean.FALSE})); //$NON-NLS-1$
 		
 		fragment(inFile,
 				outFile,
