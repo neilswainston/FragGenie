@@ -21,6 +21,7 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IBond.Order;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
@@ -288,7 +289,7 @@ public class MetFragFragmenter {
 		
 		// final List<List<Object>> brokenBondsFilter = null;
 		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
-		brokenBondsFilter.add(Arrays.asList(new Object[] {null, "SINGLE", Boolean.FALSE})); //$NON-NLS-1$
+		brokenBondsFilter.add(Arrays.asList(new Object[] {null, Order.SINGLE, Boolean.FALSE}));
 		
 		fragment(inFile,
 				outFile,
