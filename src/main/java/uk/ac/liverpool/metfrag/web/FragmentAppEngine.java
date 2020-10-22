@@ -46,7 +46,7 @@ public class FragmentAppEngine extends HttpServlet {
 			final String smiles = query.getString("smiles"); //$NON-NLS-1$
 			final int maximumTreeDepth = query.getInt("maximumTreeDepth", 3); //$NON-NLS-1$
 			final JsonNumber minMassNumber = query.getJsonNumber("minMass"); //$NON-NLS-1$
-			final float minMass = minMassNumber != null ? (float)minMassNumber.doubleValue() : 80.0f;
+			final float minMass = minMassNumber != null ? (float)minMassNumber.doubleValue() : 0.0f;
 			final List<String> fields = Arrays.asList(query.getString("fields", Headers.METFRAG_MZ.name()).split(",")); //$NON-NLS-1$ //$NON-NLS-2$
 			final List<List<Object>> brokenBondsFilter = null;
 			final Object[] results = MetFragFragmenter.getFragmentData(smiles, maximumTreeDepth, minMass, fields, brokenBondsFilter);
