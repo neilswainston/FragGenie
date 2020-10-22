@@ -33,7 +33,7 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
  */
 public class MetFragFragmenter {
 
-	enum Headers {
+	public enum Headers {
 		METFRAG_MZ,
 		METFRAG_FORMULAE,
 		METFRAG_BROKEN_BONDS
