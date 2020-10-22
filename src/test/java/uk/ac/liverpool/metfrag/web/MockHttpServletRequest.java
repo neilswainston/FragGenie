@@ -59,7 +59,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 		
 		builder.add("smiles", "CCO"); //$NON-NLS-1$ //$NON-NLS-2$
 		builder.add("maximumTreeDepth", 3); //$NON-NLS-1$
-		builder.add("minMass", 80.0); //$NON-NLS-1$
+		builder.add("minMass", 0.0); //$NON-NLS-1$
 		builder.add("fields", String.join(",", fields)); //$NON-NLS-1$ //$NON-NLS-2$
 		
 		this.query = builder.build().toString();

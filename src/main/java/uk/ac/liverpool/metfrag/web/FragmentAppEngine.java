@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import uk.ac.liverpool.metfrag.Bond;
 import uk.ac.liverpool.metfrag.MetFragFragmenter;
 import uk.ac.liverpool.metfrag.MetFragFragmenter.Headers;
 
@@ -96,7 +97,6 @@ public class FragmentAppEngine extends HttpServlet {
 		final JsonObjectBuilder resultsBuilder = Json.createObjectBuilder();
 
 		for(int i = 0; i < results.length; i++) {
-			
 			final Object value = results[i];
 				
 			if(value instanceof List) {
@@ -121,10 +121,14 @@ public class FragmentAppEngine extends HttpServlet {
 				resultBuilder.add((String)value);
 			}
 			else if(value instanceof Float) {
-				resultBuilder.add(((Double)value).doubleValue());
+				resultBuilder.add(((Float)value).doubleValue());
 			}
 			else if(value instanceof List) {
 				resultBuilder.add(getArrayBuilder((List<?>)value));
+			}
+			else if(value instanceof Bond) {
+				final Bond bond = (Bond)value;
+				resultBuilder.add(bond.encode());
 			}
 		}
 		

@@ -43,13 +43,30 @@ public class FragmentAppEngineTest {
 		Assert.assertEquals("application/json", response.getContentType()); //$NON-NLS-1$
 		Assert.assertEquals("UTF-8", response.getCharacterEncoding()); //$NON-NLS-1$
 
+		final float[] expectedMz = new float[] {14.01511f, 15.022941f, 15.02294f, 16.03077f, 17.002192f, 18.010021f, 29.0386f, 30.04643f, 31.017853f, 32.02568f, 46.041344f, 47.04917f};
+		final String[] expectedFormulae = new String[] {"CH2", "CH2", "CH3", "CH3", "HO", "HO", "C2H5", "C2H5", "CH3O", "CH3O", "C2H6O", "C2H6O"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$
+		final int[][] expectedBrokenBonds = new int[][] {
+			{12384, 12416},
+			{12384, 12416},
+			{12384},
+			{12384},
+			{12384, 12416},
+			{12384, 12416},
+			{12416},
+			{12416},
+			{12384},
+			{12384},
+			{},
+			{}
+		};
+		
 		final String resp = response.getWriterContent().toString();
-
+		
 		try(final JsonReader jsonReader = Json.createReader(new StringReader(resp))) {
 			final JsonObject results = jsonReader.readObject();
-			Assert.assertArrayEquals(new float[0], toFloatArray(results.getJsonArray(Headers.METFRAG_MZ.name())), 1e-6f);
-			Assert.assertArrayEquals(new String[0], toStringArray(results.getJsonArray(Headers.METFRAG_FORMULAE.name())));
-			Assert.assertArrayEquals(new int[0][], toIntArray(results.getJsonArray(Headers.METFRAG_BROKEN_BONDS.name())));
+			Assert.assertArrayEquals(expectedMz, toFloatArray(results.getJsonArray(Headers.METFRAG_MZ.name())), 1e-6f);
+			Assert.assertArrayEquals(expectedFormulae, toStringArray(results.getJsonArray(Headers.METFRAG_FORMULAE.name())));
+			Assert.assertArrayEquals(expectedBrokenBonds, toIntArray(results.getJsonArray(Headers.METFRAG_BROKEN_BONDS.name())));
 		}
 	}
 	
