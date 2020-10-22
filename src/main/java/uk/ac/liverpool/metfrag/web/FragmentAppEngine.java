@@ -39,7 +39,7 @@ public class FragmentAppEngine extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
 		try(final PrintWriter writer = response.getWriter()) {
 			final JsonObject query = getQuery(request);
 			final String smiles = query.getString("smiles"); //$NON-NLS-1$

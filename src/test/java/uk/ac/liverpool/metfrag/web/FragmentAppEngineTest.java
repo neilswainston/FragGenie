@@ -28,10 +28,10 @@ public class FragmentAppEngineTest {
 	 */
 	@SuppressWarnings("static-method")
 	@Test
-	public void testGet() throws IOException {
+	public void testPost() throws IOException {
 		final MockHttpServletRequest request = new MockHttpServletRequest();
 		final MockHttpServletResponse response = new MockHttpServletResponse();
-		new FragmentAppEngine().doGet(request, response);
+		new FragmentAppEngine().doPost(request, response);
 		verify(response);
 	}
 	
