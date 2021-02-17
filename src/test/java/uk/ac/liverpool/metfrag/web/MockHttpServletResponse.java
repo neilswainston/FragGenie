@@ -153,7 +153,6 @@ class MockHttpServletResponse implements HttpServletResponse {
 		return null;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public String encodeRedirectUrl(final String url) {
 		return null;
@@ -164,7 +163,6 @@ class MockHttpServletResponse implements HttpServletResponse {
 		return null;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public String encodeUrl(final String url) {
 		return null;
@@ -205,7 +203,6 @@ class MockHttpServletResponse implements HttpServletResponse {
 		// Empty block
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public void setStatus(final int statusCode, final String message) {
 		// Empty block

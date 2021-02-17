@@ -119,6 +119,17 @@ public class MetFragFragmenterTest {
 	
 	/**
 	 * 
+	 * @throws Exception
+	 */
+	@SuppressWarnings("static-method")
+	@Test
+	public void testGetFragmentsCytosine() throws Exception {
+		final float[] expected = { 13.007279f, 14.00252f, 14.01511f, 15.010349f, 15.01035f, 15.99436f, 16.018179f, 16.01818f, 17.00219f, 17.02601f, 26.01511f, 27.02294f, 27.994362f, 28.01818f, 29.002192f, 29.02601f, 41.02601f, 41.997433f, 42.02125f, 42.033836f, 43.00526f, 43.02908f, 44.01309f, 54.033836f, 55.02908f, 55.041664f, 56.013092f, 56.036907f, 57.00833f, 57.02092f, 58.01616f, 68.0369f, 69.02092f, 69.04473f, 69.04474f, 70.01616f, 70.02875f, 70.05257f, 71.02399f, 79.029076f, 80.0369f, 83.02399f, 83.047806f, 84.031815f, 84.05563f, 85.027054f, 86.03488f, 95.02399f, 95.047806f, 96.031815f, 96.05563f, 97.03964f, 97.03965f, 98.03489f, 98.04748f, 99.04272f, 111.04272f, 112.050545f };
+		doTest("Nc1cc[nH]c(=O)n1", expected, null, 2, 0f, true); //$NON-NLS-1$
+	}
+	
+	/**
+	 * 
 	 * @param smiles
 	 * @param expected
 	 * @param brokenBondsFilter

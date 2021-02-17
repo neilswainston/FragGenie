@@ -214,7 +214,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
 		return null;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public String getRealPath(final String path) {
 		// Empty block
@@ -438,7 +437,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
 		return false;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public boolean isRequestedSessionIdFromUrl() {
 		// Empty block
