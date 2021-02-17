@@ -124,8 +124,9 @@ public class MetFragFragmenterTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public void testGetFragmentsCytosine() throws Exception {
-		final float[] expected = { 13.007279f, 14.00252f, 14.01511f, 15.010349f, 15.01035f, 15.99436f, 16.018179f, 16.01818f, 17.00219f, 17.02601f, 26.01511f, 27.02294f, 27.994362f, 28.01818f, 29.002192f, 29.02601f, 41.02601f, 41.997433f, 42.02125f, 42.033836f, 43.00526f, 43.02908f, 44.01309f, 54.033836f, 55.02908f, 55.041664f, 56.013092f, 56.036907f, 57.00833f, 57.02092f, 58.01616f, 68.0369f, 69.02092f, 69.04473f, 69.04474f, 70.01616f, 70.02875f, 70.05257f, 71.02399f, 79.029076f, 80.0369f, 83.02399f, 83.047806f, 84.031815f, 84.05563f, 85.027054f, 86.03488f, 95.02399f, 95.047806f, 96.031815f, 96.05563f, 97.03964f, 97.03965f, 98.03489f, 98.04748f, 99.04272f, 111.04272f, 112.050545f };
-		doTest("Nc1cc[nH]c(=O)n1", expected, null, 2, 0f, true); //$NON-NLS-1$
+		final float[] ionMassCorrections = new float[] { 1.00728f }; // { [M]+H+ }
+		final float[] expected = { 14.01511f, 15.01035f, 16.018179f, 17.00219f, 17.02601f, 27.02294f, 29.002192f, 29.02601f, 42.033836f, 43.00526f, 43.02908f, 44.01309f, 55.041664f, 56.036907f, 57.02092f, 58.01616f, 69.04473f, 70.02875f, 70.05257f, 71.02399f, 80.0369f, 84.031815f, 84.05563f, 86.03488f, 96.031815f, 96.05563f, 97.03964f, 98.04748f, 99.04272f, 112.050545f };
+		doTest("Nc1cc[nH]c(=O)n1", expected, null, 2, 0f, true, ionMassCorrections); //$NON-NLS-1$
 	}
 	
 	/**
@@ -138,14 +139,30 @@ public class MetFragFragmenterTest {
 	 * @param biDirectional
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	private static void doTest(final String smiles, final float[] expected, final List<List<Object>> brokenBondsFilter, final int maximumTreeDepth, final float minMass, final boolean biDirectional) throws Exception {
+		final float[] ionMassCorrections = new float[] { -0.00055f, 1.00728f }; // { [M]+, [M]+H+ }
+		doTest(smiles, expected, brokenBondsFilter, maximumTreeDepth, minMass, biDirectional, ionMassCorrections);
+	}
+	
+	/**
+	 * 
+	 * @param smiles
+	 * @param expected
+	 * @param brokenBondsFilter
+	 * @param maximumTreeDepth
+	 * @param minMass
+	 * @param biDirectional
+	 * @param ionMassCorrections
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	private static void doTest(final String smiles, final float[] expected, final List<List<Object>> brokenBondsFilter, final int maximumTreeDepth, final float minMass, final boolean biDirectional, final float[] ionMassCorrections) throws Exception {
 		final List<String> headers = Arrays.asList(new String[] {
 				MetFragFragmenter.Headers.METFRAG_MZ.name(),
 				MetFragFragmenter.Headers.METFRAG_FORMULAE.name(),
 				MetFragFragmenter.Headers.METFRAG_BROKEN_BONDS.name()
 				});
-		final Object[] data = MetFragFragmenter.getFragmentData(smiles, maximumTreeDepth, minMass, headers, brokenBondsFilter);
+		final Object[] data = MetFragFragmenter.getFragmentData(smiles, maximumTreeDepth, minMass, headers, brokenBondsFilter, ionMassCorrections);
 		final List<Float> fragments = (List<Float>)data[MetFragFragmenter.Headers.METFRAG_MZ.ordinal()];
 		final Float[] uniqueFrags = new TreeSet<>(fragments).toArray(new Float[0]);
 		

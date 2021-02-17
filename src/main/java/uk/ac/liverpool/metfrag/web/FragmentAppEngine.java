@@ -49,7 +49,8 @@ public class FragmentAppEngine extends HttpServlet {
 			final float minMass = minMassNumber != null ? (float)minMassNumber.doubleValue() : 0.0f;
 			final List<String> fields = Arrays.asList(query.getString("fields", Headers.METFRAG_MZ.name()).split(",")); //$NON-NLS-1$ //$NON-NLS-2$
 			final List<List<Object>> brokenBondsFilter = null;
-			final Object[] results = MetFragFragmenter.getFragmentData(smiles, maximumTreeDepth, minMass, fields, brokenBondsFilter);
+			final float[] ionMassCorrections = new float[] { 1.00728f }; // [M]+H+
+			final Object[] results = MetFragFragmenter.getFragmentData(smiles, maximumTreeDepth, minMass, fields, brokenBondsFilter, ionMassCorrections);
 			final JsonObject json = toJson(results);
 			response.setContentType("application/json"); //$NON-NLS-1$
 			response.setCharacterEncoding("UTF-8"); //$NON-NLS-1$

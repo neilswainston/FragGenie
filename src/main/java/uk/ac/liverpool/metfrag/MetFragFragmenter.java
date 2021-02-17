@@ -42,7 +42,7 @@ public class MetFragFragmenter {
 	/**
 	 * 
 	 */
-	private final static float[] ION_MASS_CORRECTIONS = new float[] { -0.00055f, 1.00728f }; // { [M]+, [M]+H+
+	// private final static float[] ION_MASS_CORRECTIONS = new float[] { -0.00055f, 1.00728f }; // { [M]+, [M]+H+
 
 	/**
 	 * 
@@ -50,12 +50,13 @@ public class MetFragFragmenter {
 	 * @param maximumTreeDepth
 	 * @param minMass
 	 * @param fields
-	 * @return
+	 * @param ionMassCorrections
+	 * @return Object[]
 	 * @throws Exception
 	 */
-	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final float minMass, final List<String> fields) throws Exception {
+	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final float minMass, final List<String> fields, final float[] ionMassCorrections) throws Exception {
 		final List<List<Object>> brokenBondsFilter = null;
-		return getFragmentData(smiles, maximumTreeDepth, minMass, fields, brokenBondsFilter);
+		return getFragmentData(smiles, maximumTreeDepth, minMass, fields, brokenBondsFilter, ionMassCorrections);
 	}
 		
 	/**
@@ -65,10 +66,11 @@ public class MetFragFragmenter {
 	 * @param minMass
 	 * @param fields
 	 * @param brokenBondsFilter
+	 * @param ionMassCorrections
 	 * @return Object[]
 	 * @throws Exception
 	 */
-	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final float minMass, final List<String> fields, final List<List<Object>> brokenBondsFilter) throws Exception {
+	public static Object[] getFragmentData(final String smiles, final int maximumTreeDepth, final float minMass, final List<String> fields, final List<List<Object>> brokenBondsFilter, final float[] ionMassCorrections) throws Exception {
 		final Fragment fragment = new Fragment(new Precursor(getAtomContainer(smiles)));
 		final Collection<Fragment> fragments = fragment.fragment(maximumTreeDepth, minMass);
 		final boolean getMasses = fields.indexOf(Headers.METFRAG_MZ.name()) != -1;
@@ -83,7 +85,7 @@ public class MetFragFragmenter {
 			final Collection<Bond> fragBrokenBonds = childFragment.getBrokenBonds();
 			
 			if(filter(fragBrokenBonds, brokenBondsFilter)) {
-				for (float ionMassCorrection : ION_MASS_CORRECTIONS) {
+				for (float ionMassCorrection : ionMassCorrections) {
 					if(masses != null) {
 						masses.add(Float.valueOf(childFragment.getMonoisotopicMass() + ionMassCorrection));
 					}
@@ -121,10 +123,10 @@ public class MetFragFragmenter {
 	 */
 	public static void fragment(final File inFile, final File outFile, final String smilesHeader,
 			final List<String> fields, final int maximumTreeDepth, final float minMass, 
-			final int maxLenSmiles, final int maxRecords) throws Exception {
+			final int maxLenSmiles, final int maxRecords, final float[] ionMassCorrections) throws Exception {
 		final List<List<Object>> brokenBondsFilter = null;
 		
-		fragment(inFile, outFile, smilesHeader, fields, maximumTreeDepth, minMass, brokenBondsFilter, maxLenSmiles, maxRecords);
+		fragment(inFile, outFile, smilesHeader, fields, maximumTreeDepth, minMass, brokenBondsFilter, maxLenSmiles, maxRecords, ionMassCorrections);
 	}
 
 	/**
@@ -142,7 +144,7 @@ public class MetFragFragmenter {
 	 */
 	public static void fragment(final File inFile, final File outFile, final String smilesHeader,
 			final List<String> fields, final int maximumTreeDepth, final float minMass, final List<List<Object>> brokenBondsFilter,
-			final int maxLenSmiles, final int maxRecords) throws Exception {
+			final int maxLenSmiles, final int maxRecords, final float[] ionMassCorrections) throws Exception {
 
 		outFile.getParentFile().mkdirs();
 		outFile.createNewFile();
@@ -164,7 +166,7 @@ public class MetFragFragmenter {
 
 				if (smiles.length() < maxLenSmiles) {
 					try {
-						final Object[] fragmentData = getFragmentData(smiles, maximumTreeDepth, minMass, fields, brokenBondsFilter);
+						final Object[] fragmentData = getFragmentData(smiles, maximumTreeDepth, minMass, fields, brokenBondsFilter, ionMassCorrections);
 						final Map<String, String> recordMap = record.toMap();
 						
 						for(final String field : fields) {
@@ -291,6 +293,8 @@ public class MetFragFragmenter {
 		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
 		brokenBondsFilter.add(Arrays.asList(new Object[] {null, Order.SINGLE, Boolean.FALSE}));
 		
+		final float[] ionMassCorrections = new float[] { 1.00728f }; // [M]+H+
+		
 		fragment(inFile,
 				outFile,
 				smilesHeader,
@@ -299,6 +303,7 @@ public class MetFragFragmenter {
 				minMass,
 				brokenBondsFilter,
 				maxLenSmiles,
-				maxRecords);
+				maxRecords,
+				ionMassCorrections);
 	}
 }
