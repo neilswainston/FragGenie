@@ -123,7 +123,9 @@ public class Fragment implements Comparable<Fragment> {
 				final int hCount = this.prec.getAtomImplicitHydrogenCount(atomIdx);
 
 				if (elementCount.get(HYDROGEN) == null) {
-					elementCount.put(HYDROGEN, Integer.valueOf(hCount));
+					if(hCount > 0) {
+						elementCount.put(HYDROGEN, Integer.valueOf(hCount));
+					}
 				} else {
 					elementCount.put(HYDROGEN, Integer.valueOf(elementCount.get(HYDROGEN).intValue() + hCount));
 				}
@@ -224,7 +226,7 @@ public class Fragment implements Comparable<Fragment> {
 		final Object[] result2 = this.traverse(bondConnectedAtoms[1], bondConnectedAtoms[0], bondIdx);
 
 		final Fragment fragment2 = (Fragment)result2[1];
-
+		
 		return new Fragment[] { fragment1, fragment2 };
 	}
 	
