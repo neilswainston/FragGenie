@@ -1,7 +1,9 @@
-mvn -f pom_jar.xml install
+BASEDIR=$(dirname "$0")
+
+mvn -f $BASEDIR/pom_jar.xml install
 
 java \
 	-Xmx32000m \
-	-cp target/liv-metfrag-0.1.0-SNAPSHOT.jar:target/lib/* \
+	-cp $BASEDIR/target/liv-metfrag-0.1.0-SNAPSHOT.jar:target/lib/* \
 	uk.ac.liverpool.metfrag.MetFragFragmenter \
 	"$@"
