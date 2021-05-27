@@ -123,10 +123,10 @@ public class MetFragFragmenter {
 	 */
 	public static void fragment(final File inFile, final File outFile, final String smilesHeader,
 			final List<String> fields, final int maximumTreeDepth, final float minMass, 
-			final int maxLenSmiles, final int maxRecords, final float[] ionMassCorrections) throws Exception {
+			final int maxLenSmiles, final int maxRecords, final float[] ionMassCorrections, final boolean silent) throws Exception {
 		final List<List<Object>> brokenBondsFilter = null;
 		
-		fragment(inFile, outFile, smilesHeader, fields, maximumTreeDepth, minMass, brokenBondsFilter, maxLenSmiles, maxRecords, ionMassCorrections);
+		fragment(inFile, outFile, smilesHeader, fields, maximumTreeDepth, minMass, brokenBondsFilter, maxLenSmiles, maxRecords, ionMassCorrections, silent);
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class MetFragFragmenter {
 	 */
 	public static void fragment(final File inFile, final File outFile, final String smilesHeader,
 			final List<String> fields, final int maximumTreeDepth, final float minMass, final List<List<Object>> brokenBondsFilter,
-			final int maxLenSmiles, final int maxRecords, final float[] ionMassCorrections) throws Exception {
+			final int maxLenSmiles, final int maxRecords, final float[] ionMassCorrections, final boolean silent) throws Exception {
 
 		outFile.getParentFile().mkdirs();
 		outFile.createNewFile();
@@ -165,28 +165,29 @@ public class MetFragFragmenter {
 				final String smiles = record.get(smilesHeader);
 
 				if (smiles.length() < maxLenSmiles) {
+					final Map<String, String> recordMap = record.toMap();
+					
 					try {
 						final Object[] fragmentData = getFragmentData(smiles, maximumTreeDepth, minMass, fields, brokenBondsFilter, ionMassCorrections);
-						final Map<String, String> recordMap = record.toMap();
 						
 						for(final String field : fields) {
 							final int idx = Headers.valueOf(field).ordinal();
 							recordMap.put(field, fragmentData[idx].toString());
 						}
-						
-						final List<String> values = new ArrayList<>();
-
-						for (String headerName : headerNames) {
-							values.add(recordMap.get(headerName));
-						}
-
-						csvPrinter.printRecord(values);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
+					
+					final List<String> values = new ArrayList<>();
+
+					for (String headerName : headerNames) {
+						values.add(recordMap.get(headerName));
+					}
+
+					csvPrinter.printRecord(values);
 				}
 
-				if (count % 100 == 0) {
+				if (!silent && count % 100 == 0) {
 					System.out.println("Records fragmented: " + Integer.toString(count)); //$NON-NLS-1$
 				}
 
@@ -287,7 +288,8 @@ public class MetFragFragmenter {
 		final float minMass = Float.parseFloat(args[4]);
 		final int maxLenSmiles = Integer.parseInt(args[5]);
 		final int maxRecords = Integer.parseInt(args[6]);
-		final List<String> fields = Arrays.asList(Arrays.copyOfRange(args, 7, args.length));
+		final boolean silent = Boolean.parseBoolean(args[7]);
+		final List<String> fields = Arrays.asList(Arrays.copyOfRange(args, 8, args.length));
 		
 		// final List<List<Object>> brokenBondsFilter = null;
 		final List<List<Object>> brokenBondsFilter = new ArrayList<>();
@@ -304,6 +306,7 @@ public class MetFragFragmenter {
 				brokenBondsFilter,
 				maxLenSmiles,
 				maxRecords,
-				ionMassCorrections);
+				ionMassCorrections,
+				silent);
 	}
 }
