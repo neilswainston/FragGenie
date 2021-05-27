@@ -56,6 +56,18 @@ public class MetFragFragmenterTest {
 	 */
 	@SuppressWarnings("static-method")
 	@Test
+	public void testGetFragmentsUnbreakable() throws Exception {
+		// Soumitra suggested this molecule was unbreakable, but this appears not to be the case.
+		final float[] expected = { 11.99945f, 13.00728f, 23.99945f, 25.00728f, 35.99945f, 37.00728f, 47.99945f, 49.00728f };
+		doTest("C#1C#CC1", expected, null, 2, 0.0f, false); //$NON-NLS-1$
+	}
+	
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	@SuppressWarnings("static-method")
+	@Test
 	public void testGetFragmentsPrecursor() throws Exception {
 		final float[] expected = { 14.01511f, 15.02294f, 15.022941f, 16.03077f, 17.002192f, 18.010021f, 29.0386f, 30.04643f, 31.017853f, 32.02568f, 46.041344f, 47.04917f };
 		doTest("CCO", expected, null, 2, 0.0f, false); //$NON-NLS-1$
