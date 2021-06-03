@@ -1,10 +1,10 @@
-# liv-metfrag
+# FragGenie
 
-liv-metfrag provides a simple codebase and application for generating a list of
+FragGenie provides a simple codebase and application for generating a list of
 theoretical chemical fragments which can be used to generate theoretical mass
 spectra of chemical compounds.
 
-liv-metfrag can be accessed directly through the underlying Java code or run
+FragGenie can be accessed directly through the underlying Java code or run
 from the command line.
 
 An example script for running the application is provided (`test.sh`) along with
